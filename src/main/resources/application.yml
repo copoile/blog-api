@@ -1,0 +1,15 @@
+spring:
+  profiles:
+    active:
+      - dev
+  application:
+    name: ucs-blog
+  servlet:
+    multipart:
+      enabled: true
+      max-request-size: 5MB
+      max-file-size: 5MB
+  thymeleaf:
+    suffix: .html
+    cache: true
+    encoding: UTF-8
