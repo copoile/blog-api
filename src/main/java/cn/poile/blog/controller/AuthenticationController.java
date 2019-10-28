@@ -1,10 +1,10 @@
 package cn.poile.blog.controller;
 
+import cn.poile.blog.common.response.ApiResponse;
+import cn.poile.blog.service.AuthenticationService;
+import cn.poile.blog.vo.TokenVo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,16 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
  **/
 @RestController
 @Log4j2
-public class AuthenticationController {
+public class AuthenticationController extends BaseController{
+
 
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public String login(@RequestParam String username,@RequestParam String password) {
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(username,password);
-        Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-        log.info("result:{}", authenticate);
-        return authenticate.toString();
+    public ApiResponse<TokenVo> login(@RequestParam String username, @RequestParam String password) {
+        TokenVo tokenVo = authenticationService.usernameOrMobilePasswordAuthenticate(username, password);
+        return createResponse(tokenVo);
     }
 }
