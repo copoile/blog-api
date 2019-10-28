@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
@@ -50,7 +51,7 @@ public class User implements Serializable {
     private Integer gender;
 
     @ApiModelProperty(value = "生日")
-    private LocalDate birthday;
+    private Date birthday;
 
     @ApiModelProperty(value = "电子邮箱")
     private String email;
@@ -65,7 +66,7 @@ public class User implements Serializable {
     private Integer status;
 
     @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
+    private Date createTime;
 
 
 }

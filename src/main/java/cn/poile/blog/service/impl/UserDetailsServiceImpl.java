@@ -1,6 +1,5 @@
 package cn.poile.blog.service.impl;
 
-import cn.poile.blog.entity.User;
 import cn.poile.blog.service.IUserService;
 import cn.poile.blog.vo.CustomUserDetails;
 import cn.poile.blog.vo.UserVo;
@@ -27,7 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (userVo == null) {
             throw new UsernameNotFoundException("user not found:" + username);
         }
-         UserDetails userDetails = new CustomUserDetails();
+        UserDetails userDetails = new CustomUserDetails();
         BeanUtils.copyProperties(userVo,userDetails);
         return userDetails;
     }

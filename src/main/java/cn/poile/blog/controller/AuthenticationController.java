@@ -1,8 +1,8 @@
 package cn.poile.blog.controller;
 
 import cn.poile.blog.common.response.ApiResponse;
+import cn.poile.blog.common.security.Token;
 import cn.poile.blog.service.AuthenticationService;
-import cn.poile.blog.vo.TokenVo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,8 +22,8 @@ public class AuthenticationController extends BaseController{
     private AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ApiResponse<TokenVo> login(@RequestParam String username, @RequestParam String password) {
-        TokenVo tokenVo = authenticationService.usernameOrMobilePasswordAuthenticate(username, password);
+    public ApiResponse<Token> login(@RequestParam String username, @RequestParam String password) {
+        Token tokenVo = authenticationService.usernameOrMobilePasswordAuthenticate(username, password);
         return createResponse(tokenVo);
     }
 }

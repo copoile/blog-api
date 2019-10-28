@@ -20,9 +20,9 @@ public class BaseController {
         return response;
     }
 
-    protected <T> ApiResponse<T> createResponse(T data) {
+    protected <T> ApiResponse<T> createResponse(T body) {
         ApiResponse<T> response = createResponse();
-        response.setData(data);
+        response.setBody(body);
         return response;
     }
 }
