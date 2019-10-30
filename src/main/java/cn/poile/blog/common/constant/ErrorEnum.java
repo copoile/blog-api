@@ -29,15 +29,18 @@ public enum ErrorEnum {
      * 凭证已过期
      */
     CREDENTIALS_EXPIRED(1006,"凭证已过期"),
-
     /**
      * 不允许访问
      */
     ACCESS_DENIED(1007,"不允许访问"),
-
-
-
-
+    /**
+     * 无权限访问
+     */
+    PERMISSION_DENIED(1008,"无权限访问"),
+    /**
+     * 凭证无效或已过期
+     */
+    CREDENTIALS_INVALID(1009,"凭证无效或已过期"),
     /**
      * /**
      * 邮箱验证不通过

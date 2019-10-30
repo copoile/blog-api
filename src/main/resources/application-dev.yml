@@ -50,6 +50,19 @@ spring:
         login-username: admin
         login-password: 123456
 
+oss:
+  ## 存储类型,1：七牛  2：阿里云  3：腾讯云 4: 网易云
+  type: 1
+  nos:
+    accessKey: asdfasdasdf
+    secretKey: asdfasdf
+    maxConnections: 100
+    socketTimeout: 10000
+    maxErrorRetry: 2
+    endpoint: asdfasd
+    bucket: img
+  lettuce:
+    accessKey: asdfasdf
 
 
 mybatis-plus:

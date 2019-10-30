@@ -1,6 +1,6 @@
 package cn.poile.blog.service;
 
-import cn.poile.blog.common.security.Token;
+import cn.poile.blog.common.security.AccessToken;
 
 /**
  * @author: yaohw
@@ -13,5 +13,5 @@ public interface AuthenticationService {
      * @param password 密码
      * @return cn.poile.blog.vo.TokenVo
      */
-    Token usernameOrMobilePasswordAuthenticate(String s, String password);
+    AccessToken usernameOrMobilePasswordAuthenticate(String s, String password);
 }

@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
+ * 自定义无权限访问
  * @author: yaohw
  * @create: 2019-10-25 19:19
  **/
@@ -20,8 +21,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AccessDeniedException e) throws IOException, ServletException {
         ApiResponse response = new ApiResponse();
-        response.setErrorCode(ErrorEnum.ACCESS_DENIED.getErrorCode());
-        response.setErrorMsg(ErrorEnum.ACCESS_DENIED.getErrorMsg());
+        response.setErrorCode(ErrorEnum.PERMISSION_DENIED.getErrorCode());
+        response.setErrorMsg(ErrorEnum.PERMISSION_DENIED.getErrorMsg());
         httpServletResponse.setCharacterEncoding("UTF-8");
         httpServletResponse.setContentType("application/json; charset=utf-8");
         httpServletResponse.getWriter().print(JSON.toJSON(response));

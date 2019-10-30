@@ -1,7 +1,7 @@
 package cn.poile.blog.service.impl;
 
 import cn.poile.blog.common.security.RedisTokenStore;
-import cn.poile.blog.common.security.Token;
+import cn.poile.blog.common.security.AccessToken;
 import cn.poile.blog.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,7 +30,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @return cn.poile.blog.vo.TokenVo
      */
     @Override
-    public Token usernameOrMobilePasswordAuthenticate(String s, String password) {
+    public AccessToken usernameOrMobilePasswordAuthenticate(String s, String password) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(s,password);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         return tokenStore.storeAccessToken(authenticate);

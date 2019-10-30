@@ -1,5 +1,6 @@
 package cn.poile.blog.config;
 
+import cn.poile.blog.common.filter.AuthorizationTokenFilter;
 import cn.poile.blog.common.security.CustomAccessDeniedHandler;
 import cn.poile.blog.common.security.CustomAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * @author: yaohw
@@ -28,6 +30,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private AuthorizationTokenFilter authorizationTokenFilter;
 
 
     /**
@@ -80,5 +85,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 http.exceptionHandling()
                 .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 .accessDeniedHandler(new CustomAccessDeniedHandler());
+                http.addFilterBefore(authorizationTokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
 }
