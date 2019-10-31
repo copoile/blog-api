@@ -1,44 +1,30 @@
 package cn.poile.blog.common.oss;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 /**
  * @author: yaohw
  * @create: 2019-10-30 18:57
  **/
-@Component
 @ConfigurationProperties(prefix = "oss")
+@Data
 public class StorageProperties {
 
     private int type;
 
-    private final StorageProperties.Nos nos = new StorageProperties.Nos();
+    private final StorageProperties.Netease netease = new StorageProperties.Netease();
 
-    private final StorageProperties.Lettuce lettuce = new StorageProperties.Lettuce();
+    private final StorageProperties.Qiniu qiniu = new StorageProperties.Qiniu();
+
 
     public StorageProperties() {
 
     }
 
-    public static class Lettuce {
-        private String accessKey;
-
-        public String getAccessKey() {
-            return accessKey;
-        }
-
-        public void setAccessKey(String accessKey) {
-            this.accessKey = accessKey;
-        }
-    }
-
-    public static class Nos {
+    public static class Netease {
         private String accessKey;
         private String secretKey;
-        private int maxConnections;
-        private int socketTimeout;
-        private int maxErrorRetry;
         private String endpoint;
         private String bucket;
 
@@ -58,30 +44,6 @@ public class StorageProperties {
             this.secretKey = secretKey;
         }
 
-        public int getMaxConnections() {
-            return maxConnections;
-        }
-
-        public void setMaxConnections(int maxConnections) {
-            this.maxConnections = maxConnections;
-        }
-
-        public int getSocketTimeout() {
-            return socketTimeout;
-        }
-
-        public void setSocketTimeout(int socketTimeout) {
-            this.socketTimeout = socketTimeout;
-        }
-
-        public int getMaxErrorRetry() {
-            return maxErrorRetry;
-        }
-
-        public void setMaxErrorRetry(int maxErrorRetry) {
-            this.maxErrorRetry = maxErrorRetry;
-        }
-
         public String getEndpoint() {
             return endpoint;
         }
@@ -99,19 +61,51 @@ public class StorageProperties {
         }
     }
 
-    public int getType() {
-        return type;
-    }
+    public static class Qiniu {
+        private String accessKey;
+        private String secretKey;
+        private String bucket;
+        private String prefix;
+        private String domain;
 
-    public void setType(int type) {
-        this.type = type;
-    }
+        public String getAccessKey() {
+            return accessKey;
+        }
 
-    public Nos getNos() {
-        return nos;
-    }
+        public void setAccessKey(String accessKey) {
+            this.accessKey = accessKey;
+        }
 
-    public Lettuce getLettuce() {
-        return lettuce;
+        public String getSecretKey() {
+            return secretKey;
+        }
+
+        public void setSecretKey(String secretKey) {
+            this.secretKey = secretKey;
+        }
+
+        public String getBucket() {
+            return bucket;
+        }
+
+        public void setBucket(String bucket) {
+            this.bucket = bucket;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public void setPrefix(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public String getDomain() {
+            return domain;
+        }
+
+        public void setDomain(String domain) {
+            this.domain = domain;
+        }
     }
 }

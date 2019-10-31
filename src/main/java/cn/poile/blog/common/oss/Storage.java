@@ -13,17 +13,19 @@ public interface Storage {
      * 文件上传
      * @param bytes 文件字节数组
      * @param path 文件路径
+     * @param contentType 文件类型
      * @return http地址
      */
-    public String upload(byte[] bytes,String path);
+    public String upload(byte[] bytes,String path,String contentType);
 
     /**
      * 文件上传
      * @param inputStream 字节流
      * @param path 文件路径
+     * @param contentType 文件类型
      * @return http地址
      */
-    public String upload(InputStream inputStream,String path);
+    public String upload(InputStream inputStream,String path,String contentType);
 
     /**
      *  删除文件

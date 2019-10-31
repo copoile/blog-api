@@ -1,6 +1,5 @@
 package cn.poile.blog.controller;
 
-import cn.poile.blog.common.oss.StorageProperties;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.security.AccessToken;
 import cn.poile.blog.service.AuthenticationService;
@@ -22,8 +21,6 @@ import java.security.Principal;
 @Log4j2
 public class AuthenticationController extends BaseController{
 
-    @Autowired
-    private StorageProperties storageProperties;
 
     @Autowired
     private AuthenticationService authenticationService;
@@ -43,9 +40,7 @@ public class AuthenticationController extends BaseController{
     @PreAuthorize("hasAuthority('delete_img')")
     @GetMapping("/test2")
     public ApiResponse test2(Principal principal) {
-        log.info("type"+storageProperties.getType());
-        log.info("AccessKey1"+storageProperties.getLettuce().getAccessKey());
-        log.info("AccessKey2"+ storageProperties.getNos().getAccessKey());
+
         return createResponse();
     }
 }
