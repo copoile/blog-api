@@ -17,6 +17,8 @@ public class StorageProperties {
 
     private final StorageProperties.Qiniu qiniu = new StorageProperties.Qiniu();
 
+    private final StorageProperties.Local local = new StorageProperties.Local();
+
 
     public StorageProperties() {
 
@@ -106,6 +108,27 @@ public class StorageProperties {
 
         public void setDomain(String domain) {
             this.domain = domain;
+        }
+    }
+
+    public static class Local {
+        private String path = "/var/blog/";
+        private String proxy = "http://www.poile.cn/resources/";
+
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        public String getProxy() {
+            return proxy;
+        }
+
+        public void setProxy(String proxy) {
+            this.proxy = proxy;
         }
     }
 }

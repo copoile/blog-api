@@ -1,5 +1,10 @@
 package cn.poile.blog.common.oss;
 
+import com.qiniu.common.Zone;
+import com.qiniu.storage.Configuration;
+import com.qiniu.storage.UploadManager;
+import com.qiniu.util.Auth;
+
 import java.io.InputStream;
 
 /**
@@ -8,6 +13,20 @@ import java.io.InputStream;
  * @create: 2019-10-31 19:49
  **/
 public class QiniuStorage implements Storage{
+
+    private UploadManager uploadManager;
+
+    private String token;
+
+    private String domain;
+
+
+    public QiniuStorage(StorageProperties.Qiniu qiniu) {
+        uploadManager = new UploadManager(new Configuration(Zone.autoZone()));
+        token = Auth.create(qiniu.getAccessKey(),qiniu.getSecretKey()).uploadToken(qiniu.getBucket());
+    }
+
+
     /**
      * 文件上传
      *

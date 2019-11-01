@@ -25,7 +25,7 @@ public final class StorageFactory {
     public static Storage build(StorageProperties properties) {
         int type = properties.getType();
         if (type == LOCAL) {
-            return new LocalStorage();
+            return localStorage(properties.getLocal());
         } else if (type == QINIU) {
             return new QiniuStorage();
         } else if (type == NETEASE) {
@@ -34,6 +34,11 @@ public final class StorageFactory {
         return new NeteaseStorage(properties.getNetease());
     }
 
+    /**
+     *  网易云存储
+     * @param netease 网易云存储配置
+     * @return
+     */
     private static NeteaseStorage neteaseStorage(StorageProperties.Netease netease) {
         String accessKey = netease.getAccessKey();
         if (accessKey.isEmpty()) {
@@ -56,5 +61,24 @@ public final class StorageFactory {
             return null;
         }
         return new NeteaseStorage(netease);
+    }
+
+    /**
+     * 本地存储
+     * @param local 本地存储配置
+     * @return
+     */
+    private static LocalStorage localStorage(StorageProperties.Local local) {
+        String path = local.getPath();
+        log.info("本地存储" + path);
+        if (path.isEmpty()) {
+            log.error("本地存储路径未配置,请检查配置信息");
+            return null;
+        }
+        String proxy = local.getProxy();
+        if(proxy.isEmpty()) {
+            log.error("本地存储代理未配置，请检查配置信息");
+        }
+        return new LocalStorage(local);
     }
 }
