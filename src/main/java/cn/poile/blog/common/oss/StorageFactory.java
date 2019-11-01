@@ -1,5 +1,6 @@
 package cn.poile.blog.common.oss;
 
+import com.qiniu.common.Zone;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -27,7 +28,7 @@ public final class StorageFactory {
         if (type == LOCAL) {
             return localStorage(properties.getLocal());
         } else if (type == QINIU) {
-            return new QiniuStorage();
+            return qiniuStorage(properties.getQiniu());
         } else if (type == NETEASE) {
             return neteaseStorage(properties.getNetease());
         }
@@ -80,5 +81,57 @@ public final class StorageFactory {
             log.error("本地存储代理未配置，请检查配置信息");
         }
         return new LocalStorage(local);
+    }
+
+    private static QiniuStorage qiniuStorage(StorageProperties.Qiniu qiniu) {
+        String accessKey = qiniu.getAccessKey();
+        if (accessKey.isEmpty()) {
+            log.error("七牛云accessKey未配置，请检查配置信息");
+            return null;
+        }
+        String secretKey = qiniu.getSecretKey();
+        if (secretKey.isEmpty()) {
+            log.error("七牛云secretKey未配置,请检查配置信息");
+            return null;
+        }
+        String domain = qiniu.getDomain();
+        if (domain.isEmpty()) {
+            log.error("七牛云domain未配置，请检查配置信息");
+            return null;
+        }
+        String bucket = qiniu.getBucket();
+        if (bucket.isEmpty()) {
+            log.error("七牛云bucket未配置，请检查配置信息");
+            return null;
+        }
+        Zone zone = qiniuZone(qiniu.getRegion());
+        return new QiniuStorage(qiniu,zone);
+    }
+
+    /**
+     * 七牛云 区域
+     * @param zone
+     * @return
+     */
+    private static Zone qiniuZone(String zone) {
+        final String HUANAN = "huanan";
+        final String HUABEI = "huabei";
+        final String HUADONG = "huadong";
+        final String BEIMEI = "beimei";
+        final String XINJIAPO = "xinjiapo";
+        if (zone.isEmpty()) {
+            return Zone.autoZone();
+        } else if (HUANAN.equals(zone)) {
+            return Zone.huanan();
+        } else if (HUABEI.equals(zone)) {
+            return Zone.huabei();
+        } else if (HUADONG.equals(zone)) {
+            return Zone.huadong();
+        } else if (BEIMEI.equals(zone)) {
+            return Zone.beimei();
+        } else if (XINJIAPO.equals(zone)) {
+            return Zone.xinjiapo();
+        }
+        return Zone.autoZone();
     }
 }
