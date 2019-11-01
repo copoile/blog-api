@@ -67,7 +67,6 @@ public class StorageProperties {
         private String accessKey;
         private String secretKey;
         private String bucket;
-        private String prefix;
         private String domain;
         private String region;
 
@@ -93,14 +92,6 @@ public class StorageProperties {
 
         public void setBucket(String bucket) {
             this.bucket = bucket;
-        }
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public void setPrefix(String prefix) {
-            this.prefix = prefix;
         }
 
         public String getDomain() {
