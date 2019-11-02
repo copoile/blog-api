@@ -1,5 +1,7 @@
 package cn.poile.blog.common.oss;
 
+import cn.poile.blog.common.constant.ErrorEnum;
+import cn.poile.blog.common.exception.ApiException;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.ObjectMetadata;
 import lombok.extern.log4j.Log4j2;
@@ -65,10 +67,10 @@ public class AliStorage extends AbstractStorage{
     @Override
     public boolean delete(String fullPath) {
        try {
-            client.deleteObject(bucket , getFileNmaeFullPath(fullPath));
-        } catch (Exception e) {
-            log.error("删除文件失败:{}",e);
-            return false;
+            client.deleteObject(bucket , getFileNameFromFullPath(fullPath));
+        } catch (Exception ex) {
+           log.error("删除文件失败:{0}",ex);
+           throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(),"删除文件失败");
         }
         return true;
     }

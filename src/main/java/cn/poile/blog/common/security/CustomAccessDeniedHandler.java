@@ -20,11 +20,11 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AccessDeniedException e) throws IOException, ServletException {
+        httpServletResponse.setCharacterEncoding("UTF-8");
+        httpServletResponse.setContentType("application/json; charset=utf-8");
         ApiResponse response = new ApiResponse();
         response.setErrorCode(ErrorEnum.PERMISSION_DENIED.getErrorCode());
         response.setErrorMsg(ErrorEnum.PERMISSION_DENIED.getErrorMsg());
-        httpServletResponse.setCharacterEncoding("UTF-8");
-        httpServletResponse.setContentType("application/json; charset=utf-8");
         httpServletResponse.getWriter().print(JSON.toJSON(response));
     }
 }

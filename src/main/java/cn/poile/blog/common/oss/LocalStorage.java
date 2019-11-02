@@ -1,5 +1,7 @@
 package cn.poile.blog.common.oss;
 
+import cn.poile.blog.common.constant.ErrorEnum;
+import cn.poile.blog.common.exception.ApiException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 
@@ -30,8 +32,8 @@ public class LocalStorage extends AbstractStorage{
         File file = new File(path);
         try {
             FileUtils.forceMkdir(file);
-        } catch (IOException e) {
-            log.error("创建本地存储文件目录失败:{}",e);
+        } catch (IOException ex) {
+            log.error("创建本地存储文件目录失败:{0}",ex);
         }
     }
 
@@ -61,8 +63,9 @@ public class LocalStorage extends AbstractStorage{
         File file = new File(path + name );
         try {
             FileUtils.copyInputStreamToFile(inputStream, file);
-        } catch (IOException e) {
-            log.error("文件存储失败:{}",e);
+        } catch (IOException ex) {
+            log.error("本地文件存储失败:{0}",ex);
+            throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(),"上传文件失败");
         }
         return proxy + name;
     }
@@ -75,6 +78,6 @@ public class LocalStorage extends AbstractStorage{
      */
     @Override
     public boolean delete(String fullPath) {
-        return FileUtils.deleteQuietly(new File(path + getFileNmaeFullPath(fullPath)));
+        return FileUtils.deleteQuietly(new File(path + getFileNameFromFullPath(fullPath)));
     }
 }

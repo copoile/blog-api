@@ -11,7 +11,7 @@ public abstract class AbstractStorage implements Storage{
      * @param fullPath 完整路径。如 http://qiniu.poile.cn/1134664743.png
      * @return
      */
-    protected String getFileNmaeFullPath(String fullPath) {
+    protected String getFileNameFromFullPath(String fullPath) {
         if (!fullPath.isEmpty()) {
             return fullPath.substring(fullPath.lastIndexOf("/") + 1);
         }

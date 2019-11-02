@@ -1,5 +1,7 @@
 package cn.poile.blog.common.oss;
 
+import cn.poile.blog.common.constant.ErrorEnum;
+import cn.poile.blog.common.exception.ApiException;
 import com.qiniu.common.QiniuException;
 import com.qiniu.common.Zone;
 import com.qiniu.http.Response;
@@ -57,9 +59,11 @@ public class QiniuStorage extends AbstractStorage {
             Response res = uploadManager.put(bytes, path, token, null, contentType, false);
             if (!res.isOK()) {
                 log.error("七牛云上传文件失败:{}", res);
+                throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(),"上传文件失败");
             }
-        } catch (QiniuException e) {
-            log.error("七牛云上传文件失败:{}", e);
+        } catch (QiniuException ex) {
+            log.error("七牛云上传文件失败:{0}", ex);
+            throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(),"上传文件失败");
         }
         return domain + path;
     }
@@ -77,10 +81,10 @@ public class QiniuStorage extends AbstractStorage {
         try {
             byte[] bytes = IOUtils.toByteArray(inputStream);
             return upload(bytes, path, contentType);
-        } catch (IOException e) {
-            log.error("七牛云上传文件失败:{}", e);
+        } catch (IOException ex) {
+            log.error("七牛云上传文件失败:{0}", ex);
+            throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(),"上传文件失败");
         }
-        return null;
     }
 
     /**
@@ -92,15 +96,15 @@ public class QiniuStorage extends AbstractStorage {
     @Override
     public boolean delete(String fullPath) {
         try {
-            Response res = bucketManager.delete(bucket, getFileNmaeFullPath(fullPath));
+            Response res = bucketManager.delete(bucket, getFileNameFromFullPath(fullPath));
             if (!res.isOK()) {
-                log.error("删除文件失败:{}", res);
-                return false;
+                log.error("删除文件失败:{}",res);
+                throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(),"删除文件失败");
             }
             return true;
-        } catch (QiniuException e) {
-            log.error("删除文件失败:{}", e);
-            return false;
+        } catch (QiniuException ex) {
+            log.error("删除文件失败:{0}",ex);
+            throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(),"删除文件失败");
         }
     }
 }

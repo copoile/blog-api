@@ -1,6 +1,7 @@
 package cn.poile.blog.common.constant;
 
 /**
+ * 错误枚举
  * @author: yaohw
  * @create: 2019-10-25 17:15
  **/
@@ -41,6 +42,14 @@ public enum ErrorEnum {
      * 凭证无效或已过期
      */
     CREDENTIALS_INVALID(1009,"凭证无效或已过期"),
+    /**
+     * 无效请求
+     */
+    INVALID_REQUEST(1010,"无效请求"),
+    /**
+     * 系统异常
+     */
+    SYSTEM_ERROR(1011,"系统异常"),
     /**
      * /**
      * 邮箱验证不通过

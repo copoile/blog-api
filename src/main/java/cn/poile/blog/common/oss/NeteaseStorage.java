@@ -1,5 +1,6 @@
 package cn.poile.blog.common.oss;
 
+import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
 import com.netease.cloud.ClientConfiguration;
 import com.netease.cloud.Protocol;
@@ -74,10 +75,10 @@ public class NeteaseStorage extends AbstractStorage{
         Upload upload = transferManager.upload(putObjectRequest);
         try {
             upload.waitForUploadResult();
-            return "https://" + bucket+ "." + nosEndpoint + "/" + path;
-        } catch (Exception e) {
-            log.error("网易云存储上传文件失败:{}",e);
-            throw new ApiException();
+            return "https://" + bucket + "." + nosEndpoint + "/" + path;
+        } catch (Exception ex) {
+            log.error("网易云存储上传文件失败:{0}",ex);
+            throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(),"文件上传失败");
         }
     }
 
@@ -89,7 +90,7 @@ public class NeteaseStorage extends AbstractStorage{
      */
     @Override
     public boolean delete(String fullPath) {
-        DeleteObjectsRequest request = new DeleteObjectsRequest(bucket).withKeys(getFileNmaeFullPath(fullPath));
+        DeleteObjectsRequest request = new DeleteObjectsRequest(bucket).withKeys(getFileNameFromFullPath(fullPath));
         nosClient.deleteObjects(request);
         return true;
     }
