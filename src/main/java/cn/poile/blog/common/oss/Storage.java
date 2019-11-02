@@ -29,8 +29,8 @@ public interface Storage {
 
     /**
      *  删除文件
-     * @param path 文件路径
+     * @param fullPath 文件路径
      * @return 是否删除成功
      */
-    public boolean delete(String path);
+    public boolean delete(String fullPath);
 }

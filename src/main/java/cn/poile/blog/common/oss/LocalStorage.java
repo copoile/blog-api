@@ -14,7 +14,7 @@ import java.io.InputStream;
  * @create: 2019-10-31 19:50
  **/
 @Log4j2
-public class LocalStorage implements Storage{
+public class LocalStorage extends AbstractStorage{
 
     private String path;
 
@@ -70,11 +70,11 @@ public class LocalStorage implements Storage{
     /**
      * 删除文件
      *
-     * @param name 文件名称
+     * @param fullPath 文件完整路径
      * @return 是否删除成功
      */
     @Override
-    public boolean delete(String name) {
-        return FileUtils.deleteQuietly(new File(path + name));
+    public boolean delete(String fullPath) {
+        return FileUtils.deleteQuietly(new File(path + getFileNmaeFullPath(fullPath)));
     }
 }

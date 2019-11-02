@@ -22,7 +22,18 @@ public final class StorageFactory {
      *  网易云
      */
     private static final int NETEASE = 2;
+    /**
+     *  阿里云
+     */
+    private static final int ALI = 3;
 
+    private static final String SUFFIX = "/";
+
+    /**
+     * 根据配置信息生成不同 Storage 实例
+     * @param properties
+     * @return
+     */
     public static Storage build(StorageProperties properties) {
         int type = properties.getType();
         if (type == LOCAL) {
@@ -31,8 +42,10 @@ public final class StorageFactory {
             return qiniuStorage(properties.getQiniu());
         } else if (type == NETEASE) {
             return neteaseStorage(properties.getNetease());
+        } else if (type == ALI) {
+            return aliStorage(properties.getAli());
         }
-        return new NeteaseStorage(properties.getNetease());
+        return null;
     }
 
     /**
@@ -71,18 +84,24 @@ public final class StorageFactory {
      */
     private static LocalStorage localStorage(StorageProperties.Local local) {
         String path = local.getPath();
-        log.info("本地存储" + path);
         if (path.isEmpty()) {
             log.error("本地存储路径未配置,请检查配置信息");
             return null;
         }
+        local.setPath(addSuffix(path));
         String proxy = local.getProxy();
         if(proxy.isEmpty()) {
             log.error("本地存储代理未配置，请检查配置信息");
         }
+        local.setProxy(addSuffix(proxy));
         return new LocalStorage(local);
     }
 
+    /**
+     *  七牛云存储
+     * @param qiniu 七牛云配置
+     * @return
+     */
     private static QiniuStorage qiniuStorage(StorageProperties.Qiniu qiniu) {
         String accessKey = qiniu.getAccessKey();
         if (accessKey.isEmpty()) {
@@ -99,6 +118,7 @@ public final class StorageFactory {
             log.error("七牛云domain未配置，请检查配置信息");
             return null;
         }
+        qiniu.setDomain(addSuffix(domain));
         String bucket = qiniu.getBucket();
         if (bucket.isEmpty()) {
             log.error("七牛云bucket未配置，请检查配置信息");
@@ -106,6 +126,35 @@ public final class StorageFactory {
         }
         Zone zone = qiniuZone(qiniu.getRegion());
         return new QiniuStorage(qiniu,zone);
+    }
+
+    /**
+     *  阿里云存储
+     * @param ali 阿里云配置
+     * @return
+     */
+    private static AliStorage aliStorage(StorageProperties.Ali ali) {
+        String accessKeyId = ali.getAccessKeyId();
+        if (accessKeyId.isEmpty()) {
+            log.error("阿里云accessKeyId未配置，请检查配置信息");
+            return null;
+        }
+        String accessKeyIdSecret = ali.getAccessKeyIdSecret();
+        if (accessKeyIdSecret.isEmpty()) {
+            log.error("阿里云accessKeyIdSecret未配置，请检查配置信息");
+            return null;
+        }
+        String endpoint = ali.getEndpoint();
+        if (endpoint.isEmpty()) {
+            log.error("阿里云endpoint未配置，请检查配置信息");
+            return null;
+        }
+        String bucket = ali.getBucket();
+        if (bucket.isEmpty()) {
+            log.error("阿里云bucket未配置，请检查配置信息");
+            return null;
+        }
+        return new AliStorage(ali);
     }
 
     /**
@@ -133,5 +182,17 @@ public final class StorageFactory {
             return Zone.xinjiapo();
         }
         return Zone.autoZone();
+    }
+
+    /**
+     *  添加 / 后缀
+     * @param path
+     * @return
+     */
+    private static String addSuffix(String path) {
+        if(!path.endsWith(SUFFIX)) {
+            return path + SUFFIX;
+        }
+        return path;
     }
 }

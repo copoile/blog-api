@@ -4,10 +4,7 @@ import cn.poile.blog.common.oss.Storage;
 import cn.poile.blog.common.response.ApiResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
@@ -33,5 +30,11 @@ public class UploadController extends BaseController {
         String name = System.currentTimeMillis() + "." +extension;
         String fullPath = storage.upload(file.getInputStream(),name,contentType);
         return createResponse(fullPath);
+    }
+
+    @DeleteMapping("/delete")
+    public ApiResponse delete(@NotNull @RequestParam("fullpath")String fullpath){
+        storage.delete(fullpath);
+        return createResponse();
     }
 }

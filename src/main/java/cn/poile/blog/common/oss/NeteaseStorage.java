@@ -6,6 +6,7 @@ import com.netease.cloud.Protocol;
 import com.netease.cloud.auth.BasicCredentials;
 import com.netease.cloud.auth.Credentials;
 import com.netease.cloud.services.nos.NosClient;
+import com.netease.cloud.services.nos.model.DeleteObjectsRequest;
 import com.netease.cloud.services.nos.model.ObjectMetadata;
 import com.netease.cloud.services.nos.model.PutObjectRequest;
 import com.netease.cloud.services.nos.transfer.TransferManager;
@@ -16,12 +17,12 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 /**
- * 网易云
+ * 网易云 存储
  * @author: yaohw
  * @create: 2019-10-31 11:41
  **/
 @Log4j2
-public class NeteaseStorage implements Storage{
+public class NeteaseStorage extends AbstractStorage{
 
     private NosClient nosClient;
 
@@ -83,11 +84,13 @@ public class NeteaseStorage implements Storage{
     /**
      * 删除文件
      *
-     * @param path 文件路径
+     * @param fullPath 文件完整路径
      * @return 是否删除成功
      */
     @Override
-    public boolean delete(String path) {
-        return false;
+    public boolean delete(String fullPath) {
+        DeleteObjectsRequest request = new DeleteObjectsRequest(bucket).withKeys(getFileNmaeFullPath(fullPath));
+        nosClient.deleteObjects(request);
+        return true;
     }
 }

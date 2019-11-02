@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
+ * oss 存储配置
  * @author: yaohw
  * @create: 2019-10-30 18:57
  **/
@@ -18,6 +19,8 @@ public class StorageProperties {
     private final StorageProperties.Qiniu qiniu = new StorageProperties.Qiniu();
 
     private final StorageProperties.Local local = new StorageProperties.Local();
+
+    private final StorageProperties.Ali ali = new StorageProperties.Ali();
 
 
     public StorageProperties() {
@@ -129,6 +132,45 @@ public class StorageProperties {
 
         public void setProxy(String proxy) {
             this.proxy = proxy;
+        }
+    }
+
+    public static class Ali {
+        private String accessKeyId;
+        private String accessKeyIdSecret;
+        private String bucket;
+        private String endpoint;
+
+        public String getAccessKeyId() {
+            return accessKeyId;
+        }
+
+        public void setAccessKeyId(String accessKeyId) {
+            this.accessKeyId = accessKeyId;
+        }
+
+        public String getAccessKeyIdSecret() {
+            return accessKeyIdSecret;
+        }
+
+        public void setAccessKeyIdSecret(String accessKeyIdSecret) {
+            this.accessKeyIdSecret = accessKeyIdSecret;
+        }
+
+        public String getBucket() {
+            return bucket;
+        }
+
+        public void setBucket(String bucket) {
+            this.bucket = bucket;
+        }
+
+        public String getEndpoint() {
+            return endpoint;
+        }
+
+        public void setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
         }
     }
 }
