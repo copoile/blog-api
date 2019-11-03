@@ -28,7 +28,7 @@
         </collection>
     </resultMap>
 
-    <select id="selectUserVoByUsername" resultMap="userVoResultMap">
+    <select id="selectUserVoByUsernameOrMobile" resultMap="userVoResultMap">
         select
         u.id,
         u.username,
@@ -54,7 +54,16 @@
         left join role r on r.id = ur.role_id
         left join role_authority ra on ra.role_id = r.id
         left join authority a on a.id = ra.authority_id
-        where u.username = #{ username, jdbcType=VARCHAR }
+        <where>
+            <choose>
+                <when test="username != null">
+                    u.username = #{ username, jdbcType=VARCHAR }
+                </when>
+                <otherwise>
+                    u.mobile = #{ mobile, jdbcType=BIGINT}
+                </otherwise>
+            </choose>
+        </where>
     </select>
 
 </mapper>

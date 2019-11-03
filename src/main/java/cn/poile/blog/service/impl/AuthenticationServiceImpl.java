@@ -35,4 +35,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         return tokenStore.storeAccessToken(authenticate);
     }
+
+    /**
+     * 移除 accessToken 相关
+     * @param accessToken
+     */
+    @Override
+    public void remove(String accessToken) {
+        tokenStore.remove(accessToken);
+    }
+
+    /**
+     * 刷新accessToken
+     * @param refreshToken
+     * @return
+     */
+    @Override
+    public AccessToken refreshAccessToken(String refreshToken) {
+        return tokenStore.refreshAccessToken(refreshToken);
+    }
+
+
 }

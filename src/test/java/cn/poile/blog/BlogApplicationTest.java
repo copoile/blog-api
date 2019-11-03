@@ -21,7 +21,7 @@ public class BlogApplicationTest {
 
     @Test
     public void userTest() {
-        UserVo userVo = userService.selectUserVoByUsername("yaohw");
+        UserVo userVo = userService.selectUserVoByUsernameOrMobile("yaohw",null);
         System.out.println(userVo.toString());
     }
 

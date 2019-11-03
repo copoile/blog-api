@@ -15,9 +15,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface IUserService extends IService<User> {
 
     /**
-     *  根据用户名查询
+     *  根据用户名或手机号查询用户信息
      * @param username
+     * @param mobile
      * @return cn.poile.blog.entity.User
      */
-    public UserVo selectUserVoByUsername(String username);
+    public UserVo selectUserVoByUsernameOrMobile(String username,Long mobile);
 }

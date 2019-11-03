@@ -14,4 +14,17 @@ public interface AuthenticationService {
      * @return cn.poile.blog.vo.TokenVo
      */
     AccessToken usernameOrMobilePasswordAuthenticate(String s, String password);
+
+    /**
+     * 移除 accessToken 相关
+     * @param accessToken
+     */
+    void remove(String accessToken);
+
+    /**
+     * 刷新 accessToken
+     * @param refreshToken
+     * @return
+     */
+    AccessToken refreshAccessToken(String refreshToken);
 }

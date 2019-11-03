@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -53,6 +55,16 @@ public class ExceptionHandle {
     public ApiResponse handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
         return new ApiResponse(INVALID_REQUEST.getErrorCode(),ex.getParameterName() + "参数不能为空");
     }
+    /**
+     * 请求头参数缺失 异常
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponse handleMissingRequestHeaderException(MissingRequestHeaderException ex) {
+        return new ApiResponse(INVALID_REQUEST.getErrorCode(),ex.getHeaderName() + "请求头不能为空");
+    }
 
     /**
      * RequestParam 参数格式校验不通过 异常
@@ -89,6 +101,17 @@ public class ExceptionHandle {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         return new ApiResponse(INVALID_REQUEST.getErrorCode(),"请求json格式不正确");
+    }
+
+    /**
+     * 请求方法不支持 异常
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponse handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        return new ApiResponse(INVALID_REQUEST.getErrorCode(),ex.getMethod() + "请求方法不支持");
     }
 
     /**

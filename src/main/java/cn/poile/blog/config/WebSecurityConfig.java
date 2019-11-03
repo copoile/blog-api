@@ -80,11 +80,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/**/**","/login","/file/**","/v2/api-docs","/swagger/api-docs","/swagger-resources/**","/swagger-ui.html"," /webjars/**").permitAll()
+                .antMatchers("/login", "/file/**", "/v2/api-docs", "/swagger/api-docs", "/swagger-resources/**", "/swagger-ui.html", " /webjars/**").permitAll()
                 .anyRequest().authenticated();
-                http.exceptionHandling()
+        http.exceptionHandling()
                 .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 .accessDeniedHandler(new CustomAccessDeniedHandler());
-                http.addFilterBefore(authorizationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(authorizationTokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
 }
+
+

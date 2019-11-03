@@ -32,7 +32,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @return cn.poile.blog.entity.User
      */
     @Override
-    public UserVo selectUserVoByUsername(String username) {
-       return userMapper.selectUserVoByUsername(username);
+    public UserVo selectUserVoByUsernameOrMobile(String username,Long mobile) {
+       return userMapper.selectUserVoByUsernameOrMobile(username,mobile);
     }
 }

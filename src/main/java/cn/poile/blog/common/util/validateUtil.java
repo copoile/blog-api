@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
  * @author: yaohw
  * @create: 2019-10-28 18:51
  **/
-public class validateUtil {
+public class ValidateUtil {
 
     /**
      *  验证是否手机号

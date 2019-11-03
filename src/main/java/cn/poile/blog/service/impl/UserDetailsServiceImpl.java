@@ -1,5 +1,6 @@
 package cn.poile.blog.service.impl;
 
+import cn.poile.blog.common.util.ValidateUtil;
 import cn.poile.blog.service.IUserService;
 import cn.poile.blog.vo.CustomUserDetails;
 import cn.poile.blog.vo.UserVo;
@@ -22,7 +23,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserVo userVo = userService.selectUserVoByUsername(username);
+        boolean isMobile = ValidateUtil.validateMobile(username);
+        UserVo userVo;
+        if (isMobile) {
+            userVo = userService.selectUserVoByUsernameOrMobile(null,Long.parseLong(username));
+        } else {
+            userVo = userService.selectUserVoByUsernameOrMobile(username,null);
+        }
         if (userVo == null) {
             throw new UsernameNotFoundException("user not found:" + username);
         }
