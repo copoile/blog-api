@@ -2,7 +2,7 @@ package cn.poile.blog.controller;
 
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.security.AuthenticationToken;
-import cn.poile.blog.controller.model.response.AccessTokenResponse;
+import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.service.AuthenticationService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
@@ -28,9 +28,9 @@ public class AuthenticationController extends BaseController{
     private AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ApiResponse<AccessTokenResponse> login(@RequestParam String username, @RequestParam String password) {
+    public ApiResponse<AccessTokenDTO> login(@RequestParam String username, @RequestParam String password) {
         AuthenticationToken authenticationToken = authenticationService.usernameOrMobilePasswordAuthenticate(username, password);
-        AccessTokenResponse response = new AccessTokenResponse();
+        AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken,response);
         return createResponse(response);
     }
@@ -45,9 +45,9 @@ public class AuthenticationController extends BaseController{
     }
 
     @PostMapping("/refresh_access_token")
-    public ApiResponse<AccessTokenResponse> refreshAccessToken(@NotBlank @RequestParam String refreshToken) {
+    public ApiResponse<AccessTokenDTO> refreshAccessToken(@NotBlank @RequestParam String refreshToken) {
         AuthenticationToken authenticationToken = authenticationService.refreshAccessToken(refreshToken);
-        AccessTokenResponse response = new AccessTokenResponse();
+        AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken,response);
         return createResponse(response);
     }

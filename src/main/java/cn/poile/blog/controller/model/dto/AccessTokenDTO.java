@@ -1,4 +1,4 @@
-package cn.poile.blog.controller.model.response;
+package cn.poile.blog.controller.model.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,8 +11,8 @@ import lombok.experimental.Accessors;
  **/
 @Data
 @Accessors(chain = true)
-@ApiModel(value="AccessTokenResponse", description="AccessTokenResponse")
-public class AccessTokenResponse {
+@ApiModel(value="AccessTokenDTO", description="AccessTokenDTO")
+public class AccessTokenDTO {
     @ApiModelProperty("accessToken")
     private String accessToken;
 

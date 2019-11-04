@@ -34,7 +34,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
      * AuthenticationException 处理
      *
      * @param ex 认证异常
-     * @return cn.poile.blog.common.response.ApiResponse
+     * @return 
      */
     private ApiResponse customAuthenticationExceptionHandle(AuthenticationException ex) {
         if (ex instanceof BadCredentialsException) {
