@@ -1,5 +1,6 @@
 package cn.poile.blog.service;
 
+import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.entity.User;
 import cn.poile.blog.vo.UserVo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -21,4 +22,10 @@ public interface IUserService extends IService<User> {
      * @return cn.poile.blog.entity.User
      */
     public UserVo selectUserVoByUsernameOrMobile(String username,Long mobile);
+
+    /**
+     * 用户注册
+     * @param request
+     */
+    public void register(UserRegisterRequest request);
 }

@@ -7,22 +7,8 @@ package cn.poile.blog.common.constant;
 public class RedisConstant {
 
     /**
-     * accessToken key前缀
+     * 短信验证码 key前缀
      */
-    public static final String AUTH_ACCESS_TOKEN = "auth:accessToken:";
+    public static final String SMS_CODE = "sms:code:";
 
-    /**
-     * refreshToken key前缀
-     */
-    public static final String AUTH_REFRESH_TOKEN = "auth:refreshToken:";
-
-    /**
-     * accessToken 时效
-     */
-    public static final long ACCESS_TOKEN_VALIDITY_SECONDS = 43200L;
-
-    /**
-     * accessToken 时效
-     */
-    public static final long REFRESH_TOKEN_VALIDITY_SECONDS = 2592000L;
 }

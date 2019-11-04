@@ -1,5 +1,6 @@
 package cn.poile.blog.service.impl;
 
+import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.entity.User;
 import cn.poile.blog.mapper.UserMapper;
 import cn.poile.blog.service.IUserService;
@@ -34,5 +35,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public UserVo selectUserVoByUsernameOrMobile(String username,Long mobile) {
        return userMapper.selectUserVoByUsernameOrMobile(username,mobile);
+    }
+
+    /**
+     * 用户注册
+     *
+     * @param request
+     */
+    @Override
+    public void register(UserRegisterRequest request) {
+
     }
 }

@@ -2,14 +2,14 @@ package cn.poile.blog.controller;
 
 
 import cn.poile.blog.common.response.ApiResponse;
+import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.service.IUserService;
 import io.swagger.annotations.Api;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -31,6 +31,11 @@ public class UserController extends BaseController {
     @GetMapping("/info")
     public ApiResponse<Object> info(Authentication authentication) {
         return createResponse(authentication.getPrincipal());
+    }
+
+    @PostMapping("/register")
+    public ApiResponse register(@Validated @RequestBody UserRegisterRequest request) {
+        return createResponse();
     }
 
 }
