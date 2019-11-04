@@ -2,8 +2,8 @@ package cn.poile.blog.common.filter;
 
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.response.ApiResponse;
+import cn.poile.blog.common.security.AuthenticationToken;
 import cn.poile.blog.common.security.RedisTokenStore;
-import cn.poile.blog.common.security.AccessToken;
 import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * AccessToken 校验过滤器
+ * AuthenticationToken 校验过滤器
  * @author: yaohw
  * @create: 2019-10-29 19:47
  **/
@@ -39,14 +39,14 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
         if (authorization != null && authorization.startsWith(TOKEN_TYPE)) {
            String accessToken = authorization.substring(7);
            if (!accessToken.isEmpty()) {
-               AccessToken cacheAccessToken = tokenStore.readAccessToken(accessToken);
-               if (cacheAccessToken == null) {
+               AuthenticationToken cacheAuthenticationToken = tokenStore.readAccessToken(accessToken);
+               if (cacheAuthenticationToken == null) {
                    httpServletResponse.setCharacterEncoding("UTF-8");
                    httpServletResponse.setContentType("application/json; charset=utf-8");
                    httpServletResponse.getWriter().print(JSON.toJSON(createErrorResponse()));
                    return;
                }
-               UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(cacheAccessToken.getUser(), null, cacheAccessToken.getUser().getAuthorities());
+               UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(cacheAuthenticationToken.getPrincipal(), null, cacheAuthenticationToken.getPrincipal().getAuthorities());
                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
                SecurityContextHolder.getContext().setAuthentication(authentication);
            }

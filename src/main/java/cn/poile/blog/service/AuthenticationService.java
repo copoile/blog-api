@@ -1,6 +1,6 @@
 package cn.poile.blog.service;
 
-import cn.poile.blog.common.security.AccessToken;
+import cn.poile.blog.common.security.AuthenticationToken;
 
 /**
  * @author: yaohw
@@ -13,7 +13,7 @@ public interface AuthenticationService {
      * @param password 密码
      * @return cn.poile.blog.vo.TokenVo
      */
-    AccessToken usernameOrMobilePasswordAuthenticate(String s, String password);
+    AuthenticationToken usernameOrMobilePasswordAuthenticate(String s, String password);
 
     /**
      * 移除 accessToken 相关
@@ -26,5 +26,5 @@ public interface AuthenticationService {
      * @param refreshToken
      * @return
      */
-    AccessToken refreshAccessToken(String refreshToken);
+    AuthenticationToken refreshAccessToken(String refreshToken);
 }

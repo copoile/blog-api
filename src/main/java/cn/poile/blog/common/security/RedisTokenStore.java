@@ -55,15 +55,15 @@ public class RedisTokenStore {
      * @param authentication
      * @return void
      */
-    public AccessToken storeAccessToken(Authentication authentication) {
+    public AuthenticationToken storeAccessToken(Authentication authentication) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
         String accessToken = createAccessToken();
         String refreshToken = createRefreshToken();
-        AccessToken token = new AccessToken();
+        AuthenticationToken token = new AuthenticationToken();
         token.setAccessToken(accessToken);
         token.setExpire(ACCESS_TOKEN_VALIDITY_SECONDS);
         token.setRefreshToken(refreshToken);
-        token.setUser(customUserDetails);
+        token.setPrincipal(customUserDetails);
         Map<String, Object> map = new HashMap<>(3);
         map.put(AUTH_ACCESS_TOKEN + accessToken, token);
         map.put(AUTH_REFRESH_TOKEN + refreshToken, token);
@@ -79,20 +79,20 @@ public class RedisTokenStore {
      * 读 accessToken
      *
      * @param accessToken
-     * @return AccessToken
+     * @return AuthenticationToken
      */
-    public AccessToken readAccessToken(String accessToken) {
-        return (AccessToken) redisTemplate.opsForValue().get(AUTH_ACCESS_TOKEN + accessToken);
+    public AuthenticationToken readAccessToken(String accessToken) {
+        return (AuthenticationToken) redisTemplate.opsForValue().get(AUTH_ACCESS_TOKEN + accessToken);
     }
 
     /**
      * 读 refreshToken
      *
      * @param refreshToken
-     * @return AccessToken
+     * @return AuthenticationToken
      */
-    public AccessToken readRefreshToken(String refreshToken) {
-        return (AccessToken) redisTemplate.opsForValue().get(AUTH_REFRESH_TOKEN + refreshToken);
+    public AuthenticationToken readRefreshToken(String refreshToken) {
+        return (AuthenticationToken) redisTemplate.opsForValue().get(AUTH_REFRESH_TOKEN + refreshToken);
     }
 
     /**
@@ -100,18 +100,18 @@ public class RedisTokenStore {
      * @param refreshToken
      * @return
      */
-    public AccessToken refreshAccessToken(String refreshToken) {
-        AccessToken accessToken = readRefreshToken(refreshToken);
-        if (accessToken == null) {
+    public AuthenticationToken refreshAccessToken(String refreshToken) {
+        AuthenticationToken authenticationToken = readRefreshToken(refreshToken);
+        if (authenticationToken == null) {
             throw new ApiException(ErrorEnum.CREDENTIALS_INVALID.getErrorCode(),ErrorEnum.CREDENTIALS_INVALID.getErrorMsg());
         }
-        String key = accessToken.getAccessToken();
-        redisTemplate.opsForValue().set(AUTH_ACCESS_TOKEN + key,accessToken,ACCESS_TOKEN_VALIDITY_SECONDS,TimeUnit.SECONDS);
-        return accessToken;
+        String key = authenticationToken.getAccessToken();
+        redisTemplate.opsForValue().set(AUTH_ACCESS_TOKEN + key, authenticationToken,ACCESS_TOKEN_VALIDITY_SECONDS,TimeUnit.SECONDS);
+        return authenticationToken;
     }
 
     /**
-     * 移除 AccessToken 相关
+     * 移除 AuthenticationToken 相关
      * @param accessToken
      */
     public void remove(String accessToken) {

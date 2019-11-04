@@ -1,9 +1,11 @@
 package cn.poile.blog.controller;
 
 import cn.poile.blog.common.response.ApiResponse;
-import cn.poile.blog.common.security.AccessToken;
+import cn.poile.blog.common.security.AuthenticationToken;
+import cn.poile.blog.controller.model.response.AccessTokenResponse;
 import cn.poile.blog.service.AuthenticationService;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +28,14 @@ public class AuthenticationController extends BaseController{
     private AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ApiResponse<AccessToken> login(@RequestParam String username, @RequestParam String password) {
-        AccessToken accessToken = authenticationService.usernameOrMobilePasswordAuthenticate(username, password);
-        return createResponse(accessToken);
+    public ApiResponse<AccessTokenResponse> login(@RequestParam String username, @RequestParam String password) {
+        AuthenticationToken authenticationToken = authenticationService.usernameOrMobilePasswordAuthenticate(username, password);
+        AccessTokenResponse response = new AccessTokenResponse();
+        BeanUtils.copyProperties(authenticationToken,response);
+        return createResponse(response);
     }
 
-    @PostMapping("/logOut")
+    @PostMapping("/logout")
     public ApiResponse logout(@NotBlank @RequestHeader(value = "Authorization") String authorization) {
         if (authorization.startsWith(TOKEN_TYPE)) {
             String accessToken = authorization.substring(7);
@@ -41,8 +45,11 @@ public class AuthenticationController extends BaseController{
     }
 
     @PostMapping("/refresh_access_token")
-    public ApiResponse<AccessToken> refreshAccessToken(@NotBlank @RequestParam String refreshToken) {
-        return createResponse(authenticationService.refreshAccessToken(refreshToken));
+    public ApiResponse<AccessTokenResponse> refreshAccessToken(@NotBlank @RequestParam String refreshToken) {
+        AuthenticationToken authenticationToken = authenticationService.refreshAccessToken(refreshToken);
+        AccessTokenResponse response = new AccessTokenResponse();
+        BeanUtils.copyProperties(authenticationToken,response);
+        return createResponse(response);
     }
 
     @PreAuthorize("hasAuthority('admin')")
