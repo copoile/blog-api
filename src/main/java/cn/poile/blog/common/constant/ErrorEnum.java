@@ -47,9 +47,17 @@ public enum ErrorEnum {
      */
     INVALID_REQUEST(1010,"无效请求"),
     /**
+     * 用户名已注册
+     */
+    USERNAME_READY_REGISTER(1011,"用户名已被使用"),
+    /**
+     * 手机号已注册
+     */
+    MOBILE_READY_REGISTER(1012,"手机号已被注册"),
+    /**
      * 系统异常
      */
-    SYSTEM_ERROR(1011,"系统异常"),
+    SYSTEM_ERROR(1089,"系统异常"),
     /**
      * /**
      * 邮箱验证不通过

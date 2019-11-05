@@ -13,17 +13,17 @@ import com.aliyuncs.http.MethodType;
 import com.aliyuncs.profile.DefaultProfile;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 阿里云短信验证码
  * @author: yaohw
  * @create: 2019/11/4 11:17 下午
  */
 @Log4j2
-public class AliSmsService extends BaseSmsService {
+public class AliSmsCodeService extends BaseSmsCodeService {
 
     private String regionId;
 
@@ -42,7 +42,7 @@ public class AliSmsService extends BaseSmsService {
     private static final String VERSION = "2017-05-25";
 
 
-    public AliSmsService(SmsServiceProperties properties) {
+    public AliSmsCodeService(SmsServiceProperties properties) {
         setExpire(properties.getExpire());
         SmsServiceProperties.Ali ali = properties.getAli();
         init(ali);

@@ -35,6 +35,7 @@ public class UserController extends BaseController {
 
     @PostMapping("/register")
     public ApiResponse register(@Validated @RequestBody UserRegisterRequest request) {
+        userService.register(request);
         return createResponse();
     }
 

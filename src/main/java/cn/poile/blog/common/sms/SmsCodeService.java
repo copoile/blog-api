@@ -5,7 +5,7 @@ package cn.poile.blog.common.sms;
  * @author: yaohw
  * @create: 2019/11/4 10:34 下午
  */
-public interface SmsService {
+public interface SmsCodeService {
     /**
      * 发送短信验证码
      * @param mobile
@@ -27,4 +27,11 @@ public interface SmsService {
      * @return
      */
     boolean checkSmsCode(long mobile,String code);
+
+    /**
+     * 删除验证码
+     * @param mobile
+     * @return
+     */
+    boolean deleteSmsCode(long mobile);
 }

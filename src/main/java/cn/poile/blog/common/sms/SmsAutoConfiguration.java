@@ -17,7 +17,7 @@ public class SmsAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public SmsService smsService(SmsServiceProperties properties) {
-        return new AliSmsService(properties);
+    public SmsCodeService smsService(SmsServiceProperties properties) {
+        return new AliSmsCodeService(properties);
     }
 }

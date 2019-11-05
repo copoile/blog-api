@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * @create: 2019/11/4 11:20 下午
  */
 @Data
-public abstract class BaseSmsService implements SmsService, InitializingBean, ApplicationContextAware {
+public abstract class BaseSmsCodeService implements SmsCodeService, InitializingBean, ApplicationContextAware {
 
     private StringRedisTemplate redisTemplate;
 
@@ -46,6 +46,7 @@ public abstract class BaseSmsService implements SmsService, InitializingBean, Ap
 
     /**
      * 发送短信验证码，这个提供外部调用的
+     * 发送短信成功后缓存短信验证码
      *
      * @param mobile
      * @return
@@ -97,6 +98,17 @@ public abstract class BaseSmsService implements SmsService, InitializingBean, Ap
     public boolean checkSmsCode(long mobile, String code) {
         String cacheCode = redisTemplate.opsForValue().get(RedisConstant.SMS_CODE + mobile);
         return !StringUtils.isEmpty(cacheCode) && cacheCode.equals(code);
+    }
+
+    /**
+     * 删除缓存短信验证码
+     * @param mobile
+     * @return
+     */
+    @Override
+    public boolean deleteSmsCode(long mobile) {
+        redisTemplate.delete(RedisConstant.SMS_CODE + mobile);
+        return true;
     }
 
     /**

@@ -1,16 +1,26 @@
 package cn.poile.blog.service.impl;
 
+import cn.poile.blog.common.constant.ErrorEnum;
+import cn.poile.blog.common.constant.RoleConstant;
+import cn.poile.blog.common.constant.UserConstant;
+import cn.poile.blog.common.exception.ApiException;
+import cn.poile.blog.common.sms.SmsCodeService;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.entity.User;
+import cn.poile.blog.entity.UserRole;
 import cn.poile.blog.mapper.UserMapper;
+import cn.poile.blog.service.IUserRoleService;
 import cn.poile.blog.service.IUserService;
 import cn.poile.blog.vo.UserVo;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.segments.MergeSegments;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -25,6 +35,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private SmsCodeService smsCodeService;
+
+    @Autowired
+    private IUserRoleService userRoleService;
 
     /**
      * 根据用户名查询
@@ -42,8 +61,58 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      *
      * @param request
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void register(UserRegisterRequest request) {
+        long mobile = request.getMobile();
+        String code = request.getCode();
+        checkCode(mobile,code);
+        String username = request.getUsername();
+        User userDao = selectUserByUsernameOrMobile(username, mobile);
+        if (userDao != null && username.equals(userDao.getUsername())) {
+            throw new ApiException(ErrorEnum.USERNAME_READY_REGISTER.getErrorCode(),ErrorEnum.USERNAME_READY_REGISTER.getErrorMsg());
+        }
+        if (userDao != null && mobile == userDao.getMobile()) {
+            throw new ApiException(ErrorEnum.MOBILE_READY_REGISTER.getErrorCode(),ErrorEnum.MOBILE_READY_REGISTER.getErrorMsg());
+        }
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setMobile(mobile);
+        String substring = String.valueOf(mobile).substring(7);
+        user.setNickname("用户" + substring);
+        user.setGender(UserConstant.GENDER_MALE);
+        user.setBirthday(LocalDate.now());
+        user.setStatus(UserConstant.STATUS_NORMAL);
+        user.setCreateTime(LocalDateTime.now());
+        save(user);
+        UserRole userRole = new UserRole();
+        userRole.setUserId(user.getId());
+        userRole.setRoleId(RoleConstant.ROLE_NORMAL);
+        userRoleService.save(userRole);
+        smsCodeService.deleteSmsCode(mobile);
+    }
 
+    /**
+     * 校验短信验证码
+     * @param mobile
+     * @param code
+     */
+    private void checkCode(long mobile,String code) {
+        if (!smsCodeService.checkSmsCode(mobile,code)) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"验证码不正确");
+        }
+    }
+
+    /**
+     * 根据用户名或手机号查询 User
+     * @param username
+     * @param mobile
+     * @return
+     */
+    private User selectUserByUsernameOrMobile(String username,long mobile){
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("username",username).or().eq("mobile",mobile);
+        return getOne(queryWrapper);
     }
 }
