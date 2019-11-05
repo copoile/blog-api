@@ -1,5 +1,6 @@
 package cn.poile.blog.controller;
 
+import cn.poile.blog.annotation.RateLimiter;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.sms.SmsCodeService;
 import cn.poile.blog.common.validator.IsPhone;
@@ -22,9 +23,10 @@ public class SmsController extends BaseController{
     @Autowired
     private SmsCodeService smsCodeService;
 
+    @RateLimiter(max = 5,key = "#mobile")
     @PostMapping("/send_code")
     public ApiResponse sendSmsCode(@NotNull @IsPhone @RequestParam long mobile) {
-        smsCodeService.sendSmsCode(mobile);
+        // smsCodeService.sendSmsCode(mobile);
         return createResponse();
     }
 

@@ -56,14 +56,15 @@ public abstract class BaseSmsCodeService implements SmsCodeService, Initializing
         Map<String, Boolean> resultMap = handleSendSmsCode(mobile);
         Set<Map.Entry<String, Boolean>> entrySet = resultMap.entrySet();
         Iterator<Map.Entry<String, Boolean>> iterator = entrySet.iterator();
-        if (iterator.hasNext()) {
-            Map.Entry<String, Boolean> item = iterator.next();
-            String code = item.getKey();
-            Boolean smsSuccess = item.getValue();
-            if (!StringUtils.isEmpty(code) && smsSuccess) {
-                cacheSmsCode(mobile, code);
-                return true;
-            }
+        if (!iterator.hasNext()) {
+            return false;
+        }
+        Map.Entry<String, Boolean> item = iterator.next();
+        String code = item.getKey();
+        Boolean smsSuccess = item.getValue();
+        if (!StringUtils.isEmpty(code) && smsSuccess) {
+            cacheSmsCode(mobile, code);
+            return true;
         }
         return false;
     }

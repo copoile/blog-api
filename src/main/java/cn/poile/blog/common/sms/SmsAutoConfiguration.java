@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * 短信验证码服务自动配置，默认阿里云短信服务
  * @author: yaohw
  * @create: 2019-11-05 10:36
  **/
