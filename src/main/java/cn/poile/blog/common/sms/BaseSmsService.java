@@ -1,25 +1,30 @@
 package cn.poile.blog.common.sms;
 
 import cn.poile.blog.common.constant.RedisConstant;
-import com.aliyuncs.CommonRequest;
+import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.util.Assert;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author: yaohw
  * @create: 2019/11/4 11:20 下午
  */
-public abstract class BaseSmsService implements SmsService, InitializingBean {
+@Data
+public abstract class BaseSmsService implements SmsService, InitializingBean, ApplicationContextAware {
 
     private StringRedisTemplate redisTemplate;
+
+    private ApplicationContext applicationContext;
 
     /**
      * 短信验证码有效时间
@@ -27,18 +32,27 @@ public abstract class BaseSmsService implements SmsService, InitializingBean {
     private long expire = 300L;
 
     @Override
-    public void afterPropertiesSet() {
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 
+    @Override
+    public void afterPropertiesSet() {
+        if (this.redisTemplate == null) {
+            this.redisTemplate = applicationContext.getBean(StringRedisTemplate.class);
+        }
+        Assert.notNull(this.redisTemplate, "There is no one available StringRedisTemplate bean");
     }
 
     /**
      * 发送短信验证码，这个提供外部调用的
+     *
      * @param mobile
      * @return
      */
     @Override
     public boolean sendSmsCode(long mobile) {
-        Map<String,Boolean> resultMap = handleSendSmsCode(mobile);
+        Map<String, Boolean> resultMap = handleSendSmsCode(mobile);
         Set<Map.Entry<String, Boolean>> entrySet = resultMap.entrySet();
         Iterator<Map.Entry<String, Boolean>> iterator = entrySet.iterator();
         if (iterator.hasNext()) {
@@ -46,7 +60,7 @@ public abstract class BaseSmsService implements SmsService, InitializingBean {
             String code = item.getKey();
             Boolean smsSuccess = item.getValue();
             if (!StringUtils.isEmpty(code) && smsSuccess) {
-                cacheSmsCode(mobile,code);
+                cacheSmsCode(mobile, code);
                 return true;
             }
         }
@@ -55,23 +69,26 @@ public abstract class BaseSmsService implements SmsService, InitializingBean {
 
     /**
      * 发送短信验证码实现
+     *
      * @param mobile 手机号
      * @return 返回要求为一个key为验证码，value为短信是否发送成功的一个map
      */
-    protected abstract Map<String,Boolean> handleSendSmsCode(long mobile);
+    protected abstract Map<String, Boolean> handleSendSmsCode(long mobile);
 
     /**
      * 缓存短信验证码
+     *
      * @param mobile
      * @param code
      */
     @Override
-    public void cacheSmsCode(long mobile,String code) {
+    public void cacheSmsCode(long mobile, String code) {
         redisTemplate.opsForValue().set(RedisConstant.SMS_CODE + mobile, code, expire, TimeUnit.SECONDS);
     }
 
     /**
      * 校验短信验证码
+     *
      * @param mobile
      * @param code
      * @return
@@ -84,10 +101,11 @@ public abstract class BaseSmsService implements SmsService, InitializingBean {
 
     /**
      * 获取随机6位数验证码
+     *
      * @return
      */
-    protected String createCode(){
-        int random = (int)((Math.random()*9+1)*100000);
+    protected String createCode() {
+        int random = (int) ((Math.random() * 9 + 1) * 100000);
         return String.valueOf(random);
     }
 

@@ -12,7 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 public class StorageProperties {
 
-    private int type;
+    private int type = 1;
 
     private final StorageProperties.Netease netease = new StorageProperties.Netease();
 
@@ -116,7 +116,7 @@ public class StorageProperties {
 
     public static class Local {
         private String path = "/var/blog/";
-        private String proxy = "http://www.poile.cn/resources/";
+        private String proxy = "http://localhost:8080/resources/";
 
         public String getPath() {
             return path;

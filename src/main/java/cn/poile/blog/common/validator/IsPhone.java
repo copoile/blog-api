@@ -1,5 +1,6 @@
 package cn.poile.blog.common.validator;
 
+import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.*;
 
@@ -10,6 +11,7 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = IsPhoneValidator.class)
 public @interface IsPhone {
     boolean required() default true;
     String message() default "手机号格式不正确";

@@ -14,19 +14,19 @@ public final class StorageFactory {
     /**
      * 本地
      */
-    private static final int LOCAL = 0;
+    private static final int LOCAL = 1;
     /**
      * 七牛云
      */
-    private static final int QINIU = 1;
+    private static final int QINIU = 2;
     /**
      *  网易云
      */
-    private static final int NETEASE = 2;
+    private static final int NETEASE = 3;
     /**
      *  阿里云
      */
-    private static final int ALI = 3;
+    private static final int ALI = 4;
 
     private static final String SUFFIX = "/";
 
