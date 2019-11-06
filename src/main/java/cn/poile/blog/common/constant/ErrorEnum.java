@@ -47,13 +47,17 @@ public enum ErrorEnum {
      */
     INVALID_REQUEST(1010,"无效请求"),
     /**
+     * 接口限流
+     */
+    REQUEST_LIMIT(1011,"接口访问次数限制"),
+    /**
      * 用户名已注册
      */
-    USERNAME_READY_REGISTER(1011,"用户名已被使用"),
+    USERNAME_READY_REGISTER(1012,"用户名已被使用"),
     /**
      * 手机号已注册
      */
-    MOBILE_READY_REGISTER(1012,"手机号已被注册"),
+    MOBILE_READY_REGISTER(1013,"手机号已被注册"),
     /**
      * 系统异常
      */

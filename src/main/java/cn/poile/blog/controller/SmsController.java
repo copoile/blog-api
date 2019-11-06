@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.NotNull;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: yaohw
@@ -25,11 +26,10 @@ public class SmsController extends BaseController{
     @Autowired
     private SmsCodeService smsCodeService;
 
-    @RateLimiter(max = 5,key = "#{mobile}")
+    @RateLimiter(name = "sms",max = 1,key = "#mobile",timeUnit = TimeUnit.MINUTES,timeout = 2)
     @PostMapping("/send_code")
     public ApiResponse sendSmsCode(@NotNull @IsPhone @RequestParam long mobile) {
-        // smsCodeService.sendSmsCode(mobile);
-        log.info("mobile"+mobile);
+        smsCodeService.sendSmsCode(mobile);
         return createResponse();
     }
 

@@ -18,6 +18,11 @@ public @interface RateLimiter {
     long DEFAULT_REQUEST = 10;
 
     /**
+     * 名称
+     */
+    String name();
+
+    /**
      * max 最大请求数
      */
     @AliasFor("max") long value() default DEFAULT_REQUEST;
@@ -28,7 +33,7 @@ public @interface RateLimiter {
     @AliasFor("value") long max() default DEFAULT_REQUEST;
 
     /**
-     * 限流key，默认将取方法名 + 参数作为key
+     * 限流key，支持SpEL
      */
     String key() default "";
 
