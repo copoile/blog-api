@@ -73,7 +73,7 @@ public class RateLimiterAspect {
             long max = rateLimiter.max();
             long timeout = rateLimiter.timeout();
             TimeUnit timeUnit = rateLimiter.timeUnit();
-            handleLimited(key, max, timeout, timeUnit);
+            handleLimit(key, max, timeout, timeUnit);
         }
         return point.proceed();
     }
@@ -107,7 +107,7 @@ public class RateLimiterAspect {
      * @param timeUnit
      * @return
      */
-    private void handleLimited(String key, long max, long timeout, TimeUnit timeUnit) {
+    private void handleLimit(String key, long max, long timeout, TimeUnit timeUnit) {
         key = REDIS_LIMIT_KEY_PREFIX + key;
         // 统一使用单位毫秒
         long ttl = timeUnit.toMillis(timeout);
