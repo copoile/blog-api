@@ -41,7 +41,7 @@ public class EmailService {
             sb.append("accessToken");
             context.setVariable("checkUrl", sb.toString());
             //设置html模板，这里为template文件夹下的emil.html模板
-            String emailContent = templateEngine.process("email", context);
+            String emailContent = templateEngine.process("message", context);
             helper.setText(emailContent, true);
             mailSender.send(message);
         } catch (Exception e) {
