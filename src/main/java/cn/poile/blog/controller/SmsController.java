@@ -1,6 +1,7 @@
 package cn.poile.blog.controller;
 
 import cn.poile.blog.annotation.RateLimiter;
+import cn.poile.blog.common.email.EmailService;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.sms.SmsCodeService;
 import cn.poile.blog.common.validator.IsPhone;
@@ -25,6 +26,9 @@ public class SmsController extends BaseController{
     private SmsCodeService smsCodeService;
 
     @Autowired
+    private EmailService emailService;
+
+    @Autowired
     private CustomWebSocketHandler webSocketHandler;
 
     @RateLimiter(name = "sms",max = 1,key = "#mobile",timeUnit = TimeUnit.MINUTES,timeout = 2)
@@ -36,7 +40,7 @@ public class SmsController extends BaseController{
 
     @GetMapping("/test")
     public ApiResponse test() {
-        webSocketHandler.sendMessage(null);
+        emailService.test();
         return createResponse();
     }
 

@@ -110,9 +110,7 @@ public class RateLimiterAspect {
      */
     private void handleLimit(String key, long max, long timeout, TimeUnit timeUnit) {
         key = REDIS_LIMIT_KEY_PREFIX + key;
-        // 统一使用单位毫秒
         long ttl = timeUnit.toMillis(timeout);
-        // 当前时间毫秒数
         long now = Instant.now().toEpochMilli();
         long expired = now - ttl;
         // 注意这里必须转为 String,否则会报错 java.lang.Long cannot be cast to java.lang.String
@@ -120,33 +118,11 @@ public class RateLimiterAspect {
         if (executeTimes != null) {
             if (executeTimes == 0) {
                 log.error("【{}】在单位时间 {} 毫秒内已达到访问上限，当前接口上限 {}", key, ttl, max);
-                throw new ApiException(ErrorEnum.REQUEST_LIMIT.getErrorCode(),"在单位时间" + parseTime(ttl) + "内已到达访问上限,当前接口上限 " + max);
+                throw new ApiException(ErrorEnum.REQUEST_LIMIT.getErrorCode(),"接口调用频繁，请稍后再试");
             } else {
                 log.info("【{}】在单位时间 {} 毫秒内访问 {} 次", key, ttl, executeTimes);
             }
         }
     }
 
-    /**
-     * 个性化时间转换
-     *
-     * @param millis 毫秒
-     * @return
-     */
-    private String parseTime(long millis) {
-        long second = 1000L;
-        long minute = 60000L;
-        long hour = 3600000L;
-        long day = 86400000L;
-        if (millis > day) {
-            return TimeUnit.MILLISECONDS.toDays(millis) + "天";
-        } else if (millis > hour) {
-            return TimeUnit.MILLISECONDS.toHours(millis) + "小时";
-        } else if (millis > minute) {
-            return TimeUnit.MILLISECONDS.toMinutes(millis) + "分钟";
-        } else if (millis > second) {
-            return TimeUnit.MILLISECONDS.toSeconds(millis) + "秒";
-        }
-        return millis + "毫秒";
-    }
 }

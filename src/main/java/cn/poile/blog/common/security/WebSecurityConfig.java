@@ -123,7 +123,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public MobileCodeAuthenticationProvider provider() {
         MobileCodeAuthenticationProvider provider = new MobileCodeAuthenticationProvider();
         provider.setSmsCodeService(smsCodeService);
-        provider.setHideUserNotFoundExceptions(false);
         provider.setUserDetailsService(userDetailsService);
         return provider;
     }

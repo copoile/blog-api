@@ -5,6 +5,7 @@ import cn.poile.blog.common.security.RedisTokenStore;
 import cn.poile.blog.common.security.ServeSecurityContext;
 import cn.poile.blog.vo.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -30,6 +31,7 @@ public class CustomHandShakeInterceptor extends HttpSessionHandshakeInterceptor 
         String accessToken = ((ServletServerHttpRequest) request).getServletRequest().getParameter("accessToken");
         AuthenticationToken authenticationToken = tokenStore.readAccessToken(accessToken);
         if (authenticationToken == null) {
+            response.setStatusCode(HttpStatus.UNAUTHORIZED);
             return false;
         }
         attributes.put("user",authenticationToken.getPrincipal());

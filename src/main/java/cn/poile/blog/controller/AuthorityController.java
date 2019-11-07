@@ -4,7 +4,7 @@ package cn.poile.blog.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
-import cn.poile.blog.controller.BaseController;
+
 
 /**
  * <p>
