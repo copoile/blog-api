@@ -104,7 +104,7 @@ public class AliSmsCodeService extends BaseSmsCodeService {
         String resultCode = (String) jsonObject.get("Code");
         String successCode = "OK";
         if (!successCode.equals(resultCode)) {
-            String resultMessage = (String) jsonObject.get("Message");
+            String resultMessage = (String) jsonObject.get("WebSocketMessageDTO");
             throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(), resultMessage);
         }
         Map<String, Boolean> resultMap = new HashMap<>(1);

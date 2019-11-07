@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Log4j2
 public class RateLimiterAspect {
+
     private final static String SEPARATOR = ":";
     private final static String REDIS_LIMIT_KEY_PREFIX = "limit:";
     private final StringRedisTemplate stringRedisTemplate;
