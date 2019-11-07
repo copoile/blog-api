@@ -3,13 +3,16 @@ package cn.poile.blog.common.security;
 import cn.poile.blog.common.response.ApiResponse;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 import static cn.poile.blog.common.constant.ErrorEnum.*;
 
 /**
@@ -26,6 +29,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json; charset=utf-8");
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.getWriter().print(JSON.toJSON(customAuthenticationExceptionHandle(authException)));
     }
 

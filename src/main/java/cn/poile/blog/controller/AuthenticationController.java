@@ -2,6 +2,7 @@ package cn.poile.blog.controller;
 
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.security.AuthenticationToken;
+import cn.poile.blog.common.validator.IsPhone;
 import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.service.AuthenticationService;
 import lombok.extern.log4j.Log4j2;
@@ -11,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.security.Principal;
 
 /**
@@ -27,9 +29,17 @@ public class AuthenticationController extends BaseController{
     @Autowired
     private AuthenticationService authenticationService;
 
-    @PostMapping("/login")
-    public ApiResponse<AccessTokenDTO> login(@RequestParam String username, @RequestParam String password) {
+    @PostMapping("/account/login")
+    public ApiResponse<AccessTokenDTO> accountLogin(@NotBlank(message = "账号不能为空")@RequestParam String username,@NotBlank(message = "密码不能为空") @RequestParam String password) {
         AuthenticationToken authenticationToken = authenticationService.usernameOrMobilePasswordAuthenticate(username, password);
+        AccessTokenDTO response = new AccessTokenDTO();
+        BeanUtils.copyProperties(authenticationToken,response);
+        return createResponse(response);
+    }
+
+    @PostMapping("/mobile/login")
+    public ApiResponse<AccessTokenDTO> mobileLogin(@NotNull(message = "手机号不能为空") @IsPhone @RequestParam long mobile,@NotBlank(message = "验证码不能为空") @RequestParam String code) {
+        AuthenticationToken authenticationToken = authenticationService.mobileCodeAuthenticate(mobile, code);
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken,response);
         return createResponse(response);

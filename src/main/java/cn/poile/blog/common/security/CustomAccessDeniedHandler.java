@@ -3,6 +3,7 @@ package cn.poile.blog.common.security;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.response.ApiResponse;
 import com.alibaba.fastjson.JSON;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
@@ -22,6 +23,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AccessDeniedException e) throws IOException, ServletException {
         httpServletResponse.setCharacterEncoding("UTF-8");
         httpServletResponse.setContentType("application/json; charset=utf-8");
+        httpServletResponse.setStatus(HttpStatus.FORBIDDEN.value());
         ApiResponse response = new ApiResponse();
         response.setErrorCode(ErrorEnum.PERMISSION_DENIED.getErrorCode());
         response.setErrorMsg(ErrorEnum.PERMISSION_DENIED.getErrorMsg());

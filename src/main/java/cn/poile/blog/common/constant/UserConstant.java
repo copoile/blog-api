@@ -1,7 +1,7 @@
 package cn.poile.blog.common.constant;
 
 /**
- * 用户状态枚举
+ * 用户相关常量
  * @author: yaohw
  * @create: 2019-11-05 17:43
  **/

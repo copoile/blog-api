@@ -1,10 +1,12 @@
 package cn.poile.blog.config;
 
 import cn.poile.blog.common.exception.ApiException;
+import cn.poile.blog.common.exception.BadMobileCodeException;
 import cn.poile.blog.common.response.ApiResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -76,6 +78,28 @@ public class ExceptionHandle {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         return new ApiResponse(INVALID_REQUEST.getErrorCode(),ex.getName() + "参数类型不匹配");
+    }
+
+    /**
+     *  手机号验证不正确 异常
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(BadMobileCodeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponse handleBadMobileCodeException(BadMobileCodeException ex) {
+        return new ApiResponse(BAD_MOBILE_CODE.getErrorCode(),BAD_MOBILE_CODE.getErrorMsg());
+    }
+
+    /**
+     *  用户不存在 异常
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(UsernameNotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiResponse handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        return new ApiResponse(USER_NOT_FOUND.getErrorCode(),USER_NOT_FOUND.getErrorMsg());
     }
 
     /**

@@ -98,7 +98,7 @@ public abstract class BaseSmsCodeService implements SmsCodeService, Initializing
     @Override
     public boolean checkSmsCode(long mobile, String code) {
         String cacheCode = redisTemplate.opsForValue().get(RedisConstant.SMS_CODE + mobile);
-        return !StringUtils.isEmpty(cacheCode) && cacheCode.equals(code);
+        return !StringUtils.isBlank(cacheCode) && cacheCode.equals(code);
     }
 
     /**

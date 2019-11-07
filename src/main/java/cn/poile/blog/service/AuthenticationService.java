@@ -16,6 +16,14 @@ public interface AuthenticationService {
     AuthenticationToken usernameOrMobilePasswordAuthenticate(String s, String password);
 
     /**
+     * 手机号验证码认证
+     * @param mobile
+     * @param code
+     * @return
+     */
+    AuthenticationToken mobileCodeAuthenticate(long mobile,String code);
+
+    /**
      * 移除 accessToken 相关
      * @param accessToken
      */

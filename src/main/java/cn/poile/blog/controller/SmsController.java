@@ -36,7 +36,7 @@ public class SmsController extends BaseController{
 
     @GetMapping("/test")
     public ApiResponse test() {
-        webSocketHandler.sendMessage("测试");
+        webSocketHandler.sendMessage(null);
         return createResponse();
     }
 

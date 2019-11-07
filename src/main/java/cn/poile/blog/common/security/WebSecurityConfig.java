@@ -1,8 +1,9 @@
-package cn.poile.blog.config;
+package cn.poile.blog.common.security;
 
 import cn.poile.blog.common.filter.AuthorizationTokenFilter;
 import cn.poile.blog.common.security.CustomAccessDeniedHandler;
 import cn.poile.blog.common.security.CustomAuthenticationEntryPoint;
+import cn.poile.blog.common.sms.SmsCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
+ * 安全配置
+ *
  * @author: yaohw
  * @create: 2019-10-24 16:17
  **/
@@ -36,6 +39,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private AuthorizationTokenFilter authorizationTokenFilter;
+
+    @Autowired
+    private SmsCodeService smsCodeService;
 
 
     /**
@@ -58,7 +64,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
+        auth.authenticationProvider(provider())
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
     }
@@ -83,7 +89,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/login", "/websocket","/user/register","/sms/**", "/file/**", "/v2/api-docs", "/swagger/api-docs", "/swagger-resources/**", "/swagger-ui.html", " /webjars/**").permitAll()
+                .antMatchers("/account/login", "/mobile/login","/websocket", "/user/register", "/sms/**", "/file/**", "/v2/api-docs", "/swagger/api-docs", "/swagger-resources/**", "/swagger-ui.html", " /webjars/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"));
@@ -106,6 +112,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/**/*.css",
                         "/**/*.js"
                 );
+    }
+
+    /**
+     * 自定义手机验证码认证提供者
+     *
+     * @return
+     */
+    @Bean
+    public MobileCodeAuthenticationProvider provider() {
+        MobileCodeAuthenticationProvider provider = new MobileCodeAuthenticationProvider();
+        provider.setSmsCodeService(smsCodeService);
+        provider.setHideUserNotFoundExceptions(false);
+        provider.setUserDetailsService(userDetailsService);
+        return provider;
     }
 }
 

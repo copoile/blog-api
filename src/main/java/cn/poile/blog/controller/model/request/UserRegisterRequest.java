@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -26,6 +27,7 @@ public class UserRegisterRequest {
     private String username;
 
     @NotBlank(message = "密码不能为空")
+    @Length(min = 6,message = "密码至少6位数")
     @ApiModelProperty("密码")
     private String password;
 
