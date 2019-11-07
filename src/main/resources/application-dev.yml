@@ -2,6 +2,17 @@ server:
   port: 8080
 
 spring:
+  task:
+    execution:
+      pool:
+        max-size: 16
+        core-size: 8
+        keep-alive: 60s
+        queue-capacity: 100
+        allow-core-thread-timeout: true
+    scheduling:
+      thread-name-prefix: async-task-
+
   redis:
     host: localhost
     port: 6379
@@ -18,7 +29,7 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://193.112.43.235:3306/blog_db?useSSL=false
     username: root
-    password: Ab452637!
+    password: root
     druid:
       initial-size: 5
       min-idle: 5
@@ -49,6 +60,14 @@ spring:
         reset-enable: false
         login-username: admin
         login-password: 123456
+  mail:
+    host: smtp.163.com
+    username: 15625295093@163.com
+    #此处为客户端授权码
+    password: abc452637
+    default-encoding: UTF-8
+    from: 15625295093@163.com
+    fromName: 个人悦读分享
 ## oss存储配置 ##
 oss:
   ## 存储类型, 1: 本地  2：七牛  3：网易云 4: 阿里云
