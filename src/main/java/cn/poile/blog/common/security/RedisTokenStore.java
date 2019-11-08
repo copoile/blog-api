@@ -5,7 +5,11 @@ import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.vo.CustomUserDetails;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -25,17 +29,17 @@ public class RedisTokenStore {
     /**
      * accessToken key前缀
      */
-    private static final String AUTH_ACCESS_TOKEN = "auth:accessToken:";
+    private static final String AUTH_ACCESS_TOKEN = "auth:access_token:";
 
     /**
      * refreshToken key前缀
      */
-    private static final String AUTH_REFRESH_TOKEN = "auth:refreshToken:";
+    private static final String AUTH_REFRESH_TOKEN = "auth:refresh_token:";
 
     /**
      * accessToken : refreshToken
      */
-    private static final String AUTH_ACCESS = "auth:access:";
+    private static final String AUTH_ACCESS = "auth:access_to_refresh:";
 
     /**
      * accessToken 时效
@@ -48,7 +52,51 @@ public class RedisTokenStore {
     private static final long REFRESH_TOKEN_VALIDITY_SECONDS = 2592000L;
 
     @Autowired
+    private RedisConnectionFactory connectionFactory;
+
+
+    private JdkSerializationRedisSerializer jdkSerializationRedisSerializer = new JdkSerializationRedisSerializer();
+
+    private StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+
+
+    @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+
+    private RedisConnection getConnection() {
+        return connectionFactory.getConnection();
+    }
+
+    /**
+     * value序列化
+     * @param object
+     * @return
+     */
+    private byte[] serializedAuthentication(Object object) {
+        return jdkSerializationRedisSerializer.serialize(object);
+    }
+
+    /**
+     * key序列化
+     * @param string
+     * @return
+     */
+    private byte[] serializedKey(String string) {
+        return stringRedisSerializer.serialize(string);
+    }
+
+
+
+    /**
+     * 反序列化
+     * @param bytes
+     * @return
+     */
+    private AuthenticationToken deserializeAuthentication(byte[] bytes) {
+        return (AuthenticationToken) jdkSerializationRedisSerializer.deserialize(bytes);
+    }
+
 
     /**
      * 存 accessToken
@@ -65,14 +113,24 @@ public class RedisTokenStore {
         token.setExpire(ACCESS_TOKEN_VALIDITY_SECONDS);
         token.setRefreshToken(refreshToken);
         token.setPrincipal(customUserDetails);
-        Map<String, Object> map = new HashMap<>(3);
-        map.put(AUTH_ACCESS_TOKEN + accessToken, token);
-        map.put(AUTH_REFRESH_TOKEN + refreshToken, token);
-        map.put(AUTH_ACCESS + accessToken,refreshToken);
-        redisTemplate.opsForValue().multiSet(map);
-        redisTemplate.expire(AUTH_ACCESS_TOKEN + accessToken, ACCESS_TOKEN_VALIDITY_SECONDS, TimeUnit.SECONDS);
-        redisTemplate.expire(AUTH_REFRESH_TOKEN + refreshToken, REFRESH_TOKEN_VALIDITY_SECONDS, TimeUnit.SECONDS);
-        redisTemplate.expire(AUTH_ACCESS + accessToken,REFRESH_TOKEN_VALIDITY_SECONDS,TimeUnit.SECONDS);
+        RedisConnection conn = getConnection();
+        byte[] serializedAuthentication = serializedAuthentication(authentication);
+        byte[] accessTokenKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
+        byte[] refreshTokenKey = serializedKey(AUTH_REFRESH_TOKEN + refreshToken);
+        byte[] accessKey = serializedKey((AUTH_ACCESS + accessToken));
+        byte[] access = serializedKey(accessToken);
+        try {
+            conn.openPipeline();
+            conn.set(accessTokenKey, serializedAuthentication);
+            conn.set(refreshTokenKey,serializedAuthentication);
+            conn.set(accessKey,access);
+            conn.expire(accessTokenKey,ACCESS_TOKEN_VALIDITY_SECONDS);
+            conn.expire(refreshTokenKey,REFRESH_TOKEN_VALIDITY_SECONDS);
+            conn.expire(accessKey,REFRESH_TOKEN_VALIDITY_SECONDS);
+            conn.closePipeline();
+        } finally {
+            conn.close();
+        }
         return token;
     }
 
@@ -83,7 +141,15 @@ public class RedisTokenStore {
      * @return AuthenticationToken
      */
     public AuthenticationToken readAccessToken(String accessToken) {
-        return (AuthenticationToken) redisTemplate.opsForValue().get(AUTH_ACCESS_TOKEN + accessToken);
+        byte[] serializedKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
+        RedisConnection conn = getConnection();
+        byte[] bytes;
+        try {
+            bytes = conn.get(serializedKey);
+        } finally {
+            conn.close();
+        }
+        return deserializeAuthentication(bytes);
     }
 
     /**
