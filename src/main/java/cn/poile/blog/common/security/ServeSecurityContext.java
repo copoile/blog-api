@@ -2,8 +2,11 @@ package cn.poile.blog.common.security;
 
 import cn.poile.blog.vo.CustomUserDetails;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedCredentialsNotFoundException;
+
 /**
  * 服务安全上下文
  * @author: yaohw
@@ -18,7 +21,7 @@ public class ServeSecurityContext {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
         if (authentication == null) {
-            return null;
+            throw new PreAuthenticatedCredentialsNotFoundException("Pre Authenticated Credentials Not Found");
         }
        return (CustomUserDetails)authentication.getPrincipal();
     }

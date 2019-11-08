@@ -4,6 +4,7 @@ import cn.poile.blog.common.filter.AuthorizationTokenFilter;
 import cn.poile.blog.common.security.CustomAccessDeniedHandler;
 import cn.poile.blog.common.security.CustomAuthenticationEntryPoint;
 import cn.poile.blog.common.sms.SmsCodeService;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 安全配置
  *
@@ -33,6 +37,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Autowired
+    private SecurityIgnoreProperties ignoreProperties;
 
     @Autowired
     private UserDetailsService userDetailsService;
@@ -83,13 +89,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        List<String> ignorePropertiesList = ignoreProperties.getList();
+        int size = ignorePropertiesList.size();
         http.cors()
                 .and()
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/account/login", "/mobile/login","/websocket", "/user/register", "/sms/**", "/file/**", "/v2/api-docs", "/swagger/api-docs", "/swagger-resources/**", "/swagger-ui.html", " /webjars/**").permitAll()
+                .antMatchers(ignorePropertiesList.toArray(new String[size])).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"));
@@ -105,7 +113,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .ignoring()
                 .antMatchers(
                         HttpMethod.GET,
-                        "/",
                         "/*.html",
                         "/favicon.ico",
                         "/**/*.html",

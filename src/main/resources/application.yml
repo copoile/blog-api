@@ -13,3 +13,17 @@ spring:
     suffix: .html
     cache: true
     encoding: UTF-8
+
+ignore:
+  list:
+    - /actuator/**
+    - /v2/api-docs
+    - /swagger/api-docs
+    - /swagger-resources/**
+    - /swagger-ui.html
+    - /webjars/**
+    - /druid/**
+    - /sms/**
+    - /account/login
+    - /mobile/login
+    - /user/register

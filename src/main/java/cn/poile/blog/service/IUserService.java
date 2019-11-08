@@ -1,5 +1,6 @@
 package cn.poile.blog.service;
 
+import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.entity.User;
 import cn.poile.blog.vo.UserVo;
@@ -28,4 +29,10 @@ public interface IUserService extends IService<User> {
      * @param request
      */
     public void register(UserRegisterRequest request);
+
+    /**
+     * 更新用户信息
+     * @param request
+     */
+    public void update(UpdateUserRequest request);
 }

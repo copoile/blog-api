@@ -22,8 +22,8 @@ import javax.validation.constraints.Pattern;
 public class UserRegisterRequest {
 
     @NotBlank(message = "用户名不能为空")
-    @ApiModelProperty("用户名只能字母开头，允许3-16字节，允许字母数字下划线")
-    @Pattern(regexp = "^[a-zA-Z][a-zA-Z0-9_]{2,15}$", message = "用户名只能字母开头，允许3-16字节，允许字母数字下划线")
+    @ApiModelProperty("用户名只能字母开头，允许2-16字节，允许字母数字下划线")
+    @Pattern(regexp = "^[a-zA-Z][a-zA-Z0-9_]{1,15}$", message = "用户名只能字母开头，允许2-16字节，允许字母数字下划线")
     private String username;
 
     @NotBlank(message = "密码不能为空")

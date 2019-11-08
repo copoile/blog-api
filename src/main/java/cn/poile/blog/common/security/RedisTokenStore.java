@@ -6,6 +6,7 @@ import cn.poile.blog.vo.CustomUserDetails;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -111,6 +112,25 @@ public class RedisTokenStore {
     }
 
     /**
+     * accessToken 过期时间
+     * @param accessToken
+     * @return
+     */
+    private long accessTokenExpire(String accessToken) {
+        return redisTemplate.getExpire(AUTH_ACCESS_TOKEN  + accessToken,TimeUnit.SECONDS);
+    }
+
+    /**
+     * refreshToken 过期时间
+     * @param refreshToken
+     * @return
+     */
+    private long readRefreshTokenExpire(String refreshToken) {
+        return redisTemplate.getExpire(AUTH_REFRESH_TOKEN + refreshToken,TimeUnit.SECONDS);
+    }
+
+
+    /**
      * 移除 AuthenticationToken 相关
      * @param accessToken
      */
@@ -121,6 +141,26 @@ public class RedisTokenStore {
         set.add(AUTH_ACCESS_TOKEN + accessToken);
         set.add(AUTH_REFRESH_TOKEN + refreshToken);
         redisTemplate.delete(set);
+    }
+
+    /**
+     * 更新AccessToken中的Principal
+     * @param accessToken
+     * @param principal
+     */
+    public void updatePrincipal(String accessToken,CustomUserDetails principal) {
+        AuthenticationToken accessAuthenticationToken = readAccessToken(accessToken);
+        long accessTokenExpire = accessTokenExpire(accessToken);
+        accessAuthenticationToken.setPrincipal(principal);
+        String refreshToken = (String)redisTemplate.opsForValue().get(AUTH_ACCESS + accessToken);
+        long refreshTokenExpire = readRefreshTokenExpire(refreshToken);
+        Map<String, Object> map = new HashMap<>(2);
+        map.put(AUTH_ACCESS_TOKEN + accessToken, accessAuthenticationToken);
+        map.put(AUTH_REFRESH_TOKEN + refreshToken, accessAuthenticationToken);
+        redisTemplate.opsForValue().multiSet(map);
+        redisTemplate.expire(AUTH_ACCESS_TOKEN + accessToken, accessTokenExpire + 3 , TimeUnit.SECONDS);
+        redisTemplate.expire(AUTH_REFRESH_TOKEN + refreshToken, refreshTokenExpire + 3, TimeUnit.SECONDS);
+        redisTemplate.expire(AUTH_ACCESS + accessToken,refreshTokenExpire + 3,TimeUnit.SECONDS);
     }
 
 

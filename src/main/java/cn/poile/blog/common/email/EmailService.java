@@ -1,7 +1,9 @@
 package cn.poile.blog.common.email;
 
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -9,10 +11,11 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.util.Map;
 
 /**
+ * 邮件服务
  * @author: yaohw
  * @create: 2019-11-07 19:21
  **/
@@ -20,35 +23,47 @@ import javax.mail.internet.MimeMessage;
 @Log4j2
 public class EmailService {
 
+    @Value("${spring.mail.username}")
+    private String from;
+
+    @Value("${spring.mail.jndi-name}")
+    private String personal;
+
     @Autowired
     private TemplateEngine templateEngine;
 
     @Autowired
     private JavaMailSender mailSender;
 
+    /**
+     * 异步发送Html邮件
+     * @param to 发送给谁
+     * @param subject 主题
+     * @param template html模板名
+     * @param params 模板参数
+     * @param cc 抄送到
+     */
     @Async
-    public void test() {
-        MimeMessage message;
+    public void sendHtmlMail(String to, String subject, String template, Map<String, Object> params, String... cc) {
         try {
-            message = mailSender.createMimeMessage();
+            MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            //发送者
-            helper.setFrom(new InternetAddress("15625295093@163.com", "个人悦读分享"));
-            helper.setTo("726856005@qq.com");
-            helper.setSubject("人悦读分享邮箱验证");
+            helper.setFrom(from, personal);
+            helper.setTo(to);
+            helper.setSubject(subject);
             Context context = new Context();
-            StringBuilder sb=new StringBuilder("http://www.baidu.com");
-            sb.append("?");
-            sb.append("token=");
-            sb.append("accessToken");
-            context.setVariable("checkUrl", sb.toString());
-            //设置html模板，这里为template文件夹下的emil.html模板
-            String emailContent = templateEngine.process("message", context);
+            context.setVariables(params);
+            String emailContent = templateEngine.process(template, context);
             helper.setText(emailContent, true);
+            if (ArrayUtils.isNotEmpty(cc)) {
+                helper.setCc(cc);
+            }
             mailSender.send(message);
+            log.info("发送邮件成功");
         } catch (Exception e) {
-            log.error("邮件发送失败:{0}",e);
+            log.error("发送邮件失败:{0}", e);
         }
     }
+
 
 }

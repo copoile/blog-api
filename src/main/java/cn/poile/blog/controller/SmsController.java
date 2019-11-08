@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,7 +42,9 @@ public class SmsController extends BaseController{
 
     @GetMapping("/test")
     public ApiResponse test() {
-        emailService.test();
+        Map<String,Object> params = new HashMap<>(1);
+        params.put("checkUrl","http://www.baidu.com");
+        emailService.sendHtmlMail("726856005@qq.com","邮箱验证","email",params,null);
         return createResponse();
     }
 

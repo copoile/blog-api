@@ -2,6 +2,7 @@ package cn.poile.blog.controller;
 
 
 import cn.poile.blog.common.response.ApiResponse;
+import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.service.IUserService;
 import io.swagger.annotations.Api;
@@ -36,6 +37,12 @@ public class UserController extends BaseController {
     @PostMapping("/register")
     public ApiResponse register(@Validated @RequestBody UserRegisterRequest request) {
         userService.register(request);
+        return createResponse();
+    }
+
+    @PostMapping("/update")
+    public ApiResponse update(@RequestBody UpdateUserRequest request) {
+        userService.update(request);
         return createResponse();
     }
 

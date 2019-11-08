@@ -4,16 +4,20 @@ import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.common.constant.UserConstant;
 import cn.poile.blog.common.exception.ApiException;
+import cn.poile.blog.common.security.ServeSecurityContext;
 import cn.poile.blog.common.sms.SmsCodeService;
+import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.entity.User;
 import cn.poile.blog.entity.UserRole;
 import cn.poile.blog.mapper.UserMapper;
 import cn.poile.blog.service.IUserRoleService;
 import cn.poile.blog.service.IUserService;
+import cn.poile.blog.vo.CustomUserDetails;
 import cn.poile.blog.vo.UserVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -79,8 +83,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setMobile(mobile);
-        String substring = String.valueOf(mobile).substring(7);
-        user.setNickname("用户" + substring);
+        String suffix = String.valueOf(mobile).substring(7);
+        user.setNickname("用户" + suffix);
         user.setGender(UserConstant.GENDER_MALE);
         user.setBirthday(LocalDate.now());
         user.setStatus(UserConstant.STATUS_NORMAL);
@@ -94,13 +98,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     /**
+     * 更新用户信息
+     *
+     * @param request
+     */
+    @Override
+    public void update(UpdateUserRequest request) {
+        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
+        User user = new User();
+        BeanUtils.copyProperties(userDetail,user);
+        BeanUtils.copyProperties(request,user);
+        updateById(user);
+    }
+
+    /**
      * 校验短信验证码
      * @param mobile
      * @param code
      */
     private void checkCode(long mobile,String code) {
         if (!smsCodeService.checkSmsCode(mobile,code)) {
-            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"验证码不正确");
+            throw new ApiException(ErrorEnum.BAD_MOBILE_CODE.getErrorCode(),"验证码不正确");
         }
     }
 
