@@ -1,7 +1,5 @@
 package cn.poile.blog.controller.model.request;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -12,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 /**
@@ -23,6 +22,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Data
 public class UpdateUserRequest {
+
+    @ApiModelProperty(value = "用户id")
+    @NotNull(message = "用户id不能为空")
+    private long userId;
 
     @ApiModelProperty(value = "昵称")
     private String nickname;

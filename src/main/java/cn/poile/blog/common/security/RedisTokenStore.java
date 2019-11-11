@@ -14,15 +14,15 @@ import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * accessToken 生成、存储
@@ -74,6 +74,7 @@ public class RedisTokenStore {
 
     /**
      * 获取 redis 连接
+     *
      * @return
      */
     private RedisConnection getConnection() {
@@ -164,9 +165,9 @@ public class RedisTokenStore {
             conn.set(accessTokenKey, serializedAuthentication, Expiration.seconds(ACCESS_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
             conn.set(refreshTokenKey, serializedAuthentication, Expiration.seconds(REFRESH_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
             conn.set(accessKey, serializeRefreshToken, Expiration.seconds(REFRESH_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
-            conn.zSetCommands().zRemRangeByScore(extractKey,0,expired);
-            conn.zSetCommands().zAdd(extractKey,now,serializedAccessToken);
-            conn.expire(extractKey,REFRESH_TOKEN_VALIDITY_SECONDS);
+            conn.zSetCommands().zRemRangeByScore(extractKey, 0, expired);
+            conn.zSetCommands().zAdd(extractKey, now, serializedAccessToken);
+            conn.expire(extractKey, REFRESH_TOKEN_VALIDITY_SECONDS);
             conn.closePipeline();
         } finally {
             conn.close();
@@ -233,9 +234,9 @@ public class RedisTokenStore {
         try {
             conn.openPipeline();
             conn.set(serializedKey, serializedAuthentication, Expiration.seconds(ACCESS_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
-            conn.zSetCommands().zRemRangeByScore(extractKey,0,expired);
-            conn.zSetCommands().zAdd(extractKey,now,serializedAccessToken);
-            conn.expire(extractKey,REFRESH_TOKEN_VALIDITY_SECONDS);
+            conn.zSetCommands().zRemRangeByScore(extractKey, 0, expired);
+            conn.zSetCommands().zAdd(extractKey, now, serializedAccessToken);
+            conn.expire(extractKey, REFRESH_TOKEN_VALIDITY_SECONDS);
         } finally {
             conn.close();
 
@@ -307,40 +308,19 @@ public class RedisTokenStore {
         if (StringUtils.isBlank(refreshToken)) {
             return;
         }
+        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
+        assert userDetail != null;
+        String extract = extractKey(userDetail.getId());
+        byte[] extractKey = serializedKey(extract);
         byte[] accessTokenKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
         byte[] refreshTokenKey = serializedKey(AUTH_REFRESH_TOKEN + refreshToken);
         byte[] accessKey = serializedKey((AUTH_ACCESS + accessToken));
-        RedisConnection conn = getConnection();
-        try {
-            conn.del(accessTokenKey, refreshTokenKey, accessKey);
-        } finally {
-            conn.close();
-        }
-    }
-
-    /**
-     * 更新AccessToken中的Principal
-     *
-     * @param accessToken
-     * @param principal
-     */
-    public void updatePrincipal(String accessToken, CustomUserDetails principal) {
-        AuthenticationToken accessAuthenticationToken = readAccessToken(accessToken);
-        long accessTokenExpire = accessTokenExpire(accessToken);
-        accessAuthenticationToken.setPrincipal(principal);
-        byte[] serializedAuthentication = serializedAuthentication(accessAuthenticationToken);
-        String refreshToken = readAccessToRefreshToken(accessToken);
-        byte[] serializeRefreshToken = serialized(refreshToken);
-        long refreshTokenExpire = readRefreshTokenExpire(refreshToken);
-        byte[] accessTokenKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
-        byte[] refreshTokenKey = serializedKey(AUTH_REFRESH_TOKEN + refreshToken);
-        byte[] accessKey = serializedKey((AUTH_ACCESS + accessToken));
+        byte[] serializedAccessToken = serialized(accessToken);
         RedisConnection conn = getConnection();
         try {
             conn.openPipeline();
-            conn.set(accessTokenKey, serializedAuthentication, Expiration.seconds(accessTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
-            conn.set(refreshTokenKey, serializedAuthentication, Expiration.seconds(refreshTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
-            conn.set(accessKey, serializeRefreshToken, Expiration.seconds(refreshTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
+            conn.del(accessTokenKey, refreshTokenKey, accessKey);
+            conn.zSetCommands().zRem(extractKey, serializedAccessToken);
             conn.closePipeline();
         } finally {
             conn.close();
@@ -348,7 +328,60 @@ public class RedisTokenStore {
     }
 
     /**
+     * 获取用户登录所有 accessToken
+     *
+     * @param userId
+     * @return
+     */
+    private Set<String> extractAccessToken(long userId) {
+        String extract = extractKey(userId);
+        byte[] serializedKey = serializedKey(extract);
+        RedisConnection conn = getConnection();
+        Set<byte[]> set;
+        try {
+            set = conn.zSetCommands().zRange(serializedKey, 0, -1);
+        } finally {
+            conn.close();
+        }
+        return set == null ? new HashSet<>(0) : set.stream().map(this::deserializeString).collect(Collectors.toSet());
+    }
+
+    /**
+     * 更新AccessToken中的Principal
+     *
+     * @param principal
+     */
+    public void updatePrincipal(CustomUserDetails principal) {
+        Set<String> accessTokenSet = extractAccessToken(principal.getId());
+        RedisConnection conn = getConnection();
+        try {
+            accessTokenSet.forEach(
+                    accessToken -> {
+                        AuthenticationToken accessAuthenticationToken = readAccessToken(accessToken);
+                        long accessTokenExpire = accessTokenExpire(accessToken);
+                        accessAuthenticationToken.setPrincipal(principal);
+                        byte[] serializedAuthentication = serializedAuthentication(accessAuthenticationToken);
+                        String refreshToken = readAccessToRefreshToken(accessToken);
+                        byte[] serializeRefreshToken = serialized(refreshToken);
+                        long refreshTokenExpire = readRefreshTokenExpire(refreshToken);
+                        byte[] accessTokenKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
+                        byte[] refreshTokenKey = serializedKey(AUTH_REFRESH_TOKEN + refreshToken);
+                        byte[] accessKey = serializedKey((AUTH_ACCESS + accessToken));
+                        conn.openPipeline();
+                        conn.set(accessTokenKey, serializedAuthentication, Expiration.seconds(accessTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
+                        conn.set(refreshTokenKey, serializedAuthentication, Expiration.seconds(refreshTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
+                        conn.set(accessKey, serializeRefreshToken, Expiration.seconds(refreshTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
+                        conn.closePipeline();
+                    }
+            );
+        } finally {
+            conn.close();
+        }
+    }
+
+    /**
      * key 提取，主要用来判断是否同一个用户
+     *
      * @param userId
      * @return String
      */
@@ -361,6 +394,7 @@ public class RedisTokenStore {
 
     /**
      * MD5 加密key
+     *
      * @param values
      * @return String
      */
@@ -368,7 +402,7 @@ public class RedisTokenStore {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("MD5");
-            byte[] bytes = digest.digest(values.toString().getBytes(StandardCharsets.UTF_8 ));
+            byte[] bytes = digest.digest(values.toString().getBytes(StandardCharsets.UTF_8));
             return String.format("%032x", new BigInteger(1, bytes));
         } catch (NoSuchAlgorithmException nsae) {
             throw new IllegalStateException("MD5 algorithm not available.  Fatal (should be in the JDK).", nsae);

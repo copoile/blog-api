@@ -4,6 +4,7 @@ import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.common.constant.UserConstant;
 import cn.poile.blog.common.exception.ApiException;
+import cn.poile.blog.common.security.RedisTokenStore;
 import cn.poile.blog.common.security.ServeSecurityContext;
 import cn.poile.blog.common.sms.SmsCodeService;
 import cn.poile.blog.controller.model.request.UpdateUserRequest;
@@ -48,6 +49,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Autowired
     private IUserRoleService userRoleService;
+
+    @Autowired
+    private RedisTokenStore tokenStore;
 
     /**
      * 根据用户名查询
@@ -105,10 +109,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void update(UpdateUserRequest request) {
         CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
+        if (userDetail == null || request.getUserId() != userDetail.getId()) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"用户id跟当前用户id不匹配或accessToken信息异常");
+        }
         User user = new User();
         BeanUtils.copyProperties(userDetail,user);
         BeanUtils.copyProperties(request,user);
         updateById(user);
+        BeanUtils.copyProperties(user,userDetail);
+        tokenStore.updatePrincipal(userDetail);
     }
 
     /**

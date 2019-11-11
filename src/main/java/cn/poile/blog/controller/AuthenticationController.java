@@ -1,14 +1,20 @@
 package cn.poile.blog.controller;
 
+import cn.poile.blog.common.constant.ErrorEnum;
+import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.security.AuthenticationToken;
+import cn.poile.blog.common.security.RedisTokenStore;
+import cn.poile.blog.common.sms.SmsCodeService;
 import cn.poile.blog.common.validator.IsPhone;
 import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.service.AuthenticationService;
+import cn.poile.blog.vo.CustomUserDetails;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
@@ -25,12 +31,26 @@ public class AuthenticationController extends BaseController{
 
     private static final String TOKEN_TYPE = "Bearer";
 
+    @Autowired
+    private RedisTokenStore tokenStore;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private SmsCodeService smsCodeService;
+
 
     @Autowired
     private AuthenticationService authenticationService;
 
     @PostMapping("/account/login")
-    public ApiResponse<AccessTokenDTO> accountLogin(@NotBlank(message = "账号不能为空")@RequestParam String username,@NotBlank(message = "密码不能为空") @RequestParam String password) {
+    public ApiResponse<AccessTokenDTO> accountLogin(@NotBlank(message = "账号不能为空")@RequestParam String username,@NotBlank(message = "密码不能为空") @RequestParam String password,
+                                                    @RequestHeader(value = "Authorization",required = false) String Authorization) {
+        AccessTokenDTO accessTokenDTO = passwordRepeatLoginHandle(Authorization,password);
+        if (accessTokenDTO != null) {
+            return createResponse(accessTokenDTO);
+        }
         AuthenticationToken authenticationToken = authenticationService.usernameOrMobilePasswordAuthenticate(username, password);
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken,response);
@@ -38,7 +58,12 @@ public class AuthenticationController extends BaseController{
     }
 
     @PostMapping("/mobile/login")
-    public ApiResponse<AccessTokenDTO> mobileLogin(@NotNull(message = "手机号不能为空") @IsPhone @RequestParam long mobile,@NotBlank(message = "验证码不能为空") @RequestParam String code) {
+    public ApiResponse<AccessTokenDTO> mobileLogin(@NotNull(message = "手机号不能为空") @IsPhone @RequestParam long mobile,@NotBlank(message = "验证码不能为空") @RequestParam String code,
+                                                   @RequestHeader(value = "Authorization",required = false) String Authorization) {
+        AccessTokenDTO accessTokenDTO = mobileRepeatLoginHandle(Authorization,mobile,code);
+        if (accessTokenDTO != null) {
+            return createResponse(accessTokenDTO);
+        }
         AuthenticationToken authenticationToken = authenticationService.mobileCodeAuthenticate(mobile, code);
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken,response);
@@ -60,6 +85,52 @@ public class AuthenticationController extends BaseController{
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken,response);
         return createResponse(response);
+    }
+
+
+    /**
+     * 密码模式重复登录
+     * @param Authorization
+     * @return
+     */
+    private AccessTokenDTO passwordRepeatLoginHandle(final String Authorization,String password) {
+        if (Authorization != null && Authorization.startsWith(TOKEN_TYPE)) {
+            String accessToken = Authorization.substring(7);
+            AuthenticationToken authenticationToken = tokenStore.readAccessToken(accessToken);
+            if (authenticationToken != null) {
+                CustomUserDetails principal = authenticationToken.getPrincipal();
+                String principalPassword = principal.getPassword();
+                boolean matches = passwordEncoder.matches(password, principalPassword);
+                if (!matches) {
+                    throw new ApiException(ErrorEnum.BAD_CREDENTIALS.getErrorCode(),ErrorEnum.BAD_CREDENTIALS.getErrorMsg());
+                }
+                AccessTokenDTO response = new AccessTokenDTO();
+                BeanUtils.copyProperties(authenticationToken,response);
+                return response;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 手机号验证码重复登录
+     * @param Authorization
+     * @return
+     */
+    private AccessTokenDTO mobileRepeatLoginHandle(final String Authorization,long mobile,String code) {
+        if (Authorization != null && Authorization.startsWith(TOKEN_TYPE)) {
+            String accessToken = Authorization.substring(7);
+            AuthenticationToken authenticationToken = tokenStore.readAccessToken(accessToken);
+            if (authenticationToken != null) {
+                if (!smsCodeService.checkSmsCode(mobile, code)) {
+                    throw new ApiException(ErrorEnum.BAD_MOBILE_CODE.getErrorCode(),ErrorEnum.BAD_MOBILE_CODE.getErrorMsg());
+                }
+                AccessTokenDTO response = new AccessTokenDTO();
+                BeanUtils.copyProperties(authenticationToken,response);
+                return response;
+            }
+        }
+        return null;
     }
 
     @PreAuthorize("hasAuthority('admin')")

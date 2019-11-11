@@ -21,7 +21,7 @@ public class ServeSecurityContext {
         SecurityContext context = SecurityContextHolder.getContext();
         Authentication authentication = context.getAuthentication();
         if (authentication == null) {
-            throw new PreAuthenticatedCredentialsNotFoundException("Pre Authenticated Credentials Not Found");
+            return null;
         }
        return (CustomUserDetails)authentication.getPrincipal();
     }
