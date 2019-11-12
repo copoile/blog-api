@@ -65,5 +65,17 @@ public class EmailService {
         }
     }
 
+    /**
+     * 异步发送Html邮件
+     * @param to 发送给谁
+     * @param subject 主题
+     * @param template html模板名
+     * @param params 模板参数
+     */
+    @Async
+    public void sendHtmlMail(String to, String subject, String template, Map<String, Object> params) {
+        String[] cc = new String[0];
+        sendHtmlMail(to, subject, template, params,cc);
+    }
 
 }

@@ -34,7 +34,7 @@ public class SmsController extends BaseController{
     private CustomWebSocketHandler webSocketHandler;
 
     @RateLimiter(name = "sms",max = 1,key = "#mobile",timeUnit = TimeUnit.MINUTES,timeout = 2)
-    @PostMapping("/send_code")
+    @PostMapping("/send")
     public ApiResponse sendSmsCode(@NotNull @IsPhone @RequestParam long mobile) {
         smsCodeService.sendSmsCode(mobile);
         return createResponse();

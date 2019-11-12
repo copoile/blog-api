@@ -27,3 +27,6 @@ ignore:
     - /account/login
     - /mobile/login
     - /user/register
+
+mail:
+  prefix: http://127.0.0.1:8080/email/verify

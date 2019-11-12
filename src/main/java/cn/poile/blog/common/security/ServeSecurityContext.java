@@ -26,4 +26,26 @@ public class ServeSecurityContext {
        return (CustomUserDetails)authentication.getPrincipal();
     }
 
+    /**
+     * 获取认证信息
+     * @return org.springframework.security.core.Authentication
+     */
+    public static Authentication getAuthentication() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        return context.getAuthentication();
+    }
+
+    /**
+     * 获取AuthenticationToken
+     * @return cn.poile.blog.common.security.AuthenticationToken
+     */
+    public static AuthenticationToken getAuthenticationToken() {
+        SecurityContext context = SecurityContextHolder.getContext();
+        Authentication authentication = context.getAuthentication();
+        if (authentication == null) {
+            return null;
+        }
+        return (AuthenticationToken)authentication.getDetails();
+    }
+
 }

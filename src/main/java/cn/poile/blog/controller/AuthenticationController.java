@@ -46,8 +46,8 @@ public class AuthenticationController extends BaseController{
 
     @PostMapping("/account/login")
     public ApiResponse<AccessTokenDTO> accountLogin(@NotBlank(message = "账号不能为空")@RequestParam String username,@NotBlank(message = "密码不能为空") @RequestParam String password,
-                                                    @RequestHeader(value = "Authorization",required = false) String Authorization) {
-        AccessTokenDTO accessTokenDTO = passwordRepeatLoginHandle(Authorization,password);
+                                                    @RequestHeader(value = "Authorization",required = false) String authorization) {
+        AccessTokenDTO accessTokenDTO = passwordRepeatLoginHandle(authorization,password);
         if (accessTokenDTO != null) {
             return createResponse(accessTokenDTO);
         }
@@ -59,8 +59,8 @@ public class AuthenticationController extends BaseController{
 
     @PostMapping("/mobile/login")
     public ApiResponse<AccessTokenDTO> mobileLogin(@NotNull(message = "手机号不能为空") @IsPhone @RequestParam long mobile,@NotBlank(message = "验证码不能为空") @RequestParam String code,
-                                                   @RequestHeader(value = "Authorization",required = false) String Authorization) {
-        AccessTokenDTO accessTokenDTO = mobileRepeatLoginHandle(Authorization,mobile,code);
+                                                   @RequestHeader(value = "Authorization",required = false) String authorization) {
+        AccessTokenDTO accessTokenDTO = mobileRepeatLoginHandle(authorization,mobile,code);
         if (accessTokenDTO != null) {
             return createResponse(accessTokenDTO);
         }
@@ -90,12 +90,12 @@ public class AuthenticationController extends BaseController{
 
     /**
      * 密码模式重复登录
-     * @param Authorization
+     * @param authorization
      * @return
      */
-    private AccessTokenDTO passwordRepeatLoginHandle(final String Authorization,String password) {
-        if (Authorization != null && Authorization.startsWith(TOKEN_TYPE)) {
-            String accessToken = Authorization.substring(7);
+    private AccessTokenDTO passwordRepeatLoginHandle(final String authorization,String password) {
+        if (authorization != null && authorization.startsWith(TOKEN_TYPE)) {
+            String accessToken = authorization.substring(7);
             AuthenticationToken authenticationToken = tokenStore.readAccessToken(accessToken);
             if (authenticationToken != null) {
                 CustomUserDetails principal = authenticationToken.getPrincipal();
@@ -114,12 +114,12 @@ public class AuthenticationController extends BaseController{
 
     /**
      * 手机号验证码重复登录
-     * @param Authorization
+     * @param authorization
      * @return
      */
-    private AccessTokenDTO mobileRepeatLoginHandle(final String Authorization,long mobile,String code) {
-        if (Authorization != null && Authorization.startsWith(TOKEN_TYPE)) {
-            String accessToken = Authorization.substring(7);
+    private AccessTokenDTO mobileRepeatLoginHandle(final String authorization,long mobile,String code) {
+        if (authorization != null && authorization.startsWith(TOKEN_TYPE)) {
+            String accessToken = authorization.substring(7);
             AuthenticationToken authenticationToken = tokenStore.readAccessToken(accessToken);
             if (authenticationToken != null) {
                 if (!smsCodeService.checkSmsCode(mobile, code)) {
@@ -127,6 +127,7 @@ public class AuthenticationController extends BaseController{
                 }
                 AccessTokenDTO response = new AccessTokenDTO();
                 BeanUtils.copyProperties(authenticationToken,response);
+                smsCodeService.deleteSmsCode(mobile);
                 return response;
             }
         }

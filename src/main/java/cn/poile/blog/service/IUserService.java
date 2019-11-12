@@ -35,4 +35,18 @@ public interface IUserService extends IService<User> {
      * @param request
      */
     public void update(UpdateUserRequest request);
+
+    /**
+     *  发送邮箱验证链接
+     * @param email
+     * @return void
+     */
+    public void validateEmail(String email);
+
+    /**
+     *  绑定邮箱
+     * @param code
+     * @return void
+     */
+    public void bindEmail(String code);
 }

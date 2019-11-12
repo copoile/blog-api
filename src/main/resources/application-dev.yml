@@ -7,11 +7,12 @@ spring:
       pool:
         max-size: 16
         core-size: 8
-        keep-alive: 10s
+        keep-alive: 60s
         queue-capacity: 100
         allow-core-thread-timeout: true
     scheduling:
       thread-name-prefix: async-task-
+
   redis:
     host: localhost
     port: 6379
@@ -63,11 +64,12 @@ spring:
     host: smtp.163.com
     port: 25
     username: 15625295093@163.com
-    password: abc
+    password: abc452
     protocol: smtp
     test-connection: true
     default-encoding: UTF-8
     jndi-name: 个人悦读分享
+
 
 ## oss存储配置 ##
 oss:
@@ -82,8 +84,8 @@ oss:
     endpoint: nos-eastchina1.126.net
     bucket: poile-img
   qiniu:
-    accessKey: vBVb9KFP8grlTDqgWo-w
-    secretKey: G2bU07ymUqjVCx-2t
+    accessKey: vBVb9KFP8grlTDqgWo-wzOj4V
+    secretKey: G2bU07ymUqjVCx-2t1eM
     region: huanan
     bucket: softwares
     domain: http://qiniu.poile.cn/
@@ -99,9 +101,12 @@ sms:
   ali:
     regionId: cn-hangzhou
     accessKeyId: LTAIaEeboqn0kRQg
-    accessKeySecret: bU54eGKPugUj03LJm8eEL
+    accessKeySecret: bU54eGKPugUj03LJm8eELNEJ5Xnj0q
     signName: 个人悦读分享
     templateCode: SMS_176942058
+
+
+
 
 mybatis-plus:
   mapper-locations:

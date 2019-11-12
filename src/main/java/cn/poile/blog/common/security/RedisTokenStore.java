@@ -141,9 +141,8 @@ public class RedisTokenStore {
      */
     public AuthenticationToken storeAccessToken(Authentication authentication) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        String accessToken = createAccessToken();
-        String refreshToken = createRefreshToken();
-
+        String accessToken = createToken();
+        String refreshToken = createToken();
         AuthenticationToken token = new AuthenticationToken();
         token.setAccessToken(accessToken);
         token.setExpire(ACCESS_TOKEN_VALIDITY_SECONDS);
@@ -223,7 +222,6 @@ public class RedisTokenStore {
             throw new ApiException(ErrorEnum.CREDENTIALS_INVALID.getErrorCode(), ErrorEnum.CREDENTIALS_INVALID.getErrorMsg());
         }
         String accessToken = authenticationToken.getAccessToken();
-        byte[] serializedAuthentication = serializedAuthentication(authenticationToken);
         byte[] serializedKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
         String extract = extractKey(authenticationToken.getPrincipal().getId());
         byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
@@ -233,7 +231,7 @@ public class RedisTokenStore {
         RedisConnection conn = getConnection();
         try {
             conn.openPipeline();
-            conn.set(serializedKey, serializedAuthentication, Expiration.seconds(ACCESS_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
+            conn.expire(serializedKey,ACCESS_TOKEN_VALIDITY_SECONDS);
             conn.zSetCommands().zRemRangeByScore(extractKey, 0, expired);
             conn.zSetCommands().zAdd(extractKey, now, serializedAccessToken);
             conn.expire(extractKey, REFRESH_TOKEN_VALIDITY_SECONDS);
@@ -243,6 +241,34 @@ public class RedisTokenStore {
         }
         return authenticationToken;
     }
+
+    /***
+     * 刷新 AccessToken 时间
+     * @param authenticationToken
+     * @return
+     */
+    public AuthenticationToken refreshAccessTokenExpire(AuthenticationToken authenticationToken) {
+        String accessToken = authenticationToken.getAccessToken();
+        byte[] serializedKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
+        String extract = extractKey(authenticationToken.getPrincipal().getId());
+        byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
+        byte[] serializedAccessToken = serialized(accessToken);
+        long now = Instant.now().toEpochMilli();
+        long expired = now - TimeUnit.SECONDS.toMillis(ACCESS_TOKEN_VALIDITY_SECONDS);
+        RedisConnection conn = getConnection();
+        try {
+            conn.openPipeline();
+            conn.expire(serializedKey,ACCESS_TOKEN_VALIDITY_SECONDS);
+            conn.zSetCommands().zRemRangeByScore(extractKey, 0, expired);
+            conn.zSetCommands().zAdd(extractKey, now, serializedAccessToken);
+            conn.expire(extractKey, REFRESH_TOKEN_VALIDITY_SECONDS);
+        } finally {
+            conn.close();
+
+        }
+        return authenticationToken;
+    }
+
 
     /**
      * accessToken 过期时间
@@ -311,7 +337,7 @@ public class RedisTokenStore {
         CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
         assert userDetail != null;
         String extract = extractKey(userDetail.getId());
-        byte[] extractKey = serializedKey(extract);
+        byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
         byte[] accessTokenKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
         byte[] refreshTokenKey = serializedKey(AUTH_REFRESH_TOKEN + refreshToken);
         byte[] accessKey = serializedKey((AUTH_ACCESS + accessToken));
@@ -335,11 +361,14 @@ public class RedisTokenStore {
      */
     private Set<String> extractAccessToken(long userId) {
         String extract = extractKey(userId);
-        byte[] serializedKey = serializedKey(extract);
+        byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
+        long now = Instant.now().toEpochMilli();
+        long expired = now - TimeUnit.SECONDS.toMillis(ACCESS_TOKEN_VALIDITY_SECONDS);
         RedisConnection conn = getConnection();
         Set<byte[]> set;
         try {
-            set = conn.zSetCommands().zRange(serializedKey, 0, -1);
+            conn.zSetCommands().zRemRangeByScore(extractKey, 0, expired);
+            set = conn.zSetCommands().zRange(extractKey, 0, -1);
         } finally {
             conn.close();
         }
@@ -358,12 +387,12 @@ public class RedisTokenStore {
             accessTokenSet.forEach(
                     accessToken -> {
                         AuthenticationToken accessAuthenticationToken = readAccessToken(accessToken);
-                        long accessTokenExpire = accessTokenExpire(accessToken);
+                        long accessTokenExpire = accessTokenExpire(AUTH_ACCESS_TOKEN + accessToken);
                         accessAuthenticationToken.setPrincipal(principal);
                         byte[] serializedAuthentication = serializedAuthentication(accessAuthenticationToken);
                         String refreshToken = readAccessToRefreshToken(accessToken);
                         byte[] serializeRefreshToken = serialized(refreshToken);
-                        long refreshTokenExpire = readRefreshTokenExpire(refreshToken);
+                        long refreshTokenExpire = readRefreshTokenExpire(AUTH_REFRESH_TOKEN + refreshToken);
                         byte[] accessTokenKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
                         byte[] refreshTokenKey = serializedKey(AUTH_REFRESH_TOKEN + refreshToken);
                         byte[] accessKey = serializedKey((AUTH_ACCESS + accessToken));
@@ -410,21 +439,12 @@ public class RedisTokenStore {
     }
 
     /**
-     * 生成 accessToken
+     * 生成 Token
      *
      * @return String
      */
-    private String createAccessToken() {
+    private String createToken() {
         return UUID.randomUUID().toString();
     }
 
-
-    /**
-     * 生成 accessToken
-     *
-     * @return String
-     */
-    private String createRefreshToken() {
-        return UUID.randomUUID().toString();
-    }
 }

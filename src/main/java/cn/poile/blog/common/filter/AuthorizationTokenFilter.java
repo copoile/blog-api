@@ -47,7 +47,7 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
                    return;
                }
                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(cacheAuthenticationToken.getPrincipal(), null, cacheAuthenticationToken.getPrincipal().getAuthorities());
-               authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+               authentication.setDetails(cacheAuthenticationToken);
                SecurityContextHolder.getContext().setAuthentication(authentication);
            }
         }

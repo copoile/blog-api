@@ -3,10 +3,13 @@ package cn.poile.blog.service.impl;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.common.constant.UserConstant;
+import cn.poile.blog.common.email.EmailService;
 import cn.poile.blog.common.exception.ApiException;
+import cn.poile.blog.common.security.AuthenticationToken;
 import cn.poile.blog.common.security.RedisTokenStore;
 import cn.poile.blog.common.security.ServeSecurityContext;
 import cn.poile.blog.common.sms.SmsCodeService;
+import cn.poile.blog.common.util.RandomValueStringGenerator;
 import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.entity.User;
@@ -18,14 +21,21 @@ import cn.poile.blog.vo.CustomUserDetails;
 import cn.poile.blog.vo.UserVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -36,7 +46,9 @@ import java.time.LocalDateTime;
  * @since 2019-10-23
  */
 @Service
+@Log4j2
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
+
 
     @Autowired
     private UserMapper userMapper;
@@ -52,6 +64,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Autowired
     private RedisTokenStore tokenStore;
+
+    @Value("${mail.prefix}")
+    private String prefix;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    private final static String MAIL_CODE_PREFIX ="mail:code:";
+
+    private RandomValueStringGenerator generator = new RandomValueStringGenerator();
 
     /**
      * 根据用户名查询
@@ -74,7 +99,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public void register(UserRegisterRequest request) {
         long mobile = request.getMobile();
         String code = request.getCode();
-        checkCode(mobile,code);
+        checkSmsCode(mobile,code);
         String username = request.getUsername();
         User userDao = selectUserByUsernameOrMobile(username, mobile);
         if (userDao != null && username.equals(userDao.getUsername())) {
@@ -113,11 +138,59 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"用户id跟当前用户id不匹配或accessToken信息异常");
         }
         User user = new User();
-        BeanUtils.copyProperties(userDetail,user);
         BeanUtils.copyProperties(request,user);
         updateById(user);
-        BeanUtils.copyProperties(user,userDetail);
+        userDetail.setBirthday(request.getBirthday());
+        userDetail.setGender(request.getGender());
+        userDetail.setNickname(request.getNickname());
+        userDetail.setBrief(request.getBrief());
         tokenStore.updatePrincipal(userDetail);
+    }
+
+
+    /**
+     * 发送邮箱验证链接
+     *
+     * @param email
+     * @return void
+     */
+    @Override
+    public void validateEmail(String email) {
+        AuthenticationToken authenticationToken = ServeSecurityContext.getAuthenticationToken();
+        Map<String,Object> params = new HashMap<>(1);
+        String code = generator.generate();
+        String accessToken = authenticationToken.getAccessToken();
+        String checkUrl = prefix + "?code=" + code;
+        params.put("checkUrl",checkUrl);
+        String key = MAIL_CODE_PREFIX + code;
+        Map<String,String> map = new HashMap<>(2);
+        map.put("access_token",accessToken);
+        map.put("email",email);
+        redisTemplate.opsForHash().putAll(key,map);
+        redisTemplate.expire(key,2L,TimeUnit.HOURS);
+       // emailService.sendHtmlMail(email,"邮箱验证","email",params);
+    }
+
+    /**
+     * 绑定邮箱
+     *
+     * @param code
+     * @return void
+     */
+    @Override
+    public void bindEmail(String code) {
+        Map<Object, Object> resultMap = redisTemplate.opsForHash().entries(MAIL_CODE_PREFIX + code);
+        if (resultMap.isEmpty()) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"code无效或code已过期");
+        }
+        String accessToken = (String)resultMap.get("access_token");
+        AuthenticationToken authenticationToken = tokenStore.readAccessToken(accessToken);
+        CustomUserDetails principal = authenticationToken.getPrincipal();
+        User user = new User();
+        user.setId(principal.getId());
+        String email = (String)resultMap.get("email");
+        user.setEmail(email);
+        updateById(user);
     }
 
     /**
@@ -125,7 +198,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @param mobile
      * @param code
      */
-    private void checkCode(long mobile,String code) {
+    private void checkSmsCode(long mobile, String code) {
         if (!smsCodeService.checkSmsCode(mobile,code)) {
             throw new ApiException(ErrorEnum.BAD_MOBILE_CODE.getErrorCode(),"验证码不正确");
         }
