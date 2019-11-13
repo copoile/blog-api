@@ -4,6 +4,7 @@ import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -78,6 +79,9 @@ public class LocalStorage extends AbstractStorage{
      */
     @Override
     public boolean delete(String fullPath) {
+        if (StringUtils.isBlank(fullPath)) {
+            return false;
+        }
         return FileUtils.deleteQuietly(new File(path + getFileNameFromFullPath(fullPath)));
     }
 }

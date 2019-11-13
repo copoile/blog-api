@@ -1,5 +1,7 @@
 package cn.poile.blog.common.validator;
 
+import cn.poile.blog.common.validator.annotation.IsPhone;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.util.regex.Pattern;
@@ -23,6 +25,6 @@ public class IsPhoneValidator implements ConstraintValidator<IsPhone, Object> {
             String regexp = "^[1][3,4,5,6,7,8,9]\\d{9}$";
             return Pattern.matches(regexp, mobile);
         }
-        return false;
+        return true;
     }
 }

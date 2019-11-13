@@ -16,7 +16,7 @@ public interface Storage {
      * @param contentType 文件类型
      * @return http地址
      */
-    public String upload(byte[] bytes,String path,String contentType);
+    String upload(byte[] bytes,String path,String contentType);
 
     /**
      * 文件上传
@@ -25,12 +25,12 @@ public interface Storage {
      * @param contentType 文件类型
      * @return http地址
      */
-    public String upload(InputStream inputStream,String path,String contentType);
+    String upload(InputStream inputStream,String path,String contentType);
 
     /**
      *  删除文件
      * @param fullPath 文件路径
      * @return 是否删除成功
      */
-    public boolean delete(String fullPath);
+    boolean delete(String fullPath);
 }

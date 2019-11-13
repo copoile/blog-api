@@ -64,7 +64,7 @@ spring:
     host: smtp.163.com
     port: 25
     username: 15625295093@163.com
-    password: abc452
+    password: abc
     protocol: smtp
     test-connection: true
     default-encoding: UTF-8
@@ -79,13 +79,13 @@ oss:
     path: /var/blog/
     proxy: http://www.poile.cn/resource/
   netease:
-    accessKey: 2bec4d8797e64f99b967c88f
-    secretKey: ca8bb777179949a4b07671
+    accessKey: 2bec4d8797e64f99b9
+    secretKey: ca8bb777179949a4b
     endpoint: nos-eastchina1.126.net
     bucket: poile-img
   qiniu:
-    accessKey: vBVb9KFP8grlTDqgWo-wzOj4V
-    secretKey: G2bU07ymUqjVCx-2t1eM
+    accessKey: vBVb9KFP8grlTDqgWo
+    secretKey: G2bU07ymUqjVCx-
     region: huanan
     bucket: softwares
     domain: http://qiniu.poile.cn/
@@ -100,8 +100,8 @@ sms:
   expire: 300
   ali:
     regionId: cn-hangzhou
-    accessKeyId: LTAIaEeboqn0kRQg
-    accessKeySecret: bU54eGKPugUj03LJm8eELNEJ5Xnj0q
+    accessKeyId: LTAIaEeboqn
+    accessKeySecret: bU54eGKPugUj
     signName: 个人悦读分享
     templateCode: SMS_176942058
 
@@ -117,3 +117,4 @@ logging:
   level:
     cn.poile.blog.mapper: DEBUG
     org.springframework.security: DEBUG
+

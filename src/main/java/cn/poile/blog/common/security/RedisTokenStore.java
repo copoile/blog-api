@@ -222,6 +222,7 @@ public class RedisTokenStore {
             throw new ApiException(ErrorEnum.CREDENTIALS_INVALID.getErrorCode(), ErrorEnum.CREDENTIALS_INVALID.getErrorMsg());
         }
         String accessToken = authenticationToken.getAccessToken();
+        byte[] serializedAuthentication = serializedAuthentication(authenticationToken);
         byte[] serializedKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
         String extract = extractKey(authenticationToken.getPrincipal().getId());
         byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
@@ -231,7 +232,7 @@ public class RedisTokenStore {
         RedisConnection conn = getConnection();
         try {
             conn.openPipeline();
-            conn.expire(serializedKey,ACCESS_TOKEN_VALIDITY_SECONDS);
+            conn.set(serializedKey, serializedAuthentication, Expiration.seconds(ACCESS_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
             conn.zSetCommands().zRemRangeByScore(extractKey, 0, expired);
             conn.zSetCommands().zAdd(extractKey, now, serializedAccessToken);
             conn.expire(extractKey, REFRESH_TOKEN_VALIDITY_SECONDS);
@@ -247,7 +248,7 @@ public class RedisTokenStore {
      * @param authenticationToken
      * @return
      */
-    public AuthenticationToken refreshAccessTokenExpire(AuthenticationToken authenticationToken) {
+    public void refreshAccessTokenExpire(AuthenticationToken authenticationToken) {
         String accessToken = authenticationToken.getAccessToken();
         byte[] serializedKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
         String extract = extractKey(authenticationToken.getPrincipal().getId());
@@ -266,7 +267,6 @@ public class RedisTokenStore {
             conn.close();
 
         }
-        return authenticationToken;
     }
 
 

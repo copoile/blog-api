@@ -26,7 +26,10 @@ ignore:
     - /sms/**
     - /account/login
     - /mobile/login
+    - /refresh_access_token
     - /user/register
+    - /email/bind
 
 mail:
-  prefix: http://127.0.0.1:8080/email/verify
+  check:
+    prefix: http://127.0.0.1:8080/email/verify

@@ -13,6 +13,7 @@ import com.netease.cloud.services.nos.model.PutObjectRequest;
 import com.netease.cloud.services.nos.transfer.TransferManager;
 import com.netease.cloud.services.nos.transfer.Upload;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -90,6 +91,9 @@ public class NeteaseStorage extends AbstractStorage{
      */
     @Override
     public boolean delete(String fullPath) {
+        if (StringUtils.isBlank(fullPath)) {
+            return false;
+        }
         DeleteObjectsRequest request = new DeleteObjectsRequest(bucket).withKeys(getFileNameFromFullPath(fullPath));
         nosClient.deleteObjects(request);
         return true;

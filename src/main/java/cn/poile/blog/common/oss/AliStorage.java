@@ -5,6 +5,7 @@ import cn.poile.blog.common.exception.ApiException;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.ObjectMetadata;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -66,6 +67,9 @@ public class AliStorage extends AbstractStorage{
      */
     @Override
     public boolean delete(String fullPath) {
+        if (StringUtils.isBlank(fullPath)) {
+            return false;
+        }
        try {
             client.deleteObject(bucket , getFileNameFromFullPath(fullPath));
         } catch (Exception ex) {

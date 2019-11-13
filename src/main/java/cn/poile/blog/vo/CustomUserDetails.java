@@ -2,6 +2,8 @@ package cn.poile.blog.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.CollectionUtils;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
  * @create: 2019-10-24 16:45
  **/
 @Data
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = false)
 public class CustomUserDetails extends UserVo implements UserDetails {
 
     @JsonIgnore

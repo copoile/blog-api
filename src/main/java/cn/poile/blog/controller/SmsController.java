@@ -4,7 +4,7 @@ import cn.poile.blog.annotation.RateLimiter;
 import cn.poile.blog.common.email.EmailService;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.sms.SmsCodeService;
-import cn.poile.blog.common.validator.IsPhone;
+import cn.poile.blog.common.validator.annotation.IsPhone;
 import cn.poile.blog.websock.CustomWebSocketHandler;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;

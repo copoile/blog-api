@@ -6,7 +6,7 @@ import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.security.AuthenticationToken;
 import cn.poile.blog.common.security.RedisTokenStore;
 import cn.poile.blog.common.sms.SmsCodeService;
-import cn.poile.blog.common.validator.IsPhone;
+import cn.poile.blog.common.validator.annotation.IsPhone;
 import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.service.AuthenticationService;
 import cn.poile.blog.vo.CustomUserDetails;
@@ -80,7 +80,7 @@ public class AuthenticationController extends BaseController{
     }
 
     @PostMapping("/refresh_access_token")
-    public ApiResponse<AccessTokenDTO> refreshAccessToken(@NotBlank @RequestParam String refreshToken) {
+    public ApiResponse<AccessTokenDTO> refreshAccessToken(@NotBlank @RequestParam("refreshToken") String refreshToken) {
         AuthenticationToken authenticationToken = authenticationService.refreshAccessToken(refreshToken);
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken,response);

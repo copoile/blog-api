@@ -11,6 +11,7 @@ import com.qiniu.storage.UploadManager;
 import com.qiniu.util.Auth;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -95,6 +96,9 @@ public class QiniuStorage extends AbstractStorage {
      */
     @Override
     public boolean delete(String fullPath) {
+        if (StringUtils.isBlank(fullPath)) {
+            return false;
+        }
         try {
             Response res = bucketManager.delete(bucket, getFileNameFromFullPath(fullPath));
             if (!res.isOK()) {

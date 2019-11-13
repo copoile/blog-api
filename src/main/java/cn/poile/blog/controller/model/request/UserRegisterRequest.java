@@ -1,6 +1,6 @@
 package cn.poile.blog.controller.model.request;
 
-import cn.poile.blog.common.validator.IsPhone;
+import cn.poile.blog.common.validator.annotation.IsPhone;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
