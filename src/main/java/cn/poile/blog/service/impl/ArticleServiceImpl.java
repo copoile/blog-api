@@ -55,6 +55,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public void save(ArticleRequest request) {
+        saveOrUpdate(request,ArticleStatusEnum.NOT_PUBLISH.getStatus());
+    }
+
+    /**
+     * 新增或更新
+     * @param request
+     * @param status
+     */
+    private void saveOrUpdate(ArticleRequest request,final int status) {
         Article article = new Article();
         // 文章id处理
         article.setId(request.getId() == null ? null : request.getId() == 0 ? null : request.getId());
@@ -73,8 +82,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setSummary(request.getSummary());
         article.setContent(request.getContent());
         article.setCover(request.getCover());
-        // 文章未发布状态
-        article.setStatus(ArticleStatusEnum.NOT_PUBLISH.getStatus());
+        // 文章状态
+        article.setStatus(status);
         // 时间
         article.setPublishTime(LocalDateTime.now());
         article.setUpdateTime(LocalDateTime.now());
@@ -92,6 +101,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 批量新增
         List<ArticleTag> articleTagList = tagIds.stream().map((tagId) -> new ArticleTag(articleId, tagId)).collect(Collectors.toList());
         articleTagService.saveBatch(articleTagList);
+    }
+
+    /**
+     * 发表文章
+     * @param request
+     */
+    @Override
+    public void pubilsh(ArticleRequest request) {
+        saveOrUpdate(request,ArticleStatusEnum.NORMAL.getStatus());
     }
 
     /**

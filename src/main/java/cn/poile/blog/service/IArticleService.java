@@ -21,4 +21,10 @@ public interface IArticleService extends IService<Article> {
      */
     void save(ArticleRequest request);
 
+    /**
+     * 发表文章
+     * @param request
+     */
+    void pubilsh(ArticleRequest request);
+
 }

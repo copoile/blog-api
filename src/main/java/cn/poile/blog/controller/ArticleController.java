@@ -41,6 +41,7 @@ public class ArticleController extends BaseController {
     @ApiOperation(value = "保存并发布文章", notes = "需要accessToken")
     @PostMapping("/publish")
     public ApiResponse publish(@Validated @RequestBody ArticleRequest request) {
+        articleService.pubilsh(request);
         return createResponse();
     }
 
