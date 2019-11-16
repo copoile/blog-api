@@ -9,11 +9,11 @@ public class RoleConstant {
     /**
      * 管理员
      */
-    public static final int ROLE_ADMIN = 1;
+    public static final String ADMIN = "ADMIN";
 
     /**
      * 普通用户
      */
-    public static final int ROLE_NORMAL = 2;
+    public static final String ORDINARY = "ORDINARY";
 
 }

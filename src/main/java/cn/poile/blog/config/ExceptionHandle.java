@@ -6,6 +6,8 @@ import cn.poile.blog.common.response.ApiResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -100,6 +102,83 @@ public class ExceptionHandle {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse handleUsernameNotFoundException(UsernameNotFoundException ex) {
         return new ApiResponse(USER_NOT_FOUND.getErrorCode(),USER_NOT_FOUND.getErrorMsg());
+    }
+
+    /**
+     * 认证失败
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse handleBadCredentialsException(BadCredentialsException ex) {
+        return new ApiResponse(BAD_CREDENTIALS.getErrorCode(),BAD_CREDENTIALS.getErrorMsg());
+    }
+
+    /**
+     * 账号锁定
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(LockedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse handleLockedException(LockedException ex) {
+        return new ApiResponse(ACCOUNT_LOCKED.getErrorCode(),ACCOUNT_LOCKED.getErrorMsg());
+    }
+
+    /**
+     * 账号超时
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(AccountExpiredException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse handleAccountExpiredException(AccountExpiredException ex) {
+        return new ApiResponse(ACCOUNT_EXPIRED.getErrorCode(),ACCOUNT_EXPIRED.getErrorMsg());
+    }
+
+    /**
+     * 账号禁用
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(DisabledException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse handleDisabledException(DisabledException ex) {
+        return new ApiResponse(ACCOUNT_DISABLE.getErrorCode(),ACCOUNT_DISABLE.getErrorMsg());
+    }
+
+    /**
+     * 凭证已过期
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(CredentialsExpiredException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse handleCredentialsExpiredException(CredentialsExpiredException ex) {
+        return new ApiResponse(CREDENTIALS_EXPIRED.getErrorCode(),CREDENTIALS_EXPIRED.getErrorMsg());
+    }
+
+    /**
+     * 不允许访问
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(InsufficientAuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse handleInsufficientAuthenticationException(InsufficientAuthenticationException ex) {
+        return new ApiResponse(ACCESS_DENIED.getErrorCode(),ACCESS_DENIED.getErrorMsg());
+    }
+
+    /**
+     * 权限不足
+     * @param ex
+     * @return
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiResponse handleAccessDeniedException(AccessDeniedException ex) {
+        return new ApiResponse(PERMISSION_DENIED.getErrorCode(),PERMISSION_DENIED.getErrorMsg());
     }
 
     /**

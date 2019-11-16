@@ -41,13 +41,13 @@ public class UserController extends BaseController {
     private IUserService userService;
 
 
-    @ApiOperation(value = "获取用户信息接口", notes = "需要传accessToken")
+    @ApiOperation(value = "获取用户信息", notes = "需要传accessToken")
     @GetMapping("/info")
     public ApiResponse<Object> info(Authentication authentication) {
         return createResponse(authentication.getPrincipal());
     }
 
-    @ApiOperation(value = "用户注册接口", notes = "不需要传accessToken")
+    @ApiOperation(value = "用户注册", notes = "不需要传accessToken")
     @PostMapping("/register")
     public ApiResponse register(@Validated @RequestBody UserRegisterRequest request) {
         userService.register(request);
@@ -81,7 +81,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "更新用户头像", notes = "文件只限bmp,gif,jpeg,jpeg,png,webp格式")
     @PostMapping("/avatar/update")
     public ApiResponse updAvatar(@ApiParam("头像图片文件") @IsImage @RequestPart(value = "file") MultipartFile file) {
-        userService.updAvatar(file);
+        userService.updateAvatar(file);
         return createResponse();
     }
 

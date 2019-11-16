@@ -14,9 +14,11 @@ import cn.poile.blog.common.util.RandomValueStringGenerator;
 import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
+import cn.poile.blog.entity.Role;
 import cn.poile.blog.entity.User;
 import cn.poile.blog.entity.UserRole;
 import cn.poile.blog.mapper.UserMapper;
+import cn.poile.blog.service.IRoleService;
 import cn.poile.blog.service.IUserRoleService;
 import cn.poile.blog.service.IUserService;
 import cn.poile.blog.vo.CustomUserDetails;
@@ -65,6 +67,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Autowired
     private IUserRoleService userRoleService;
+
+    @Autowired
+    private IRoleService roleService;
 
     @Autowired
     private RedisTokenStore tokenStore;
@@ -133,11 +138,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setStatus(UserConstant.STATUS_NORMAL);
         user.setCreateTime(LocalDateTime.now());
         save(user);
-        UserRole userRole = new UserRole();
-        userRole.setUserId(user.getId());
-        userRole.setRoleId(RoleConstant.ROLE_NORMAL);
-        userRoleService.save(userRole);
+        initUserRole(user.getId());
         smsCodeService.deleteSmsCode(mobile);
+    }
+
+    /**
+     * 初始化普通用户角色
+     * @param userId
+     */
+    private void initUserRole(int userId) {
+        QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(Role::getRoleCode,RoleConstant.ORDINARY);
+        Role ordinary = roleService.getOne(queryWrapper, false);
+        if (ordinary == null) {
+            throw new ApiException(ErrorEnum.SYSMTEM_DATA_MISSING.getErrorCode(),"系统数据缺失,未查询到普通用户角色数据" );
+        }
+        UserRole userRole = new UserRole();
+        userRole.setUserId(userId);
+        userRole.setRoleId(ordinary.getId());
+        userRoleService.save(userRole);
     }
 
     /**
@@ -220,7 +239,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @return void
      */
     @Override
-    public void updAvatar(MultipartFile file) {
+    public void updateAvatar(MultipartFile file) {
         String filename = file.getOriginalFilename();
         String contentType = file.getContentType();
         String extension = filename.substring(filename.lastIndexOf(".") + 1);
@@ -308,6 +327,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         checkSmsCode(mobile, code);
         // 经过原手机号验证标识
         redisTemplate.opsForValue().set(REDIS_MOBILE_VALIDATED_PREFIX + mobile, Long.toString(mobile), 5L, TimeUnit.MINUTES);
+        smsCodeService.deleteSmsCode(mobile);
     }
 
     /**
@@ -320,7 +340,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void rebindMobile(long mobile, String code) {
         CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
-        Long cacheKey = userDetail.getMobile();
+        long cacheKey = userDetail.getMobile();
         // 判断是否经过步骤一
         String validated = redisTemplate.opsForValue().get(REDIS_MOBILE_VALIDATED_PREFIX + cacheKey);
         if (StringUtils.isBlank(validated)) {
@@ -340,6 +360,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         userDetail.setMobile(mobile);
         // 更新token缓存
         tokenStore.updatePrincipal(userDetail);
+        smsCodeService.deleteSmsCode(mobile);
     }
 
     /**
@@ -363,7 +384,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     private User selectUserByUsernameOrMobile(String username, long mobile) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("username", username).or().eq("mobile", mobile);
-        return getOne(queryWrapper);
+        queryWrapper.lambda().eq(User::getUsername,username).or().eq(User::getMobile,mobile);
+        return getOne(queryWrapper,false);
     }
 }

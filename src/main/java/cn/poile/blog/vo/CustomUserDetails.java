@@ -20,11 +20,12 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(callSuper = false)
 public class CustomUserDetails extends UserVo implements UserDetails {
 
-    @JsonIgnore
+
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (!CollectionUtils.isEmpty(authorityList)) {
-            return authorityList.stream().map(s -> createAuthority(s.getAuthorityCode())).collect(Collectors.toList());
+            return authorityList.stream().map(s -> createAuthority(s.getAuthorityCode())).collect(Collectors.toSet());
         }
         return null;
     }
@@ -33,25 +34,26 @@ public class CustomUserDetails extends UserVo implements UserDetails {
        return (()->authority);
     }
 
-    @JsonIgnore
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return !getStatus().equals(3);
     }
 
-    @JsonIgnore
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
         return !getStatus().equals(1);
     }
 
-    @JsonIgnore
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return true;
     }
-    @JsonIgnore
+
     @Override
+    @JsonIgnore
     public boolean isEnabled() {
         return !getStatus().equals(2);
     }

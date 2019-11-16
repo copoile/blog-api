@@ -57,7 +57,7 @@ public interface IUserService extends IService<User> {
      * @param file
      * @return void
      */
-    void updAvatar(MultipartFile file);
+    void updateAvatar(MultipartFile file);
 
     /**
      *  修改密码

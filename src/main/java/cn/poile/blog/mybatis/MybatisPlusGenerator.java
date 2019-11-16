@@ -28,13 +28,14 @@ public class MybatisPlusGenerator {
         gc.setAuthor("yaohw");
         gc.setOpen(false);
         gc.setSwagger2(true);
+        gc.isSwagger2();
         autoGenerator.setGlobalConfig(gc);
         // 数据源配置
         DataSourceConfig dataSource = new DataSourceConfig();
         dataSource.setUrl("jdbc:mysql://193.112.43.235:3306/blog_db?useSSL=false");
         dataSource.setDriverName("com.mysql.jdbc.Driver");
         dataSource.setUsername("root");
-        dataSource.setPassword("Ab452637!");
+        dataSource.setPassword("root");
         dataSource.setTypeConvert(new MySqlTypeConvert() {
             @Override
             public DbColumnType processTypeConvert(GlobalConfig globalConfig, String fieldType) {
@@ -78,7 +79,7 @@ public class MybatisPlusGenerator {
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);
         strategy.setEntityLombokModel(true);
         strategy.setRestControllerStyle(true);
-        strategy.setInclude("authority","role_authority");
+        strategy.setInclude("article_tag");
         // 设置
         // strategy.setInclude("")
         // 公共父类

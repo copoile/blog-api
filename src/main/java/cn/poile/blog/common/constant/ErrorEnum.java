@@ -67,6 +67,10 @@ public enum ErrorEnum {
      */
     BAD_MOBILE_CODE(1015,"手机号验证码不正确"),
     /**
+     * 数据缺失
+     */
+    SYSMTEM_DATA_MISSING(1016,"系统数据缺失"),
+    /**
      * 系统异常
      */
     SYSTEM_ERROR(1089,"系统异常"),

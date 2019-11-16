@@ -1,10 +1,7 @@
 package cn.poile.blog.common.security;
 
 import cn.poile.blog.common.filter.AuthorizationTokenFilter;
-import cn.poile.blog.common.security.CustomAccessDeniedHandler;
-import cn.poile.blog.common.security.CustomAuthenticationEntryPoint;
 import cn.poile.blog.common.sms.SmsCodeService;
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -101,9 +97,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 .logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"));
-        http.exceptionHandling()
-                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-                .accessDeniedHandler(new CustomAccessDeniedHandler());
         http.addFilterBefore(authorizationTokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
