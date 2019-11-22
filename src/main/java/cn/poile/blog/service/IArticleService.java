@@ -25,6 +25,6 @@ public interface IArticleService extends IService<Article> {
      * 发表文章
      * @param request
      */
-    void pubilsh(ArticleRequest request);
+    void publish(ArticleRequest request);
 
 }

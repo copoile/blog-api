@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -20,12 +21,11 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode(callSuper = false)
 public class CustomUserDetails extends UserVo implements UserDetails {
 
-
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (!CollectionUtils.isEmpty(authorityList)) {
-            return authorityList.stream().map(s -> createAuthority(s.getAuthorityCode())).collect(Collectors.toSet());
+        if (!CollectionUtils.isEmpty(roleList)) {
+            return roleList.stream().map(s->createAuthority(s)).collect(Collectors.toSet());
         }
         return null;
     }

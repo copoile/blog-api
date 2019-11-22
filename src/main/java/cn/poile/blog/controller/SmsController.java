@@ -8,6 +8,7 @@ import cn.poile.blog.common.validator.annotation.IsPhone;
 import cn.poile.blog.websock.CustomWebSocketHandler;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
@@ -33,8 +34,9 @@ public class SmsController extends BaseController{
     @Autowired
     private CustomWebSocketHandler webSocketHandler;
 
-    @RateLimiter(name = "sms",max = 1,key = "#mobile",timeUnit = TimeUnit.MINUTES,timeout = 2)
+
     @PostMapping("/send")
+    @RateLimiter(name = "sms",max = 1,key = "#mobile",timeUnit = TimeUnit.MINUTES,timeout = 2)
     public ApiResponse sendSmsCode(@NotNull @IsPhone @RequestParam long mobile) {
         smsCodeService.sendSmsCode(mobile);
         return createResponse();

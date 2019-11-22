@@ -1,7 +1,5 @@
 package cn.poile.blog.vo;
 
-import cn.poile.blog.entity.Authority;
-import cn.poile.blog.entity.Role;
 import cn.poile.blog.entity.User;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,12 +23,7 @@ public class UserVo extends User {
      * 角色列表
      */
     @ApiModelProperty(value = "角色列表")
-    private List<Role> roleList;
+    protected List<String> roleList;
 
-    /**
-     * 权限列表
-     */
-    @ApiModelProperty(value = "权限列表")
-    public List<Authority> authorityList;
 
 }

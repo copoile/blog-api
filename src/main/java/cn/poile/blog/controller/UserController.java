@@ -41,36 +41,37 @@ public class UserController extends BaseController {
     private IUserService userService;
 
 
-    @ApiOperation(value = "获取用户信息", notes = "需要传accessToken")
+
     @GetMapping("/info")
+    @ApiOperation(value = "获取用户信息", notes = "需要传accessToken")
     public ApiResponse<Object> info(Authentication authentication) {
         return createResponse(authentication.getPrincipal());
     }
 
-    @ApiOperation(value = "用户注册", notes = "不需要传accessToken")
     @PostMapping("/register")
+    @ApiOperation(value = "用户注册", notes = "不需要传accessToken")
     public ApiResponse register(@Validated @RequestBody UserRegisterRequest request) {
         userService.register(request);
         return createResponse();
     }
 
-    @ApiOperation(value = "更新用户基本信息", notes = "需要传accessToken，请求的json中id字段必传，更新不为null的项")
     @PostMapping("/update")
+    @ApiOperation(value = "更新用户基本信息", notes = "需要传accessToken，请求的json中id字段必传，更新不为null的项")
     public ApiResponse update(@RequestBody UpdateUserRequest request) {
         userService.update(request);
         return createResponse();
     }
 
-    @ApiOperation(value = "修改密码", notes = "需要传accessToken,密码至少6位数")
     @PostMapping("/password/update")
+    @ApiOperation(value = "修改密码", notes = "需要传accessToken,密码至少6位数")
     public ApiResponse updPassword(@ApiParam("原密码") @NotBlank(message = "旧密码不能为空") @RequestParam(value = "oldPassword") String oldPassword,
                                    @ApiParam("新密码") @NotBlank(message = "新密码不能为空") @Length(min = 6, message = "密码至少6位数") @RequestParam(value = "newPassword") String newPassword) {
         userService.updatePassword(oldPassword, newPassword);
         return createResponse();
     }
 
-    @ApiOperation(value = "重置密码", notes = "不需要传accessToken,需要验证手机号")
     @PostMapping("/password/reset")
+    @ApiOperation(value = "重置密码", notes = "不需要传accessToken,需要验证手机号")
     public ApiResponse resetPassword(@ApiParam("手机号") @NotNull(message = "手机号不能为空") @IsPhone @RequestParam("mobile") long mobile,
                                      @ApiParam("验证码") @NotBlank(message = "验证码不能为空") @RequestParam("code") String code,
                                      @ApiParam("密码") @NotBlank(message = "密码不能为空") @RequestParam("password") String password) {
@@ -78,23 +79,23 @@ public class UserController extends BaseController {
         return createResponse();
     }
 
-    @ApiOperation(value = "更新用户头像", notes = "文件只限bmp,gif,jpeg,jpeg,png,webp格式")
     @PostMapping("/avatar/update")
+    @ApiOperation(value = "更新用户头像", notes = "文件只限bmp,gif,jpeg,jpeg,png,webp格式")
     public ApiResponse updAvatar(@ApiParam("头像图片文件") @IsImage @RequestPart(value = "file") MultipartFile file) {
         userService.updateAvatar(file);
         return createResponse();
     }
 
-    @ApiOperation(value = "更换手机号步骤一，验证原手机号", notes = "需要传accessToken")
     @PostMapping("/mobile/validate")
+    @ApiOperation(value = "更换手机号步骤一，验证原手机号", notes = "需要传accessToken")
     public ApiResponse validateMobile(@ApiParam("手机号") @NotNull(message = "手机号不能为空") @IsPhone @RequestParam("mobile") long mobile,
                                       @NotBlank(message = "验证码不能为空") @RequestParam("code") String code) {
         userService.validateMobile(mobile, code);
         return createResponse();
     }
 
-    @ApiOperation(value = "更换手机号步骤二，绑定新手机号", notes = "需要传accessToken")
     @PostMapping("/mobile/rebind")
+    @ApiOperation(value = "更换手机号步骤二，绑定新手机号", notes = "需要传accessToken")
     public ApiResponse rebindMobile(@ApiParam("手机号") @NotNull(message = "手机号不能为空") @IsPhone @RequestParam(value = "mobile") long mobile,
                                     @ApiParam("验证码") @NotBlank(message = "验证码不能为空") @RequestParam(value = "code") String code) {
         userService.rebindMobile(mobile, code);
@@ -108,8 +109,8 @@ public class UserController extends BaseController {
         return createResponse();
     }
 
-    @ApiOperation(value = "code绑定邮箱", notes = "不需要accessToken，code有效2小时，绑定成功后返回accessToken相关信息")
     @PostMapping("/email/bind")
+    @ApiOperation(value = "code绑定邮箱", notes = "不需要accessToken，code有效2小时，绑定成功后返回accessToken相关信息")
     public ApiResponse<AccessTokenDTO> bindEmail(@ApiParam("邮箱链接中的code") @NotBlank(message = "code不能为空") @RequestParam("code") String code) {
         return createResponse(userService.bindEmail(code));
     }

@@ -46,4 +46,10 @@ public @interface RateLimiter {
      * 超时时间单位 默认为 秒
      */
     TimeUnit timeUnit() default TimeUnit.SECONDS;
+
+    /**
+     * 自定义附加限流器
+     * @return
+     */
+    String additional() default "";
 }

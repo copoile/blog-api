@@ -16,4 +16,14 @@ public class UserConstant {
      * 用户性别-男
      */
     public static final int GENDER_MALE = 1;
+
+    /**
+     * 用户类型-管理员
+     */
+    public static final int ADMIN = 1;
+
+    public static final int ORDINARY = 0;
+
+
+
 }

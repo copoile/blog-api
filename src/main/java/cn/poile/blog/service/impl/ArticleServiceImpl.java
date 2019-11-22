@@ -89,18 +89,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setUpdateTime(LocalDateTime.now());
         // 文章标签，冗余标签名，使用,分割
         List<Integer> tagIds = request.getTagIds();
-        article.setTags(getSeparationTagNameStr(tagIds));
+        article.setTags(getSeparationTagNames(tagIds));
         // 保存或更新文章
-        saveOrUpdate(article);
+        // saveOrUpdate(article);
         // 文章-标签 关联
         // 先删除原来的
         QueryWrapper<ArticleTag> deleteWrapper = new QueryWrapper<>();
         Integer articleId = article.getId();
         deleteWrapper.lambda().eq(ArticleTag::getArticleId, articleId);
-        articleTagService.remove(deleteWrapper);
+        // articleTagService.remove(deleteWrapper);
         // 批量新增
         List<ArticleTag> articleTagList = tagIds.stream().map((tagId) -> new ArticleTag(articleId, tagId)).collect(Collectors.toList());
-        articleTagService.saveBatch(articleTagList);
+        // articleTagService.saveBatch(articleTagList);
     }
 
     /**
@@ -108,7 +108,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * @param request
      */
     @Override
-    public void pubilsh(ArticleRequest request) {
+    public void publish(ArticleRequest request) {
         saveOrUpdate(request,ArticleStatusEnum.NORMAL.getStatus());
     }
 
@@ -118,17 +118,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * @param tagIds
      * @return
      */
-    private String getSeparationTagNameStr(List<Integer> tagIds) {
+    private String getSeparationTagNames(List<Integer> tagIds) {
         Collection<Tag> tags = tagService.listByIds(tagIds);
-        StringBuilder sb = null;
-        for (Tag tag : tags) {
-            if (sb == null) {
-                sb = new StringBuilder(tag.getName());
-            } else {
-                sb.append(SEPARATION).append(tag.getName());
-            }
-        }
-        return sb == null ? null : sb.toString();
+        return tags.stream().map(Tag::getName).collect(Collectors.joining(SEPARATION));
     }
 
 

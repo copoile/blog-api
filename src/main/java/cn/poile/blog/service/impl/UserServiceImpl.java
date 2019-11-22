@@ -1,7 +1,6 @@
 package cn.poile.blog.service.impl;
 
 import cn.poile.blog.common.constant.ErrorEnum;
-import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.common.constant.UserConstant;
 import cn.poile.blog.common.email.EmailService;
 import cn.poile.blog.common.exception.ApiException;
@@ -14,12 +13,8 @@ import cn.poile.blog.common.util.RandomValueStringGenerator;
 import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
-import cn.poile.blog.entity.Role;
 import cn.poile.blog.entity.User;
-import cn.poile.blog.entity.UserRole;
 import cn.poile.blog.mapper.UserMapper;
-import cn.poile.blog.service.IRoleService;
-import cn.poile.blog.service.IUserRoleService;
 import cn.poile.blog.service.IUserService;
 import cn.poile.blog.vo.CustomUserDetails;
 import cn.poile.blog.vo.UserVo;
@@ -39,7 +34,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -64,12 +61,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Autowired
     private SmsCodeService smsCodeService;
-
-    @Autowired
-    private IUserRoleService userRoleService;
-
-    @Autowired
-    private IRoleService roleService;
 
     @Autowired
     private RedisTokenStore tokenStore;
@@ -104,8 +95,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @return cn.poile.blog.entity.User
      */
     @Override
-    public UserVo selectUserVoByUsernameOrMobile(String username, Long mobile) {
-        return userMapper.selectUserVoByUsernameOrMobile(username, mobile);
+    public UserVo selectUserVoByUsernameOtherwiseMobile(String username, Long mobile) {
+        User user = selectUserByUsernameOtherwiseMobile(username, mobile);
+        if (user == null) {
+            return null;
+        }
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(user,userVo);
+        Integer admin = user.getAdmin();
+        List<String> roleList = new ArrayList<>();
+        if (admin.equals(UserConstant.ADMIN)) {
+           roleList.add("admin");
+        }
+        userVo.setRoleList(roleList);
+        return userVo;
     }
 
     /**
@@ -137,26 +140,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setBirthday(LocalDate.now());
         user.setStatus(UserConstant.STATUS_NORMAL);
         user.setCreateTime(LocalDateTime.now());
+        user.setAdmin(UserConstant.ORDINARY);
         save(user);
-        initUserRole(user.getId());
         smsCodeService.deleteSmsCode(mobile);
-    }
-
-    /**
-     * 初始化普通用户角色
-     * @param userId
-     */
-    private void initUserRole(int userId) {
-        QueryWrapper<Role> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(Role::getRoleCode,RoleConstant.ORDINARY);
-        Role ordinary = roleService.getOne(queryWrapper, false);
-        if (ordinary == null) {
-            throw new ApiException(ErrorEnum.SYSMTEM_DATA_MISSING.getErrorCode(),"系统数据缺失,未查询到普通用户角色数据" );
-        }
-        UserRole userRole = new UserRole();
-        userRole.setUserId(userId);
-        userRole.setRoleId(ordinary.getId());
-        userRoleService.save(userRole);
     }
 
     /**
@@ -297,7 +283,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void resetPassword(long mobile, String code, String password) {
         // 判断用户是否存在
-        UserVo userVo = selectUserVoByUsernameOrMobile(null, mobile);
+        UserVo userVo = selectUserVoByUsernameOtherwiseMobile(null, mobile);
         if (userVo == null) {
             throw new ApiException(ErrorEnum.USER_NOT_FOUND.getErrorCode(), ErrorEnum.USER_NOT_FOUND.getErrorMsg());
         }
@@ -382,9 +368,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @param mobile
      * @return
      */
-    private User selectUserByUsernameOrMobile(String username, long mobile) {
+    private User selectUserByUsernameOrMobile(String username, Long mobile) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(User::getUsername,username).or().eq(User::getMobile,mobile);
+        return getOne(queryWrapper,false);
+    }
+
+    /**
+     * username 不为空时使用username查询，否则使用mobile查询
+     * @param username
+     * @param mobile
+     * @return
+     */
+    private User selectUserByUsernameOtherwiseMobile(String username, Long mobile) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        if (StringUtils.isBlank(username)) {
+            queryWrapper.lambda().eq(User::getMobile,mobile);
+        }else {
+            queryWrapper.lambda().eq(User::getUsername,username);
+        }
         return getOne(queryWrapper,false);
     }
 }

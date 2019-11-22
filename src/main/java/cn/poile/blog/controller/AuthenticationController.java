@@ -10,6 +10,9 @@ import cn.poile.blog.common.validator.annotation.IsPhone;
 import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.service.AuthenticationService;
 import cn.poile.blog.vo.CustomUserDetails;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,7 @@ import java.security.Principal;
  **/
 @RestController
 @Log4j2
+@Api(tags = "认证服务",value = "/")
 public class AuthenticationController extends BaseController{
 
     private static final String TOKEN_TYPE = "Bearer";
@@ -45,8 +49,10 @@ public class AuthenticationController extends BaseController{
     private AuthenticationService authenticationService;
 
     @PostMapping("/account/login")
-    public ApiResponse<AccessTokenDTO> accountLogin(@NotBlank(message = "账号不能为空")@RequestParam String username,@NotBlank(message = "密码不能为空") @RequestParam String password,
-                                                    @RequestHeader(value = "Authorization",required = false) String authorization) {
+    @ApiOperation(value = "账号密码登录",notes = "账号可以是用户名或手机号")
+    public ApiResponse<AccessTokenDTO> accountLogin(@ApiParam("用户名或手机号") @NotBlank(message = "账号不能为空")@RequestParam String username,
+                                                    @ApiParam("密码") @NotBlank(message = "密码不能为空") @RequestParam String password,
+                                                    @ApiParam("请求头，可空，用于重复登录处理") @RequestHeader(value = "Authorization",required = false) String authorization) {
         AccessTokenDTO accessTokenDTO = passwordRepeatLoginHandle(authorization,password);
         if (accessTokenDTO != null) {
             return createResponse(accessTokenDTO);
@@ -58,8 +64,10 @@ public class AuthenticationController extends BaseController{
     }
 
     @PostMapping("/mobile/login")
-    public ApiResponse<AccessTokenDTO> mobileLogin(@NotNull(message = "手机号不能为空") @IsPhone @RequestParam long mobile,@NotBlank(message = "验证码不能为空") @RequestParam String code,
-                                                   @RequestHeader(value = "Authorization",required = false) String authorization) {
+    @ApiOperation(value = "手机号验证码登录",notes = "验证码调用发送验证码接口获取")
+    public ApiResponse<AccessTokenDTO> mobileLogin(@ApiParam("手机号") @NotNull(message = "手机号不能为空") @IsPhone @RequestParam long mobile,
+                                                   @ApiParam("手机号验证码") @NotBlank(message = "验证码不能为空") @RequestParam String code,
+                                                   @ApiParam("请求头，可空，用于重复登录处理") @RequestHeader(value = "Authorization",required = false) String authorization) {
         AccessTokenDTO accessTokenDTO = mobileRepeatLoginHandle(authorization,mobile,code);
         if (accessTokenDTO != null) {
             return createResponse(accessTokenDTO);
@@ -71,6 +79,7 @@ public class AuthenticationController extends BaseController{
     }
 
     @PostMapping("/logout")
+    @ApiOperation(value = "用户登出",notes = "需要accessToken")
     public ApiResponse logout(@NotBlank @RequestHeader(value = "Authorization") String authorization) {
         if (authorization.startsWith(TOKEN_TYPE)) {
             String accessToken = authorization.substring(7);
@@ -80,7 +89,8 @@ public class AuthenticationController extends BaseController{
     }
 
     @PostMapping("/refresh_access_token")
-    public ApiResponse<AccessTokenDTO> refreshAccessToken(@NotBlank @RequestParam("refreshToken") String refreshToken) {
+    @ApiOperation(value = "刷新accessToken")
+    public ApiResponse<AccessTokenDTO> refreshAccessToken(@ApiParam("refreshToken") @NotBlank(message = "refreshToken不能为空") @RequestParam("refreshToken") String refreshToken) {
         AuthenticationToken authenticationToken = authenticationService.refreshAccessToken(refreshToken);
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken,response);
@@ -132,18 +142,5 @@ public class AuthenticationController extends BaseController{
             }
         }
         return null;
-    }
-
-    @PreAuthorize("hasAuthority('admin')")
-    @GetMapping("/test")
-    public ApiResponse test(Principal principal) {
-        return createResponse();
-    }
-
-    @PreAuthorize("hasAuthority('delete_img')")
-    @GetMapping("/test2")
-    public ApiResponse test2(Principal principal) {
-
-        return createResponse();
     }
 }

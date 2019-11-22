@@ -24,7 +24,7 @@ public interface IUserService extends IService<User> {
      * @param mobile
      * @return cn.poile.blog.entity.User
      */
-    UserVo selectUserVoByUsernameOrMobile(String username,Long mobile);
+    UserVo selectUserVoByUsernameOtherwiseMobile(String username, Long mobile);
 
     /**
      * 用户注册

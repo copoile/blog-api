@@ -26,9 +26,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         boolean isMobile = ValidateUtil.validateMobile(username);
         UserVo userVo;
         if (isMobile) {
-            userVo = userService.selectUserVoByUsernameOrMobile(null,Long.parseLong(username));
+            userVo = userService.selectUserVoByUsernameOtherwiseMobile(null,Long.parseLong(username));
         } else {
-            userVo = userService.selectUserVoByUsernameOrMobile(username,null);
+            userVo = userService.selectUserVoByUsernameOtherwiseMobile(username,null);
         }
         if (userVo == null) {
             throw new UsernameNotFoundException("user not found:" + username);
