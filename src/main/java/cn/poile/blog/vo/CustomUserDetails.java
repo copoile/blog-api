@@ -25,7 +25,7 @@ public class CustomUserDetails extends UserVo implements UserDetails {
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (!CollectionUtils.isEmpty(roleList)) {
-            return roleList.stream().map(s->createAuthority(s)).collect(Collectors.toSet());
+            return roleList.stream().map(this::createAuthority).collect(Collectors.toSet());
         }
         return null;
     }

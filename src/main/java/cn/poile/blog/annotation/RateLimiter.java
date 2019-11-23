@@ -18,6 +18,12 @@ public @interface RateLimiter {
     long DEFAULT_REQUEST = 10;
 
     /**
+     * 只启动附加
+     * @return
+     */
+    boolean onlyAdditional() default false;
+
+    /**
      * 名称
      */
     String name();
@@ -48,8 +54,20 @@ public @interface RateLimiter {
     TimeUnit timeUnit() default TimeUnit.SECONDS;
 
     /**
-     * 自定义附加限流器
+     * 是否拼接ip
+     * @return
+     */
+    boolean appendIp() default false;
+
+    /**
+     * 自定义附加限流器bean名称
      * @return
      */
     String additional() default "";
+
+    /**
+     * 限流信息
+     * @return
+     */
+    String message() default "接口调用频繁，请稍后再试";
 }
