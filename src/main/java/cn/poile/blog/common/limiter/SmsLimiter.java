@@ -1,6 +1,6 @@
 package cn.poile.blog.common.limiter;
 
-import cn.poile.blog.annotation.RateLimiter;
+import cn.poile.blog.common.limiter.annotation.RateLimiter;
 import cn.poile.blog.common.util.IpUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 短信接口附加限流
+ * 短信接口附加限流,ip限流，同一手机号一天内限流
  *
  * @author: yaohw
  * @create: 2019-11-22 17:35

@@ -1,5 +1,6 @@
 package cn.poile.blog.service.impl;
 
+import cn.poile.blog.common.constant.CommonConstant;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.entity.Tag;
@@ -33,8 +34,8 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
      * @param tagName
      * @return void
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void addTag(String tagName) {
         Tag daoTag = selectByTagName(tagName);
         if (daoTag != null) {
@@ -42,6 +43,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         }
         Tag tag = new Tag();
         tag.setName(tagName);
+        tag.setDeleted(CommonConstant.NOT_DELETED);
         tag.setCreateTime(LocalDateTime.now());
         save(tag);
     }
@@ -76,8 +78,8 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
 
 
     /**
-     * 修改标签
-     *
+     * 修改标签，这里修改不直接修改原来的标签，逻辑删除原标签新增一个标签
+     * 这么做是为了不改变已写文章已挂载的标签
      * @param id
      * @param tagName
      */
@@ -87,10 +89,12 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         if (daoTag != null) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"标签已存在");
         }
+        removeById(id);
         Tag tag = new Tag();
-        tag.setId(id);
         tag.setName(tagName);
-        updateById(tag);
+        tag.setCreateTime(LocalDateTime.now());
+        tag.setDeleted(CommonConstant.NOT_DELETED);
+        save(tag);
     }
 
     /**

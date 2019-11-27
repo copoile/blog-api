@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author: yaohw
@@ -22,6 +23,7 @@ public class AddCategoryRequest {
     @ApiModelProperty(value = "名称")
     private String name;
 
+    @NotNull(message = "parentId不能为空")
     @ApiModelProperty(value = "父类id,添加根目录分类时值为0")
     private Integer parentId;
 }

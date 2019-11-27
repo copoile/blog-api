@@ -1,6 +1,6 @@
 package cn.poile.blog.controller;
 
-import cn.poile.blog.annotation.RateLimiter;
+import cn.poile.blog.common.limiter.annotation.RateLimiter;
 import cn.poile.blog.common.email.EmailService;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.sms.SmsCodeService;
@@ -41,7 +41,7 @@ public class SmsController extends BaseController{
     @RateLimiter(name = "sms",max = 1,key = "#mobile", timeout = 120L,additional = "smsLimiter")
     @ApiOperation(value = "发送短信验证码",notes = "验证码有效时5分钟;同一手机号每天只能发10次;ip限流120s一次;同一手机号限流120s一次")
     public ApiResponse sendSmsCode(@ApiParam("手机号") @NotNull @IsPhone @RequestParam long mobile) {
-        smsCodeService.sendSmsCode(mobile);
+        // smsCodeService.sendSmsCode(mobile);
         return createResponse();
     }
 

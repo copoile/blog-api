@@ -22,6 +22,9 @@ public class UserConstant {
      */
     public static final int ADMIN = 1;
 
+    /**
+     * 用户类型-普通用户
+     */
     public static final int ORDINARY = 0;
 
 

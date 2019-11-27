@@ -2,4 +2,216 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="cn.poile.blog.mapper.ArticleMapper">
 
+    <resultMap id="articleResultMap" type="cn.poile.blog.entity.Article">
+        <id property="id" column="id"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="userId" column="user_id"/>
+        <result property="author" column="author"/>
+        <result property="avatar" column="avatar"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="title" column="title"/>
+        <result property="summary" column="summary"/>
+        <result property="content" column="content"/>
+        <result property="cover" column="cover"/>
+        <result property="status" column="status"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="commentCount" column="comment_count"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="publishTime" column="publish_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="reproduce" column="reproduce"/>
+        <result property="deleted" column="deleted"/>
+    </resultMap>
+
+
+    <resultMap id="articleVoResultMap" type="cn.poile.blog.vo.ArticleVo">
+        <id property="id" column="id"/>
+        <result property="categoryName" column="category_name"/>
+        <result property="userId" column="user_id"/>
+        <result property="author" column="author"/>
+        <result property="avatar" column="avatar"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="title" column="title"/>
+        <result property="summary" column="summary"/>
+        <result property="content" column="content"/>
+        <result property="cover" column="cover"/>
+        <result property="status" column="status"/>
+        <result property="viewCount" column="view_count"/>
+        <result property="commentCount" column="comment_count"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="publishTime" column="publish_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="reproduce" column="reproduce"/>
+        <result property="deleted" column="deleted"/>
+        <collection property="tagList" ofType="cn.poile.blog.entity.Tag">
+            <id property="id" column="tag_id"/>
+            <result property="name" column="tag_name"/>
+        </collection>
+    </resultMap>
+
+    <sql id="Article_Column_List">
+        id, user_id, author, avatar, category_name, category_id, title, summary, content, cover, status, view_count, comment_count, like_count, publish_time, update_time, reproduce,deleted
+    </sql>
+
+    <select id="selectArticleVoById" resultMap="articleVoResultMap">
+        select
+        outer_a.id,
+        outer_a.user_id,
+        outer_a.author,
+        outer_a.avatar,
+        outer_a.category_name,
+        outer_a.category_id,
+        outer_a.title,
+        outer_a.summary,
+        outer_a.content,
+        outer_a.cover,
+        outer_a.status,
+        outer_a.view_count,
+        outer_a.comment_count,
+        outer_a.like_count,
+        outer_a.publish_time,
+        outer_a.update_time,
+        outer_a.reproduce,
+        outer_a.deleted,
+        t.id tag_id,
+        t.name tag_name
+        from
+        (
+        select <include refid="Article_Column_List"/> from article inner_a
+        where inner_a.deleted = 0 and inner_a.id = #{id}
+        <if test="status != null">
+            and inner_a.status = #{status}
+        </if>
+        ) outer_a
+        left join article_tag a_t on a_t.article_id = outer_a.id
+        left join tag t on t.id = a_t.tag_id
+    </select>
+
+    <!--分页查询计数-->
+    <select id="selectPageCount" resultType="Integer">
+        select count(1)
+        from article a
+        where a.deleted = 0
+        <if test="status != null">
+            and a.status = #{status}
+        </if>
+        <if test="title != null and title != ''">
+            and a.title like concat('%',concat(#{title}, '%'))
+        </if>
+        <if test="categoryId != null">
+            and a.category_id = #{categoryId}
+        </if>
+        <if test="start != null and end != null">
+            and a.publish_time >= #{start} and a.publish_time <![CDATA[<=]]> #{end}
+        </if>
+        <if test="tagId != null">
+            and a.id in (select a_t.article_id from article_tag a_t where a_t.tag_id = #{tagId})
+        </if>
+    </select>
+
+    <!--分页查询文章-->
+    <select id="selectArticleVoPage" resultMap="articleVoResultMap">
+        select
+        outer_a.id,
+        outer_a.user_id,
+        outer_a.author,
+        outer_a.avatar,
+        outer_a.category_name,
+        outer_a.category_id,
+        outer_a.title,
+        outer_a.summary,
+        outer_a.cover,
+        outer_a.status,
+        outer_a.view_count,
+        outer_a.comment_count,
+        outer_a.like_count,
+        outer_a.publish_time,
+        outer_a.update_time,
+        outer_a.reproduce,
+        outer_a.deleted,
+        t.id tag_id,
+        t.name tag_name
+        from
+        (
+        select <include refid="Article_Column_List"/> from article inner_a
+        where inner_a.deleted = 0
+        <if test="status != null">
+            and inner_a.status = #{status}
+        </if>
+        <if test="title != null and title != ''">
+            and inner_a.title like concat('%',concat(#{title}, '%'))
+        </if>
+        <if test="categoryId != null">
+            and inner_a.category_id = #{categoryId}
+        </if>
+        <if test="start != null and end != null">
+            and inner_a.publish_time >= #{start} and inner_a.publish_time <![CDATA[<=]]> #{end}
+        </if>
+        <if test="tagId != null">
+            and inner_a.id in (select inner_a_t.article_id from article_tag inner_a_t where inner_a_t.tag_id = #{tagId})
+        </if>
+        order by inner_a.id desc limit #{offset},#{limit}
+        ) outer_a
+        left join article_tag a_t on a_t.article_id = outer_a.id
+        left join tag t on t.id = a_t.tag_id
+    </select>
+
+    <!--文章归档计数-->
+    <select id="selectArticleArchivesCount" resultType="Integer">
+        select
+        count(1) count
+        from
+        (
+        select
+        date_format(a.publish_time, '%Y-%m') yearMonth
+        from
+        article a
+        where
+        a.status = 0
+        and a.deleted = 0
+        group by
+        yearMonth
+        ) temp
+    </select>
+
+    <!--文章归档-->
+    <select id="selectArticleArchives" resultType="cn.poile.blog.vo.ArticleArchivesVo">
+        select
+        date_format(a.publish_time, '%Y-%m') yearMonth,
+        count(1) count
+        from article a
+        where a.status = 0
+        and a.deleted = 0
+        group by yearMonth
+        order by yearMonth desc
+        limit #{offset},#{limit}
+    </select>
+
+    <!--查询上一篇下一篇-->
+    <select id="selectPreAndNext" resultMap="articleResultMap">
+        (
+        select
+        a.id,
+        a.title
+        from article a
+        where a.id <![CDATA[<]]> #{id}
+        and a.deleted = 0
+        and a.status = 0
+        order by a.id desc
+        limit 1
+        )
+        union all
+        (
+        select
+        b.id,
+        b.title
+        from article b
+        where b.id > #{id}
+        and b.deleted = 0
+        and b.status = 0
+        order by b.id
+        limit 1
+        )
+    </select>
+
 </mapper>

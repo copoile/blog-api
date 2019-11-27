@@ -34,7 +34,7 @@ public class RandomValueStringGenerator {
     }
 
 
-    protected String getCodeString(byte[] verifierBytes) {
+    private String getCodeString(byte[] verifierBytes) {
         char[] chars = new char[verifierBytes.length];
         for (int i = 0; i < verifierBytes.length; i++) {
             chars[i] = DEFAULT_CODEC[((verifierBytes[i] & 0xFF) % DEFAULT_CODEC.length)];

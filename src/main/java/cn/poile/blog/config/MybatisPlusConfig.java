@@ -1,5 +1,7 @@
 package cn.poile.blog.config;
 
+import com.baomidou.mybatisplus.core.injector.ISqlInjector;
+import com.baomidou.mybatisplus.extension.injector.LogicSqlInjector;
 import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
@@ -23,5 +25,15 @@ public class MybatisPlusConfig {
         PaginationInterceptor paginationInterceptor = new PaginationInterceptor();
         paginationInterceptor.setDialectType("mysql");
         return paginationInterceptor;
+    }
+
+    /**
+     * 逻辑删除
+     * 3.1.1开始不再需要这一步
+     * @return
+     */
+    @Bean
+    public ISqlInjector sqlInjector() {
+        return new LogicSqlInjector();
     }
 }

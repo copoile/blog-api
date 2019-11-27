@@ -3,6 +3,7 @@ package cn.poile.blog.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
@@ -28,8 +29,9 @@ import java.time.LocalDateTime;
  * @since 2019-10-23
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
+@EqualsAndHashCode(callSuper = false)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @ApiModel(value="User对象", description="用户表")
 public class User implements Serializable {
 

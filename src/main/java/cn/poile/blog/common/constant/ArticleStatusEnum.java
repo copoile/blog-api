@@ -14,13 +14,9 @@ public enum ArticleStatusEnum {
      */
     NOT_PUBLISH(1, "待发布"),
     /**
-     * 回收站
+     * 丢弃（回收站）
      */
-    RECOVERED(2, "回收站"),
-    /**
-     * 已删除
-     */
-    DELETED(3, "已删除");
+    DISCARD(2, "丢弃（回收站）");
 
     private Integer status;
 

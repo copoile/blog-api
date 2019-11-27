@@ -1,11 +1,16 @@
 package cn.poile.blog;
 
+import cn.poile.blog.entity.Article;
 import cn.poile.blog.entity.Category;
 import cn.poile.blog.entity.Tag;
+import cn.poile.blog.mapper.ArticleMapper;
+import cn.poile.blog.service.IArticleService;
 import cn.poile.blog.service.ICategoryService;
 import cn.poile.blog.service.ITagService;
 import cn.poile.blog.service.IUserService;
 import cn.poile.blog.service.impl.CategoryServiceImpl;
+import cn.poile.blog.vo.ArticleArchivesVo;
+import cn.poile.blog.vo.ArticleVo;
 import cn.poile.blog.vo.UserVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.log4j.Log4j2;
@@ -27,12 +32,14 @@ import java.util.List;
 public class BlogApplicationTest {
 
     @Autowired
-    private CategoryServiceImpl categoryService;
+    private IArticleService articleService;
 
     @Test
     public void test() {
         //Category category = categoryService.selectOneByParentId(0);
         //log.info("分页:{}",category);
+        IPage<ArticleArchivesVo> articleArchivesVoIPage = articleService.selectArticleArchives(1, 5);
+        log.info("分页:{}",articleArchivesVoIPage.getRecords());
     }
 
 }

@@ -1,6 +1,6 @@
-package cn.poile.blog.aspect;
+package cn.poile.blog.common.limiter.aspect;
 
-import cn.poile.blog.annotation.RateLimiter;
+import cn.poile.blog.common.limiter.annotation.RateLimiter;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.limiter.AdditionalLimiter;
@@ -61,7 +61,7 @@ public class RateLimiterAspect implements ApplicationContextAware {
      */
     private DefaultParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
 
-    @Pointcut("@annotation(cn.poile.blog.annotation.RateLimiter)")
+    @Pointcut("@annotation(cn.poile.blog.common.limiter.annotation.RateLimiter)")
     public void rateLimit() {
 
     }

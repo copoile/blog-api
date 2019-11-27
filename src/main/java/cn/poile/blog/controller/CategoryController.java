@@ -54,14 +54,14 @@ public class CategoryController extends BaseController {
     @ApiOperation(value = "修改分类名",notes = "需要accessToken，需要管理员权限")
     public ApiResponse update(@ApiParam("分类id") @PathVariable("id") int id,
                               @ApiParam("标签名") @RequestParam(value = "categoryName") String categoryName) {
-        categoryService.updateCategoryNameById(id,categoryName);
+        categoryService.updateCategoryById(id,categoryName);
         return createResponse();
     }
 
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('admin')")
-    @ApiOperation(value = "删除分类",notes = "硬删除，需要accessToken，需要管理员权限，存在子类不允许删除")
+    @ApiOperation(value = "删除分类",notes = "硬删除，需要accessToken，逻辑删除,需要管理员权限，若存在子类，则不允许删除")
     public ApiResponse delete(@ApiParam("分类id") @PathVariable("id") int id) {
         categoryService.delete(id);
         return createResponse();

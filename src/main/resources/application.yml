@@ -29,6 +29,10 @@ ignore:
     - /refresh_access_token
     - /user/register
     - /email/bind
+    - /article/published/page
+    - /article/detail/add_view_count/**
+    - /article/pre_next/**
+    - /article/archives/page
 
 mail:
   check:

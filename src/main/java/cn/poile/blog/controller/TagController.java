@@ -71,7 +71,7 @@ public class TagController extends BaseController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('admin')")
-    @ApiOperation(value = "删除标签",notes = "需要accessToken,，需要管理员权限，硬删除，文章冗余字段，不会对文章有影响")
+    @ApiOperation(value = "删除标签",notes = "需要accessToken,需要管理员权限，逻辑删除")
     public ApiResponse delete(@ApiParam("标签id") @PathVariable("id") int id) {
         tagService.delete(id);
         return createResponse();

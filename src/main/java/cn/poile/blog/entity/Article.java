@@ -1,9 +1,13 @@
 package cn.poile.blog.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -22,6 +26,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="Article对象", description="文章表")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Article implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -30,8 +35,15 @@ public class Article implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    @JsonIgnore
     @ApiModelProperty(value = "用户id")
     private Integer userId;
+
+    @ApiModelProperty(value = "作者")
+    private String author;
+
+    @ApiModelProperty(value = "作者头像")
+    private String avatar;
 
     @ApiModelProperty(value = "分类名称-冗余字段")
     private String categoryName;
@@ -51,10 +63,7 @@ public class Article implements Serializable {
     @ApiModelProperty(value = "文章封面")
     private String cover;
 
-    @ApiModelProperty(value = "文章标签，使用，分割-冗余字段")
-    private String tags;
-
-    @ApiModelProperty(value = "文章状态：0为正常，1为待发布，2为回收站,3为已删除")
+    @ApiModelProperty(value = "文章状态：0为正常，1为待发布，2为回收站")
     private Integer status;
 
     @ApiModelProperty(value = "文章浏览次数")
@@ -67,10 +76,20 @@ public class Article implements Serializable {
     private Integer likeCount;
 
     @ApiModelProperty(value = "发布时间")
+    @JsonFormat(pattern="yyyy-MM-dd",timezone = "GMT+8")
     private LocalDateTime publishTime;
 
     @ApiModelProperty(value = "更新时间")
+    @JsonFormat(pattern="yyyy-MM-dd",timezone = "GMT+8")
     private LocalDateTime updateTime;
+
+    @TableLogic
+    @JsonIgnore
+    @ApiModelProperty(value = "是否已删除,1:是，0:否")
+    private Integer deleted;
+
+    @ApiModelProperty(value = "是否转载,1:是，0:否")
+    private Integer reproduce;
 
 
 }

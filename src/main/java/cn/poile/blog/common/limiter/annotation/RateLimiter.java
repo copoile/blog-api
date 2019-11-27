@@ -1,4 +1,4 @@
-package cn.poile.blog.annotation;
+package cn.poile.blog.common.limiter.annotation;
 
 import org.springframework.core.annotation.AliasFor;
 

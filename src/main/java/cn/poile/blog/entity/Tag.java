@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -23,8 +26,9 @@ import javax.validation.constraints.Null;
  * @since 2019-11-14
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
+@EqualsAndHashCode(callSuper = false)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @ApiModel(value="Tag对象", description="标签表")
 public class Tag implements Serializable {
 
@@ -41,8 +45,11 @@ public class Tag implements Serializable {
 
     @Null(message = "不需要传创建时间")
     @ApiModelProperty(value = "创建时间")
-    @TableField("createTime")
     private LocalDateTime createTime;
+
+    @TableLogic
+    @ApiModelProperty(value = "是否已删除,1:是，0:否")
+    private Integer deleted;
 
 
 }

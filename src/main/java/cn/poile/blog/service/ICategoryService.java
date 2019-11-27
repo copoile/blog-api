@@ -34,12 +34,19 @@ public interface ICategoryService extends IService<Category> {
      * @param id
      * @param name
      */
-    void updateCategoryNameById(int id,String name);
+    void updateCategoryById(int id, String name);
 
     /**
      * 删除分类
      * @param id
      */
     void delete(int id);
+
+    /**
+     * 获取子元素对应父元素列表，顺序为 node3 node2 root
+     * @param categoryId
+     * @return
+     */
+    List<Category> parentList(Integer categoryId);
 
 }

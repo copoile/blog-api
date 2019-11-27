@@ -3,6 +3,9 @@ package cn.poile.blog.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -34,6 +37,11 @@ public class Category implements Serializable {
 
     @ApiModelProperty(value = "父类id")
     private Integer parentId;
+
+    @JsonIgnore
+    @TableLogic
+    @ApiModelProperty(value = "是否已删除,1:是，0:否")
+    private Integer deleted;
 
 
 }

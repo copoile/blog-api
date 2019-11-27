@@ -10,6 +10,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 /**
@@ -27,7 +28,7 @@ public class CustomUserDetails extends UserVo implements UserDetails {
         if (!CollectionUtils.isEmpty(roleList)) {
             return roleList.stream().map(this::createAuthority).collect(Collectors.toSet());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     private GrantedAuthority createAuthority(String authority) {

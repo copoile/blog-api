@@ -112,6 +112,11 @@ mybatis-plus:
   mapper-locations:
     - classpath:/mapper/*.xml
   type-aliases-package: cn.poile.bolg.entity
+  global-config:
+    db-config:
+      # 配置逻辑删除，1：是，0：否
+      logic-not-delete-value: 0
+      logic-delete-value: 1
 
 logging:
   level:

@@ -1,12 +1,18 @@
 package cn.poile.blog.common.security;
 
+import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.filter.AuthorizationTokenFilter;
+import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.sms.SmsCodeService;
+import com.alibaba.fastjson.JSON;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,12 +20,16 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -28,6 +38,7 @@ import java.util.List;
  * @author: yaohw
  * @create: 2019-10-24 16:17
  **/
+@Log4j2
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -98,6 +109,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"));
         http.addFilterBefore(authorizationTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint());
+    }
+
+    private AuthenticationEntryPoint authenticationEntryPoint() {
+        return (HttpServletRequest var1, HttpServletResponse var2, AuthenticationException var3) -> {
+            if (var3 instanceof InsufficientAuthenticationException) {
+                var2.setCharacterEncoding("UTF-8");
+                var2.setContentType("application/json; charset=utf-8");
+                var2.setStatus(HttpStatus.FORBIDDEN.value());
+                ApiResponse response = new ApiResponse();
+                response.setErrorCode(ErrorEnum.PERMISSION_DENIED.getErrorCode());
+                response.setErrorMsg(ErrorEnum.PERMISSION_DENIED.getErrorMsg());
+                var2.getWriter().print(JSON.toJSON(response));
+            }
+        };
     }
 
     @Override

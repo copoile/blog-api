@@ -88,7 +88,7 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(BadMobileCodeException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ApiResponse handleBadMobileCodeException(BadMobileCodeException ex) {
         return new ApiResponse(BAD_MOBILE_CODE.getErrorCode(),BAD_MOBILE_CODE.getErrorMsg());
     }
@@ -99,7 +99,7 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(UsernameNotFoundException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ApiResponse handleUsernameNotFoundException(UsernameNotFoundException ex) {
         return new ApiResponse(USER_NOT_FOUND.getErrorCode(),USER_NOT_FOUND.getErrorMsg());
     }
@@ -224,7 +224,7 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ApiResponse handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
         return new ApiResponse(INVALID_REQUEST.getErrorCode(),ex.getMethod() + "请求方法不支持");
     }
@@ -235,7 +235,7 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(ApiException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     public ApiResponse handleApiException(ApiException ex) {
        return new ApiResponse(ex.getErrorCode(),ex.getErrorMsg());
     }

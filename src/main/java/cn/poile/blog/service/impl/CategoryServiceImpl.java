@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>
@@ -81,7 +78,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateCategoryNameById(int id, String name) {
+    public void updateCategoryById(int id, String name) {
         Category daoCategory = selectByBName(name);
         if (daoCategory != null) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"分类已存在");
@@ -112,6 +109,44 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         removeById(id);
     }
 
+
+    /**
+     * 获取子元素对应父元素列表，顺序为 root node2 node3
+     * @param categoryId 当前类别id
+     * @return
+     */
+    @Override
+    public List<Category> parentList(Integer categoryId) {
+        List<Category> daoCategoryList = list();
+        Category currentCategory = null;
+        Map<Integer,Category> map = new HashMap<>(daoCategoryList.size());
+        for (Category category:daoCategoryList) {
+            if (categoryId.equals(category.getId())) {
+                currentCategory = category;
+            }
+            map.put(category.getId(),category);
+        }
+        List<Category> list = new ArrayList<>();
+        List<Category> categoryList = addParent(currentCategory, list,map);
+        Collections.reverse(categoryList);
+        return categoryList;
+
+    }
+
+    /**
+     * 根据子元素递归获取父元素列表
+     *
+     * @param category
+     * @return
+     */
+    private List<Category> addParent(Category category, List<Category> parentList,Map<Integer,Category> map) {
+        if(category == null){
+            return parentList;
+        }
+        parentList.add(category);
+        Category parent = map.get(category.getParentId());
+        return addParent(parent,parentList,map);
+    }
 
     /**
      *  parentId 查询一个

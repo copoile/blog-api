@@ -86,7 +86,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     private final static String REDIS_MOBILE_VALIDATED_PREFIX = "mobile:validated:";
 
-    private RandomValueStringGenerator generator = new RandomValueStringGenerator();
+
 
     /**
      * 根据用户名查询
@@ -177,6 +177,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public void validateEmail(String email) {
         AuthenticationToken authenticationToken = ServeSecurityContext.getAuthenticationToken();
         Map<String, Object> params = new HashMap<>(1);
+        RandomValueStringGenerator generator = new RandomValueStringGenerator();
         String code = generator.generate();
         String accessToken = authenticationToken.getAccessToken();
         String checkUrl = prefix + "?code=" + code;
