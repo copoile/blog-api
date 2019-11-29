@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * @author: yaohw
  * @create: 2019-11-22 17:35
  **/
-public class SmsLimiter implements AdditionalLimiter {
+public class SmsLimiter implements ExtraLimiter {
 
 
     private final static String SEPARATOR = ":";

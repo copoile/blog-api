@@ -3,6 +3,8 @@ package cn.poile.blog.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -19,12 +21,14 @@ import javax.validation.constraints.NotBlank;
  * @since 2019-11-15
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
-@Accessors(chain = true)
-@ApiModel(value="ArticleTag对象", description="文章-标签 关联表")
-@AllArgsConstructor
+
 @NoArgsConstructor
+@AllArgsConstructor
+@Accessors(chain = true)
 @RequiredArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@ApiModel(value="ArticleTag对象", description="文章-标签 关联表")
 public class ArticleTag implements Serializable {
 
 

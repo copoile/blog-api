@@ -50,7 +50,8 @@
     </resultMap>
 
     <sql id="Article_Column_List">
-        id, user_id, author, avatar, category_name, category_id, title, summary, content, cover, status, view_count, comment_count, like_count, publish_time, update_time, reproduce,deleted
+        id, user_id, author, avatar, category_name, category_id, title, summary, content, cover, status, view_count,
+        comment_count, like_count, publish_time, update_time, reproduce,deleted
     </sql>
 
     <select id="selectArticleVoById" resultMap="articleVoResultMap">
@@ -77,7 +78,9 @@
         t.name tag_name
         from
         (
-        select <include refid="Article_Column_List"/> from article inner_a
+        select
+        <include refid="Article_Column_List"/>
+        from article inner_a
         where inner_a.deleted = 0 and inner_a.id = #{id}
         <if test="status != null">
             and inner_a.status = #{status}
@@ -133,7 +136,9 @@
         t.name tag_name
         from
         (
-        select <include refid="Article_Column_List"/> from article inner_a
+        select
+        <include refid="Article_Column_List"/>
+        from article inner_a
         where inner_a.deleted = 0
         <if test="status != null">
             and inner_a.status = #{status}
@@ -150,10 +155,26 @@
         <if test="tagId != null">
             and inner_a.id in (select inner_a_t.article_id from article_tag inner_a_t where inner_a_t.tag_id = #{tagId})
         </if>
-        order by inner_a.id desc limit #{offset},#{limit}
+        <choose>
+            <when test="orderBy == 'publish_time'">
+                order by inner_a.publish_time desc
+            </when>
+            <otherwise>
+                order by inner_a.view_count desc
+            </otherwise>
+        </choose>
+        limit #{offset},#{limit}
         ) outer_a
         left join article_tag a_t on a_t.article_id = outer_a.id
         left join tag t on t.id = a_t.tag_id
+        <choose>
+            <when test="orderBy == 'publish_time'">
+                order by outer_a.publish_time desc
+            </when>
+            <otherwise>
+                order by outer_a.view_count desc
+            </otherwise>
+        </choose>
     </select>
 
     <!--文章归档计数-->
@@ -178,7 +199,7 @@
     <select id="selectArticleArchives" resultType="cn.poile.blog.vo.ArticleArchivesVo">
         select
         date_format(a.publish_time, '%Y-%m') yearMonth,
-        count(1) count
+        count(1) article_count
         from article a
         where a.status = 0
         and a.deleted = 0
@@ -212,6 +233,56 @@
         order by b.id
         limit 1
         )
+    </select>
+
+    <!--文章分类统计查询-->
+    <select id="selectCategoryStatistic" resultType="cn.poile.blog.vo.ArticleCategoryStatisticsVo">
+        select
+        c.id,
+        c.name,
+        c.parent_id,
+        (
+        select
+        count(1)
+        from
+        article a
+        where
+        a.status = 0
+        and a.deleted = 0
+        and a.category_id = c.id
+        ) article_count
+        from
+        category c
+        where
+        c.deleted = 0
+    </select>
+
+    <select id="selectTagStatistic" resultType="cn.poile.blog.vo.ArticleTagStatisticsVo">
+        select
+        t.id,
+        t.name
+        , (
+        select
+        count(1)
+        from
+        article a
+        where
+        a.status = 0
+        and a.deleted = 0
+        and a.id in
+        (
+        select
+        a_t.article_id
+        from
+        article_tag a_t
+        where
+        a_t.tag_id = t.id
+        )
+        ) article_count
+        from
+        tag t
+        where
+        t.deleted = 0
     </select>
 
 </mapper>

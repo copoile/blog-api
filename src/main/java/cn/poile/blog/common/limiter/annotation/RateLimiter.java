@@ -21,7 +21,7 @@ public @interface RateLimiter {
      * 只启动附加
      * @return
      */
-    boolean onlyAdditional() default false;
+    boolean onlyExtra() default false;
 
     /**
      * 名称
@@ -63,7 +63,7 @@ public @interface RateLimiter {
      * 自定义附加限流器bean名称
      * @return
      */
-    String additional() default "";
+    String extra() default "";
 
     /**
      * 限流信息

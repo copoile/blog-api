@@ -1,6 +1,7 @@
 package cn.poile.blog.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomUserDetails extends UserVo implements UserDetails {
 
     @Override

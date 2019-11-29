@@ -57,9 +57,9 @@ public class User implements Serializable {
     @ApiModelProperty(value = "性别，1：男，0：女，默认为1")
     private Integer gender;
 
+    @ApiModelProperty(value = "生日")
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonSerialize(using = LocalDateSerializer.class)
-    @ApiModelProperty(value = "生日")
     private LocalDate birthday;
 
     @ApiModelProperty(value = "电子邮箱")
@@ -71,7 +71,6 @@ public class User implements Serializable {
     @ApiModelProperty(value = "用户头像")
     private String avatar;
 
-    @JsonIgnore
     @ApiModelProperty(value = "状态，0：正常，1：锁定，2：禁用，3：过期")
     private Integer status;
 
@@ -79,9 +78,10 @@ public class User implements Serializable {
     @ApiModelProperty(value = "是否管理员，1：是，0：否")
     private Integer admin;
 
+
+    @ApiModelProperty(value = "创建时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @ApiModelProperty(value = "创建时间")
     private LocalDateTime createTime;
 
 

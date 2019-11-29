@@ -1,6 +1,6 @@
 package cn.poile.blog.config;
 
-import cn.poile.blog.common.limiter.AdditionalLimiter;
+import cn.poile.blog.common.limiter.ExtraLimiter;
 import cn.poile.blog.common.limiter.SmsLimiter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class LimiterConfig {
 
     @Bean("smsLimiter")
-    public AdditionalLimiter limiter() {
+    public ExtraLimiter limiter() {
         return new SmsLimiter();
     }
 }

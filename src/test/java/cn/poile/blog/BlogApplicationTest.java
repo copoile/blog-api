@@ -4,10 +4,7 @@ import cn.poile.blog.entity.Article;
 import cn.poile.blog.entity.Category;
 import cn.poile.blog.entity.Tag;
 import cn.poile.blog.mapper.ArticleMapper;
-import cn.poile.blog.service.IArticleService;
-import cn.poile.blog.service.ICategoryService;
-import cn.poile.blog.service.ITagService;
-import cn.poile.blog.service.IUserService;
+import cn.poile.blog.service.*;
 import cn.poile.blog.service.impl.CategoryServiceImpl;
 import cn.poile.blog.vo.ArticleArchivesVo;
 import cn.poile.blog.vo.ArticleVo;
@@ -32,14 +29,15 @@ import java.util.List;
 public class BlogApplicationTest {
 
     @Autowired
-    private IArticleService articleService;
+    private ArticleRecommendService articleRecommendService;
 
     @Test
     public void test() {
         //Category category = categoryService.selectOneByParentId(0);
         //log.info("分页:{}",category);
-        IPage<ArticleArchivesVo> articleArchivesVoIPage = articleService.selectArticleArchives(1, 5);
-        log.info("分页:{}",articleArchivesVoIPage.getRecords());
+       //articleRecommendService.list();
+        articleRecommendService.remove(2);
+        //log.info("分页:{}",articleArchivesVoIPage.getRecords());
     }
 
 }

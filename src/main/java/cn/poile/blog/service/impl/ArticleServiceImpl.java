@@ -17,9 +17,8 @@ import cn.poile.blog.service.IArticleService;
 import cn.poile.blog.service.IArticleTagService;
 import cn.poile.blog.service.ICategoryService;
 import cn.poile.blog.service.ITagService;
-import cn.poile.blog.vo.ArticleArchivesVo;
-import cn.poile.blog.vo.ArticleVo;
-import cn.poile.blog.vo.CustomUserDetails;
+import cn.poile.blog.vo.*;
+import cn.poile.blog.wrapper.ArticlePageQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -27,6 +26,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +55,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private IArticleTagService articleTagService;
 
     private static final String SEPARATION = ",";
+
+    @Autowired
+    private ZSetOperations<String, Object> zSetOperations;
 
     /**
      * 保存文章
@@ -128,21 +131,36 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     /**
      * 分页查询文章
-     *
      * @param current
      * @param size
      * @param status
      * @param title
+     * @param categoryId
+     * @param tagId
+     * @param yearMonth
      * @return
      */
     @Override
-    public IPage<ArticleVo> selectArticleVoPage(long current, long size, Integer status, String title) {
+    public IPage<ArticleVo> selectArticleVoPage(long current, long size, Integer status,String title,Integer categoryId,Integer tagId,String yearMonth) {
         validStatus(status);
-        int count = selectPageCount(status, null, null, null, null, title);
+        String[] startAndEndOfMonth = getStartAndEndOfMonth(yearMonth);
+        String start = startAndEndOfMonth[0];
+        String end = startAndEndOfMonth[1];
+        int count = selectPageCount(status, categoryId, tagId, start, end, title);
         if (count == 0) {
             return new Page<>(current, size);
         }
-        List<ArticleVo> articleVoList = this.baseMapper.selectArticleVoPage(status, title, null, null, null, null, (current - 1) * size, size);
+        ArticlePageQueryWrapper queryWrapper = new ArticlePageQueryWrapper();
+        queryWrapper.setOffset((current - 1) * size);
+        queryWrapper.setLimit(size);
+        queryWrapper.setCategoryId(categoryId);
+        queryWrapper.setTagId(tagId);
+        queryWrapper.setTitle(title);
+        queryWrapper.setOrderBy("publish_time");
+        queryWrapper.setStart(start);
+        queryWrapper.setEnd(end);
+        queryWrapper.setStatus(status);
+        List<ArticleVo> articleVoList = this.baseMapper.selectArticleVoPage(queryWrapper);
         Page<ArticleVo> page = new Page<>(current, size, count);
         page.setRecords(articleVoList);
         return page;
@@ -183,10 +201,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * @param tagId
      * @param yearMonth 归档年月，因为数据库函数date_format会使publish_time索引失效，索引转换下再查询
      * @param title
+     * @param orderBy 排序
      * @return
      */
     @Override
-    public IPage<ArticleVo> selectPublishedArticleVoPage(long current, long size, Integer categoryId, Integer tagId, String yearMonth, String title) {
+    public IPage<ArticleVo> selectPublishedArticleVoPage(long current, long size, Integer categoryId, Integer tagId, String yearMonth, String title,String orderBy) {
         String[] startAndEndOfMonth = getStartAndEndOfMonth(yearMonth);
         String start = startAndEndOfMonth[0];
         String end = startAndEndOfMonth[1];
@@ -194,7 +213,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (count == 0) {
             return new Page<>(current, size);
         }
-        List<ArticleVo> articleVoList = this.baseMapper.selectArticleVoPage(ArticleStatusEnum.NORMAL.getStatus(), title, categoryId, tagId, start, end, (current - 1) * size, size);
+        ArticlePageQueryWrapper queryWrapper = new ArticlePageQueryWrapper();
+        queryWrapper.setOffset((current - 1) * size);
+        queryWrapper.setLimit(size);
+        queryWrapper.setCategoryId(categoryId);
+        queryWrapper.setTagId(tagId);
+        queryWrapper.setTitle(title);
+        queryWrapper.setOrderBy(orderBy);
+        queryWrapper.setStart(start);
+        queryWrapper.setEnd(end);
+        queryWrapper.setStatus((ArticleStatusEnum.NORMAL.getStatus()));
+        List<ArticleVo> articleVoList = this.baseMapper.selectArticleVoPage(queryWrapper);
         Page<ArticleVo> page = new Page<>(current, size, count);
         page.setRecords(articleVoList);
         return page;
@@ -236,6 +265,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setViewCount(viewCount + 1);
         article.setId(articleVo.getId());
         updateById(article);
+        // 上一篇和下一篇
+        PreArtAndNextArtDTO preAndNext = selectPreAndNext(id);
+        articleVo.setPrevious(preAndNext.getPre());
+        articleVo.setNext(preAndNext.getNext());
         return articleVo;
     }
 
@@ -277,8 +310,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * @param id
      * @return
      */
-    @Override
-    public PreArtAndNextArtDTO selectPreAndNext(int id) {
+    private PreArtAndNextArtDTO selectPreAndNext(int id) {
         List<Article> articleList = this.baseMapper.selectPreAndNext(id);
         int two = 2;
         int size = articleList.size();
@@ -294,6 +326,27 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             return dto;
         }
         return dto;
+    }
+
+    /**
+     * 按分类计数文章数
+     *
+     * @return
+     */
+    @Override
+    public List<ArticleCategoryStatisticsVo> selectCategoryStatistic() {
+        return this.baseMapper.selectCategoryStatistic();
+    }
+
+
+    /**
+     * 按标签计数文章数
+     *
+     * @return
+     */
+    @Override
+    public List<ArticleTagStatisticsVo> selectTagStatistic() {
+        return this.baseMapper.selectTagStatistic();
     }
 
     /**

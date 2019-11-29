@@ -29,10 +29,15 @@ ignore:
     - /refresh_access_token
     - /user/register
     - /email/bind
+    - /category/tree
+    - /category/list
     - /article/published/page
-    - /article/detail/add_view_count/**
+    - /article/view/**
     - /article/pre_next/**
     - /article/archives/page
+    - /article/category/statistic
+    - /article/tag/statistic
+    - /article/recommend/list
 
 mail:
   check:

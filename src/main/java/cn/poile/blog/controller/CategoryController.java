@@ -4,6 +4,7 @@ package cn.poile.blog.controller;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.controller.model.dto.CategoryNodeDTO;
 import cn.poile.blog.controller.model.request.AddCategoryRequest;
+import cn.poile.blog.entity.Category;
 import cn.poile.blog.service.ICategoryService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,10 +43,15 @@ public class CategoryController extends BaseController {
 
 
     @GetMapping("/tree")
-    @PreAuthorize("hasAuthority('admin')")
-    @ApiOperation(value = "获取目录树",notes = "需要accessToken，需要管理员权限")
+    @ApiOperation(value = "获取目录树",notes = "数据结构为树型结构")
     public ApiResponse<List<CategoryNodeDTO>> tree() {
         return createResponse(categoryService.getCategoryNodeTree());
+    }
+
+    @GetMapping("/list")
+    @ApiOperation(value = "获取目录分类列表",notes = "不分上下级，返回所有分类(已删除除外)")
+    public ApiResponse<List<Category>> list() {
+        return createResponse(categoryService.list());
     }
 
 

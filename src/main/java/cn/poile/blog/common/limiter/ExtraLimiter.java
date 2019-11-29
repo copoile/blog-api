@@ -10,7 +10,7 @@ import java.util.List;
  * @author: yaohw
  * @create: 2019-11-22 17:30
  **/
-public interface AdditionalLimiter {
+public interface ExtraLimiter {
 
     /**
      *  附加自定义限流

@@ -1,18 +1,25 @@
 package cn.poile.blog.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
-
-import java.time.LocalDateTime;
-import java.io.Serializable;
-
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
@@ -23,10 +30,10 @@ import lombok.experimental.Accessors;
  * @since 2019-11-15
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="Article对象", description="文章表")
+@EqualsAndHashCode(of = "id")
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@ApiModel(value="Article对象", description="文章表")
 public class Article implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -76,11 +83,16 @@ public class Article implements Serializable {
     private Integer likeCount;
 
     @ApiModelProperty(value = "发布时间")
-    @JsonFormat(pattern="yyyy-MM-dd",timezone = "GMT+8")
+
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime publishTime;
 
     @ApiModelProperty(value = "更新时间")
-    @JsonFormat(pattern="yyyy-MM-dd",timezone = "GMT+8")
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime updateTime;
 
     @TableLogic

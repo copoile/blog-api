@@ -3,7 +3,7 @@ package cn.poile.blog.common.limiter.aspect;
 import cn.poile.blog.common.limiter.annotation.RateLimiter;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
-import cn.poile.blog.common.limiter.AdditionalLimiter;
+import cn.poile.blog.common.limiter.ExtraLimiter;
 import cn.poile.blog.common.limiter.Limit;
 import cn.poile.blog.common.util.IpUtil;
 import lombok.RequiredArgsConstructor;
@@ -77,7 +77,7 @@ public class RateLimiterAspect implements ApplicationContextAware {
         Method method = signature.getMethod();
         // 通过 AnnotationUtils.findAnnotation 获取 RateLimiter 注解
         RateLimiter rateLimiter = AnnotationUtils.findAnnotation(method, RateLimiter.class);
-        if (rateLimiter != null && !rateLimiter.onlyAdditional()) {
+        if (rateLimiter != null && !rateLimiter.onlyExtra()) {
             String key = rateLimiter.key();
             if (StringUtils.isBlank(key)) {
                 key = rateLimiter.name();
@@ -99,8 +99,8 @@ public class RateLimiterAspect implements ApplicationContextAware {
             handleLimit(limit);
         }
         // 附加限流
-        if (rateLimiter != null && !StringUtils.isBlank(rateLimiter.additional())) {
-            AdditionalLimiter limiter =(AdditionalLimiter) applicationContext.getBean(rateLimiter.additional());
+        if (rateLimiter != null && !StringUtils.isBlank(rateLimiter.extra())) {
+            ExtraLimiter limiter =(ExtraLimiter) applicationContext.getBean(rateLimiter.extra());
             if (limiter != null) {
                 List<Limit> limit = limiter.limit(rateLimiter, point);
                 limit.forEach(this::handleLimit);

@@ -2,7 +2,10 @@ package cn.poile.blog.mapper;
 
 import cn.poile.blog.entity.Article;
 import cn.poile.blog.vo.ArticleArchivesVo;
+import cn.poile.blog.vo.ArticleCategoryStatisticsVo;
+import cn.poile.blog.vo.ArticleTagStatisticsVo;
 import cn.poile.blog.vo.ArticleVo;
+import cn.poile.blog.wrapper.ArticlePageQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,24 +22,11 @@ import java.util.List;
 public interface ArticleMapper extends BaseMapper<Article> {
 
     /**
-     * 分页查询文章，不查询文章内容
-     * @param status
-     * @param title
-     * @param categoryId
-     * @param tagId
-     * @param start
-     * @param end
-     * @param offset
-     * @param limit
+     * 分页查询
+     * @param queryWrapper
      * @return
      */
-    List<ArticleVo> selectArticleVoPage(@Param("status") Integer status, @Param("title") String title,
-                                        @Param("categoryId") Integer categoryId,
-                                        @Param("tagId") Integer tagId,
-                                        @Param("start") String start,
-                                        @Param("end")String end,
-                                        @Param("offset") long offset,
-                                        @Param("limit") long limit);
+    List<ArticleVo> selectArticleVoPage(ArticlePageQueryWrapper queryWrapper);
 
 
     /**
@@ -44,8 +34,8 @@ public interface ArticleMapper extends BaseMapper<Article> {
      * @param status 状态
      * @param categoryId 分类id
      * @param tagId 标签id
-     * @param start 开始
-     * @param end
+     * @param start 开始日期
+     * @param end 结束日期
      * @param title 标题关键字
      * @return
      */
@@ -86,6 +76,16 @@ public interface ArticleMapper extends BaseMapper<Article> {
      */
     List<ArticleArchivesVo> selectArticleArchives(@Param("offset") long offset,@Param("limit") long limit);
 
+    /**
+     * 按分类计数文章数
+     * @return
+     */
+    List<ArticleCategoryStatisticsVo> selectCategoryStatistic();
 
+    /**
+     * 按标签计数文章数
+     * @return
+     */
+    List<ArticleTagStatisticsVo> selectTagStatistic();
 
 }

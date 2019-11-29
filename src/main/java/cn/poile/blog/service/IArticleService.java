@@ -1,9 +1,10 @@
 package cn.poile.blog.service;
 
-import cn.poile.blog.controller.model.dto.PreArtAndNextArtDTO;
 import cn.poile.blog.controller.model.request.ArticleRequest;
 import cn.poile.blog.entity.Article;
 import cn.poile.blog.vo.ArticleArchivesVo;
+import cn.poile.blog.vo.ArticleCategoryStatisticsVo;
+import cn.poile.blog.vo.ArticleTagStatisticsVo;
 import cn.poile.blog.vo.ArticleVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -39,9 +40,12 @@ public interface IArticleService extends IService<Article> {
      * @param size
      * @param status
      * @param title
+     * @param categoryId
+     * @param tagId
+     * @param yearMonth
      * @return
      */
-    IPage<ArticleVo> selectArticleVoPage(long current, long size, Integer status,String title);
+    IPage<ArticleVo> selectArticleVoPage(long current, long size, Integer status,String title,Integer categoryId,Integer tagId,String yearMonth);
 
     /**
      * 分页查询已发布文章
@@ -51,9 +55,10 @@ public interface IArticleService extends IService<Article> {
      * @param tagId
      * @param yearMonth
      * @param title
+     * @param orderBy
      * @return
      */
-    IPage<ArticleVo> selectPublishedArticleVoPage(long current,long size,Integer categoryId,Integer tagId,String yearMonth,String title);
+    IPage<ArticleVo> selectPublishedArticleVoPage(long current,long size,Integer categoryId,Integer tagId,String yearMonth,String title,String orderBy);
 
     /**
      * id查询文章详细
@@ -82,18 +87,23 @@ public interface IArticleService extends IService<Article> {
     void delete(int id);
 
     /**
-     * 查询上一篇和下一篇
-     * @param id
-     * @return
-     */
-    PreArtAndNextArtDTO selectPreAndNext(int id);
-
-    /**
      * 分页年月归档查询
      * @param current
      * @param size
      * @return
      */
     IPage<ArticleArchivesVo> selectArticleArchives(long current, long size);
+
+    /**
+     * 按分类计数文章数
+     * @return
+     */
+    List<ArticleCategoryStatisticsVo> selectCategoryStatistic();
+
+    /**
+     * 按标签计数文章数
+     * @return
+     */
+    List<ArticleTagStatisticsVo> selectTagStatistic();
 
 }
