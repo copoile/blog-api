@@ -5,13 +5,12 @@ import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.mapper.ArticleMapper;
 import cn.poile.blog.service.ArticleRecommendService;
-import cn.poile.blog.service.IArticleService;
 import cn.poile.blog.vo.ArticleVo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -22,8 +21,8 @@ import java.util.Set;
  * @author: yaohw
  * @create: 2019-11-29 11:57
  **/
-@Service
 @Log4j2
+@Service
 public class ArticleRecommendServiceImpl implements ArticleRecommendService {
 
     private static final String KEY = "article:recommend:";
@@ -36,15 +35,17 @@ public class ArticleRecommendServiceImpl implements ArticleRecommendService {
 
     /**
      * 新增推荐
-     *
      * @param articleId
-     * @param score     排序编码
+     * @param score   文章分数
      */
     @Override
     public void add(Integer articleId, Double score) {
+        if (articleId == null) {
+            return;
+        }
         ArticleVo articleVo = articleMapper.selectArticleVoById(articleId, ArticleStatusEnum.NORMAL.getStatus());
         if (articleVo == null) {
-            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "文章不存在");
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "文章不存在或未发布");
         }
         // 只存列表所需要字段
         articleVo.setContent(null);
@@ -56,7 +57,6 @@ public class ArticleRecommendServiceImpl implements ArticleRecommendService {
 
     /**
      * 获取推荐列表
-     *
      * @return
      */
     @Override
@@ -77,11 +77,13 @@ public class ArticleRecommendServiceImpl implements ArticleRecommendService {
 
     /**
      * 从推荐中移除
-     *
      * @param articleId
      */
     @Override
     public void remove(Integer articleId) {
+        if (articleId == null) {
+            return;
+        }
         Set<Object> set = zSetOperations.range(KEY, 0, -0);
         if (set != null) {
             set.forEach(i -> {
@@ -90,6 +92,45 @@ public class ArticleRecommendServiceImpl implements ArticleRecommendService {
                     zSetOperations.remove(KEY, articleVo);
                 }
             });
+        }
+    }
+
+    /**
+     * 刷新
+     * @param articleId
+     */
+    @Override
+    public void refresh(Integer articleId) {
+        asyncRefresh(articleId);
+    }
+
+    /**
+     * 异步刷新(底层使用aop，所以同一个类调用异步不会生效)
+     * @param articleId
+     */
+    @Async
+    @Override
+    public void asyncRefresh(Integer articleId) {
+        if (articleId == null) {
+            return;
+        }
+        Set<ZSetOperations.TypedTuple<Object>> valueScoreSet = zSetOperations.reverseRangeWithScores(KEY, 0, -1);
+        boolean exist = false;
+        ArticleVo articleVo = null;
+        double score = 0;
+        if (valueScoreSet != null) {
+            for(ZSetOperations.TypedTuple<Object> item:valueScoreSet) {
+                ArticleVo value =(ArticleVo) item.getValue();
+                if (articleId.equals(value.getId())) {
+                    articleVo = value;
+                    score = item.getScore();
+                    exist = true;
+                }
+            }
+        }
+        if (exist) {
+            zSetOperations.remove(KEY,articleVo);
+            add(articleId,score);
         }
     }
 }

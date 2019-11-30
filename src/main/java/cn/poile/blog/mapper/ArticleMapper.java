@@ -88,4 +88,12 @@ public interface ArticleMapper extends BaseMapper<Article> {
      */
     List<ArticleTagStatisticsVo> selectTagStatistic();
 
+    /**
+     * 标签列表查询文章列表
+     * @param tagList
+     * @param limit
+     * @return
+     */
+    List<ArticleVo> selectByTagList(@Param("tagList") List<Integer> tagList,@Param("limit") long limit );
+
 }

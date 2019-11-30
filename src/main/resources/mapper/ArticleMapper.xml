@@ -177,6 +177,47 @@
         </choose>
     </select>
 
+    <!--标签列表查询文章列表-->
+    <select id="selectByTagList" resultMap="articleVoResultMap">
+        select
+        outer_a.id,
+        outer_a.user_id,
+        outer_a.author,
+        outer_a.avatar,
+        outer_a.category_name,
+        outer_a.category_id,
+        outer_a.title,
+        outer_a.summary,
+        outer_a.cover,
+        outer_a.status,
+        outer_a.view_count,
+        outer_a.comment_count,
+        outer_a.like_count,
+        outer_a.publish_time,
+        outer_a.update_time,
+        outer_a.reproduce,
+        outer_a.deleted,
+        t.id tag_id,
+        t.name tag_name
+        from
+        (
+        select
+        <include refid="Article_Column_List"/>
+        from article inner_a
+        where inner_a.deleted = 0
+        and inner_a.status = 0
+        and inner_a.id in
+        (select distinct inner_a_t.article_id from article_tag inner_a_t where inner_a_t.tag_id in
+        <foreach collection="tagList" index="index" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        )
+        limit 0,#{limit}
+        ) outer_a
+        left join article_tag a_t on a_t.article_id = outer_a.id
+        left join tag t on t.id = a_t.tag_id
+    </select>
+
     <!--文章归档计数-->
     <select id="selectArticleArchivesCount" resultType="Integer">
         select

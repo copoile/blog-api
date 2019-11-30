@@ -3,7 +3,6 @@ package cn.poile.blog.service;
 import cn.poile.blog.vo.ArticleVo;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * 文章推荐服务接口
@@ -30,4 +29,16 @@ public interface ArticleRecommendService {
      * @param articleId
      */
     void remove(Integer articleId);
+
+    /**
+     * 异步刷新
+     * @param articleId
+     */
+    void asyncRefresh(Integer articleId);
+
+    /**
+     * 刷新
+     * @param articleId
+     */
+    void refresh(Integer articleId);
 }

@@ -38,6 +38,7 @@ ignore:
     - /article/category/statistic
     - /article/tag/statistic
     - /article/recommend/list
+    - /article/interrelated/list
 
 mail:
   check:

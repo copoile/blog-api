@@ -106,4 +106,12 @@ public interface IArticleService extends IService<Article> {
      */
     List<ArticleTagStatisticsVo> selectTagStatistic();
 
+    /**
+     * 相关文章查询
+     * @param id
+     * @param limit
+     * @return
+     */
+    List<ArticleVo> selectInterrelatedById(Integer id,Long limit);
+
 }

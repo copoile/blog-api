@@ -47,6 +47,7 @@ public class ArticleController extends BaseController {
     @ApiOperation(value = "保存文章", notes = "需要accessToken，需要管理员权限")
     public ApiResponse save(@Validated @RequestBody ArticleRequest request) {
         articleService.save(request);
+        articleRecommendService.remove(request.getId());
         return createResponse();
     }
 
@@ -56,6 +57,7 @@ public class ArticleController extends BaseController {
     @ApiOperation(value = "保存并发布文章", notes = "需要accessToken，需要管理员权限")
     public ApiResponse publish(@Validated @RequestBody ArticleRequest request) {
         articleService.publish(request);
+        articleRecommendService.asyncRefresh(request.getId());
         return createResponse();
     }
 
@@ -92,6 +94,7 @@ public class ArticleController extends BaseController {
     @ApiOperation(value = "删除文章", notes = "逻辑删除，需要accessToken，需要管理员权限")
     private ApiResponse delete(@ApiParam("文章id") @PathVariable("id") int id) {
         articleService.delete(id);
+        articleRecommendService.remove(id);
         return createResponse();
     }
 
@@ -100,6 +103,7 @@ public class ArticleController extends BaseController {
     @ApiOperation(value = "丢弃文章(回收站)", notes = "需要accessToken，需要管理员权限")
     private ApiResponse discard(@ApiParam("文章id") @PathVariable("id") int id) {
         articleService.discard(id);
+        articleRecommendService.remove(id);
         return createResponse();
     }
 
@@ -113,7 +117,9 @@ public class ArticleController extends BaseController {
     @GetMapping("/view/{id}")
     @ApiOperation(value = "获取文章详情信息并增加浏览次数", notes = "比列表返回的多一个文章内容，文章分类列表")
     public ApiResponse<ArticleVo> view(@ApiParam("文章id") @PathVariable("id") int id) {
-        return createResponse(articleService.selectOneAndAddViewCount(id));
+        ArticleVo articleVo = articleService.selectOneAndAddViewCount(id);
+        articleRecommendService.asyncRefresh(id);
+        return createResponse(articleVo);
     }
 
     @GetMapping("/archives/page")
@@ -138,12 +144,13 @@ public class ArticleController extends BaseController {
 
     @PostMapping("/recommend/add")
     @PreAuthorize("hasAuthority('admin')")
-    @ApiOperation(value = "添加到推荐", notes = "需要accessToken，需要管理员权限")
+    @ApiOperation(value = "添加到推荐，如果已存在则更新", notes = "需要accessToken，需要管理员权限")
     public ApiResponse recommendAdd(@ApiParam("文章id") @NotNull(message = "文章id不能为空") @RequestParam(value = "articleId") Integer articleId,
-            @ApiParam("分数，分数越高越排前面") @RequestParam(value = "score",required = false,defaultValue = "0") Double score) {
-        articleRecommendService.add(articleId,score);
+                                    @ApiParam("分数，分数越高越排前面") @RequestParam(value = "score", required = false, defaultValue = "0") Double score) {
+        articleRecommendService.add(articleId, score);
         return createResponse();
     }
+
 
     @GetMapping("/recommend/list")
     @ApiOperation(value = "获取文章推荐列表", notes = "按分数排序")
@@ -158,5 +165,15 @@ public class ArticleController extends BaseController {
         articleRecommendService.remove(articleId);
         return createResponse();
     }
+
+    @GetMapping("/interrelated/list")
+    @ApiOperation(value = "相关文章", notes = "相关文章")
+    public ApiResponse<List<ArticleVo>> interrelated(@ApiParam("文章id") @NotNull(message = "文章id不能为空") @RequestParam(value = "articleId") Integer articleId,
+                                    @ApiParam("数量") @RequestParam(value = "limit", required = false, defaultValue = "5") Long limit
+    ) {
+
+        return createResponse( articleService.selectInterrelatedById(articleId, limit));
+    }
+
 
 }

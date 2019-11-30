@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,15 +30,19 @@ import java.util.List;
 public class BlogApplicationTest {
 
     @Autowired
-    private ArticleRecommendService articleRecommendService;
+    private ArticleMapper articleMapper;
 
     @Test
     public void test() {
         //Category category = categoryService.selectOneByParentId(0);
         //log.info("分页:{}",category);
        //articleRecommendService.list();
-        articleRecommendService.remove(2);
-        //log.info("分页:{}",articleArchivesVoIPage.getRecords());
+        List<Integer> list = new ArrayList<>(3);
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        List<ArticleVo> articleVos = articleMapper.selectByTagList(list, 10);
+        log.info("分页:{}",articleVos);
     }
 
 }

@@ -26,12 +26,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -56,8 +57,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     private static final String SEPARATION = ",";
 
-    @Autowired
-    private ZSetOperations<String, Object> zSetOperations;
 
     /**
      * 保存文章
@@ -131,6 +130,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     /**
      * 分页查询文章
+     *
      * @param current
      * @param size
      * @param status
@@ -141,7 +141,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * @return
      */
     @Override
-    public IPage<ArticleVo> selectArticleVoPage(long current, long size, Integer status,String title,Integer categoryId,Integer tagId,String yearMonth) {
+    public IPage<ArticleVo> selectArticleVoPage(long current, long size, Integer status, String title, Integer categoryId, Integer tagId, String yearMonth) {
         validStatus(status);
         String[] startAndEndOfMonth = getStartAndEndOfMonth(yearMonth);
         String start = startAndEndOfMonth[0];
@@ -199,13 +199,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * @param size
      * @param categoryId
      * @param tagId
-     * @param yearMonth 归档年月，因为数据库函数date_format会使publish_time索引失效，索引转换下再查询
+     * @param yearMonth  归档年月，因为数据库函数date_format会使publish_time索引失效，索引转换下再查询
      * @param title
-     * @param orderBy 排序
+     * @param orderBy    排序
      * @return
      */
     @Override
-    public IPage<ArticleVo> selectPublishedArticleVoPage(long current, long size, Integer categoryId, Integer tagId, String yearMonth, String title,String orderBy) {
+    public IPage<ArticleVo> selectPublishedArticleVoPage(long current, long size, Integer categoryId, Integer tagId, String yearMonth, String title, String orderBy) {
         String[] startAndEndOfMonth = getStartAndEndOfMonth(yearMonth);
         String start = startAndEndOfMonth[0];
         String end = startAndEndOfMonth[1];
@@ -228,6 +228,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         page.setRecords(articleVoList);
         return page;
     }
+
     /**
      * 文章详情
      *
@@ -260,6 +261,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         List<Category> categoryList = categoryService.parentList(articleVo.getCategoryId());
         articleVo.setCategoryList(categoryList);
+        // 浏览次数自增
         Article article = new Article();
         Integer viewCount = articleVo.getViewCount();
         article.setViewCount(viewCount + 1);
@@ -271,6 +273,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         articleVo.setNext(preAndNext.getNext());
         return articleVo;
     }
+
 
     /**
      * 分页年月归档查询
@@ -349,6 +352,39 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return this.baseMapper.selectTagStatistic();
     }
 
+
+    /**
+     * 相关文章查询
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public List<ArticleVo> selectInterrelatedById(Integer id, Long limit) {
+        Article article = getById(id);
+        ArticlePageQueryWrapper articlePageQueryWrapper = new ArticlePageQueryWrapper();
+        articlePageQueryWrapper.setOffset(0L);
+        articlePageQueryWrapper.setLimit(limit);
+        articlePageQueryWrapper.setOrderBy("view_count");
+        articlePageQueryWrapper.setCategoryId(article.getCategoryId());
+        articlePageQueryWrapper.setStatus((ArticleStatusEnum.NORMAL.getStatus()));
+        List<ArticleVo> resultList = this.baseMapper
+                .selectArticleVoPage(articlePageQueryWrapper).stream()
+                .filter(a -> !id.equals(a.getId())).collect(Collectors.toList());
+        // 分类下没有使用标签查询
+        if (CollectionUtils.isEmpty(resultList)) {
+            QueryWrapper<ArticleTag> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(ArticleTag::getArticleId, id);
+            List<ArticleTag> articleTagList = articleTagService.list(queryWrapper);
+            if (!CollectionUtils.isEmpty(articleTagList)) {
+                resultList = this.baseMapper
+                        .selectByTagList(articleTagList.stream().map(ArticleTag::getTagId).collect(Collectors.toList()), limit)
+                        .stream().filter(a -> !id.equals(a.getId())).collect(Collectors.toList());
+            }
+        }
+        return resultList;
+    }
+
     /**
      * 只有一篇文章判断是上一篇还是下一篇
      *
@@ -366,7 +402,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
-     *
      * 根据年月获取字符串获取对应月份开始时间和结束时间
      *
      * @param yearMonth
@@ -374,7 +409,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     private String[] getStartAndEndOfMonth(String yearMonth) {
         if (StringUtils.isBlank(yearMonth)) {
-            return new String[]{null,null};
+            return new String[]{null, null};
         }
         String separator = "-";
         String[] array = yearMonth.split(separator);
