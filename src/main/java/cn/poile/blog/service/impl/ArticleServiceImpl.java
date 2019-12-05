@@ -79,7 +79,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Article article = new Article();
         // 文章id处理
         article.setId(request.getId() == null ? null : request.getId() == 0 ? null : request.getId());
-        // 判断是否转载，作者设置
+        // 判断是否原创，做不同处理
         setAuthor(article, request);
         // 获取分类信息
         Category category = categoryService.getById(request.getCategoryId());
@@ -186,10 +186,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     public void delete(int id) {
-        Article article = new Article();
-        article.setId(id);
-        article.setDeleted(CommonConstant.DELETED);
-        updateById(article);
+        removeById(id);
     }
 
     /**
@@ -386,6 +383,99 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
+     * 更新文章状态
+     *
+     * @param articleId
+     * @param status    0或1
+     */
+    @Override
+    public void updateStatus(Integer articleId, Integer status) {
+        Integer[] array = {0, 1};
+        if (!ArrayUtils.contains(array, status)) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效状态码");
+        }
+        Article article = new Article();
+        article.setId(articleId);
+        article.setStatus(status);
+        updateById(article);
+    }
+
+    /**
+     * 点赞数自增
+     *
+     * @param articleId
+     */
+    @Override
+    public void likeCountIncrement(int articleId) {
+        this.baseMapper.likeCountIncrement(articleId);
+    }
+
+    /**
+     * 点赞数自减
+     *
+     * @param articleId
+     */
+    @Override
+    public void likeCountDecrement(int articleId) {
+        this.baseMapper.likeCountDecrement(articleId);
+    }
+
+
+    /**
+     * 评论数自增
+     *
+     * @param articleId
+     */
+    @Override
+    public void commentCountIncrement(int articleId) {
+        this.baseMapper.commentCountIncrement(articleId);
+    }
+
+    /**
+     * 评论数数自减
+     *
+     * @param articleId
+     */
+    @Override
+    public void commentCountDecrement(int articleId) {
+        this.baseMapper.commentCountDecrement(articleId);
+    }
+
+
+    /**
+     * 收藏数自增
+     *
+     * @param articleId
+     */
+    @Override
+    public void collectCountIncrement(int articleId) {
+        this.baseMapper.collectCountIncrement(articleId);
+    }
+
+    /**
+     * 收藏数自减
+     *
+     * @param articleId
+     */
+    @Override
+    public void collectCountDecrement(int articleId) {
+        this.baseMapper.collectCountDecrement(articleId);
+    }
+
+    /**
+     * 分页查询用户收藏文章
+     *
+     * @param offset
+     * @param limit
+     * @param userId
+     * @return
+     */
+    @Override
+    public List<ArticleVo> selectCollectByUserId(long offset, long limit, Integer userId) {
+        return this.baseMapper.selectCollectByUserId(offset, limit, userId);
+    }
+
+    /**
      * 只有一篇文章判断是上一篇还是下一篇
      *
      * @param dto
@@ -429,23 +519,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * @return
      */
     private void setAuthor(Article article, ArticleRequest request) {
-        // 是否转载，转载需要输入作者姓名
-        Integer reproduce = request.getReproduce();
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
-        article.setUserId(userDetail.getId());
-        if (reproduce.equals(1)) {
-            String author = request.getAuthor();
-            if (StringUtils.isBlank(author)) {
-                throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "作者不能为空");
-            }
-            article.setAuthor(author);
-            article.setAvatar("");
-        } else if (reproduce.equals(0)) {
-            article.setAuthor(userDetail.getNickname());
-            article.setAvatar(userDetail.getAvatar());
+        // 是否原创
+        Integer original = request.getOriginal();
+        String reproduce = request.getReproduce();
+        if (original.equals(0) && StringUtils.isBlank(reproduce)) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "转载地址不能为空");
+        }
+        if (original.equals(0)) {
+            article.setReproduce(reproduce);
+        } else if (original.equals(1)) {
+            article.setReproduce(null);
         } else {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效转载标识");
         }
+        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        article.setUserId(userDetail.getId());
+        article.setAvatar(userDetail.getAvatar());
+        article.setOriginal(original);
     }
 
     /**

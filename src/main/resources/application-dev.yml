@@ -10,9 +10,6 @@ spring:
         keep-alive: 60s
         queue-capacity: 100
         allow-core-thread-timeout: true
-    scheduling:
-      thread-name-prefix: async-task-
-
   redis:
     host: localhost
     port: 6379
@@ -64,7 +61,7 @@ spring:
     host: smtp.163.com
     port: 25
     username: 15625295093@163.com
-    password: abc
+    password: abc452637
     protocol: smtp
     test-connection: true
     default-encoding: UTF-8
@@ -101,12 +98,9 @@ sms:
   ali:
     regionId: cn-hangzhou
     accessKeyId: LTAIaEeboqn0kR
-    accessKeySecret: bU54eGKPugUj03LJm8eELNEJ5X
+    accessKeySecret: bU54eGKPugUj03LJm8eE
     signName: 个人悦读分享
-    templateCode: SMS_176942058
-
-
-
+    templateCode: SMS_176942
 
 mybatis-plus:
   mapper-locations:

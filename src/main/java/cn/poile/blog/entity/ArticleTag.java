@@ -21,7 +21,6 @@ import javax.validation.constraints.NotBlank;
  * @since 2019-11-15
  */
 @Data
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)

@@ -114,10 +114,9 @@
                   <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                     <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">你好,</p>
                     <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">你在个人悦读分享收到一条评论。</p>
-                    <a th:href="@{ ${checkUrl} }" target="_blank" style="display: inline-block; color: #38f; cursor: pointer;  font-size: 14px; margin: 0;text-decoration: underline;">@yaohw:</a>
-                    <p style="display: inline-block; font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">
-						测试<span class=\"ql-emojiblot\" data-name=\"hugging_face\">﻿<span contenteditable=\"false\"><span class=\"ap ap-hugging_face\">🤗</span></span>
-					</p>
+                    <a th:href="${ url }" th:text="'@' + ${ nickname }" target="_blank" style="display: inline-block; color: #38f; cursor: pointer;  font-size: 14px; margin: 0;text-decoration: underline;"></a>
+                    :&ensp;
+                    <p th:utext="${ content }" style="display: inline-block; font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;"></p>
                     <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">生活愉快，工作顺利！</p>
                   </td>
                 </tr>

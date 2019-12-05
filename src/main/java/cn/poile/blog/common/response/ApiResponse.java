@@ -25,5 +25,5 @@ public class ApiResponse<T> {
     private String errorMsg;
 
     @ApiModelProperty("响应数据")
-    private T body;
+    private T data;
 }

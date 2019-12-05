@@ -5,12 +5,13 @@ import java.util.Random;
 
 /**
  * 随机字符串生成器
+ *
  * @author: yaohw
  * @create: 2019-11-12 14:38
  **/
 public class RandomValueStringGenerator {
 
-    private static final char[] DEFAULT_CODEC = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    private static final char[] DEFAULT_CODE = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
             .toCharArray();
 
     private Random random = new SecureRandom();
@@ -33,21 +34,11 @@ public class RandomValueStringGenerator {
         return getCodeString(verifierBytes);
     }
 
-
     private String getCodeString(byte[] verifierBytes) {
         char[] chars = new char[verifierBytes.length];
         for (int i = 0; i < verifierBytes.length; i++) {
-            chars[i] = DEFAULT_CODEC[((verifierBytes[i] & 0xFF) % DEFAULT_CODEC.length)];
+            chars[i] = DEFAULT_CODE[((verifierBytes[i] & 0xFF) % DEFAULT_CODE.length)];
         }
         return new String(chars);
-    }
-
-    public void setRandom(Random random) {
-        this.random = random;
-    }
-
-
-    public void setLength(int length) {
-        this.length = length;
     }
 }

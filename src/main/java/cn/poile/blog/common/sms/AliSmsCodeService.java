@@ -61,10 +61,10 @@ public class AliSmsCodeService extends BaseSmsCodeService {
      * 发送短信验证码
      *
      * @param mobile
-     * @return 返回要求为一个key为验证码，value为短信是否发送成功的一个map
+     * @return
      */
     @Override
-    protected Map<String, Boolean> handleSendSmsCode(long mobile) {
+    protected SendResult handleSendSmsCode(long mobile) {
         DefaultProfile profile = DefaultProfile.getProfile(regionId, accessKeyId, accessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
         CommonRequest request = new CommonRequest();
@@ -94,7 +94,7 @@ public class AliSmsCodeService extends BaseSmsCodeService {
      * @param code
      * @return
      */
-    private Map<String, Boolean> handleCommonResponse(CommonResponse response, String code) {
+    private SendResult handleCommonResponse(CommonResponse response, String code) {
         int httpStatus = response.getHttpStatus();
         if (httpStatus != HttpStatus.OK.value()) {
             throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(), "短信发送失败");
@@ -104,11 +104,9 @@ public class AliSmsCodeService extends BaseSmsCodeService {
         String resultCode = (String) jsonObject.get("Code");
         String successCode = "OK";
         if (!successCode.equals(resultCode)) {
-            String resultMessage = (String) jsonObject.get("WebSocketMessageDTO");
+            String resultMessage = (String) jsonObject.get("Message");
             throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(), resultMessage);
         }
-        Map<String, Boolean> resultMap = new HashMap<>(1);
-        resultMap.put(code, Boolean.TRUE);
-        return resultMap;
+        return new SendResult(true,code);
     }
 }

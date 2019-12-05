@@ -41,7 +41,7 @@ public class SmsController extends BaseController{
     @RateLimiter(name = "sms",max = 1,key = "#mobile", timeout = 120L, extra = "smsLimiter")
     @ApiOperation(value = "发送短信验证码",notes = "验证码有效时5分钟;同一手机号每天只能发10次;ip限流120s一次;同一手机号限流120s一次")
     public ApiResponse sendSmsCode(@ApiParam("手机号") @NotNull @IsPhone @RequestParam long mobile) {
-        // smsCodeService.sendSmsCode(mobile);
+        smsCodeService.sendSmsCode(mobile);
         return createResponse();
     }
 
@@ -49,7 +49,7 @@ public class SmsController extends BaseController{
     public ApiResponse test() {
         Map<String,Object> params = new HashMap<>(1);
         params.put("checkUrl","http://www.baidu.com");
-        emailService.sendHtmlMail("726856005@qq.com","邮箱验证","email",params,null);
+        emailService.asyncSendHtmlMail("726856005@qq.com","邮箱验证","email",params,null);
         return createResponse();
     }
 

@@ -30,7 +30,7 @@ public class FileController extends BaseController {
     @PostMapping("/upload")
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "上传文件",notes = "需要accessToken，需要管理员权限")
-    public ApiResponse upload(@NotNull @RequestParam("file") MultipartFile file) throws IOException {
+    public ApiResponse<String> upload(@NotNull @RequestParam("file") MultipartFile file) throws IOException {
         String filename = file.getOriginalFilename();
         String contentType = file.getContentType();
         String extension = filename.substring(filename.lastIndexOf(".") + 1);

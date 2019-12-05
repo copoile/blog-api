@@ -334,7 +334,7 @@ public class RedisTokenStore {
         if (StringUtils.isBlank(refreshToken)) {
             return;
         }
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
+        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
         assert userDetail != null;
         String extract = extractKey(userDetail.getId());
         byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);

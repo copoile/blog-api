@@ -1,6 +1,7 @@
 package cn.poile.blog.service.impl;
 
 import cn.poile.blog.common.constant.ErrorEnum;
+import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.common.constant.UserConstant;
 import cn.poile.blog.common.email.EmailService;
 import cn.poile.blog.common.exception.ApiException;
@@ -105,7 +106,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         Integer admin = user.getAdmin();
         List<String> roleList = new ArrayList<>();
         if (admin.equals(UserConstant.ADMIN)) {
-           roleList.add("admin");
+           roleList.add(RoleConstant.ADMIN);
         }
         userVo.setRoleList(roleList);
         return userVo;
@@ -152,8 +153,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public void update(UpdateUserRequest request) {
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
-        if (userDetail == null || request.getUserId() != userDetail.getId()) {
+        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        if (request.getUserId() != userDetail.getId()) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "用户id跟当前用户id不匹配或accessToken信息异常");
         }
         User user = new User();
@@ -175,7 +176,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public void validateEmail(String email) {
-        AuthenticationToken authenticationToken = ServeSecurityContext.getAuthenticationToken();
+        AuthenticationToken authenticationToken = ServeSecurityContext.getAuthenticationToken(true);
         Map<String, Object> params = new HashMap<>(1);
         RandomValueStringGenerator generator = new RandomValueStringGenerator();
         String code = generator.generate();
@@ -188,7 +189,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         map.put("email", email);
         redisTemplate.opsForHash().putAll(key, map);
         redisTemplate.expire(key, 2L, TimeUnit.HOURS);
-        emailService.sendHtmlMail(email, "邮箱验证", "email", params);
+        emailService.asyncSendHtmlMail(email, "邮箱验证", "email", params);
     }
 
     /**
@@ -234,7 +235,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         try {
             // 上传头像
             String fullPath = storage.upload(file.getInputStream(), name, contentType);
-            CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
+            CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
             User user = new User();
             user.setId(userDetail.getId());
             user.setAvatar(fullPath);
@@ -259,7 +260,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public void updatePassword(String oldPassword, String newPassword) {
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
+        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
         boolean matches = passwordEncoder.matches(oldPassword, userDetail.getPassword());
         if (!matches) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "原密码不正确");
@@ -326,7 +327,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public void rebindMobile(long mobile, String code) {
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail();
+        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
         long cacheKey = userDetail.getMobile();
         // 判断是否经过步骤一
         String validated = redisTemplate.opsForValue().get(REDIS_MOBILE_VALIDATED_PREFIX + cacheKey);

@@ -92,7 +92,7 @@ public class ArticleController extends BaseController {
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "删除文章", notes = "逻辑删除，需要accessToken，需要管理员权限")
-    private ApiResponse delete(@ApiParam("文章id") @PathVariable("id") int id) {
+    public ApiResponse delete(@ApiParam("文章id") @PathVariable("id") int id) {
         articleService.delete(id);
         articleRecommendService.remove(id);
         return createResponse();
@@ -101,7 +101,7 @@ public class ArticleController extends BaseController {
     @DeleteMapping("/discard/{id}")
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "丢弃文章(回收站)", notes = "需要accessToken，需要管理员权限")
-    private ApiResponse discard(@ApiParam("文章id") @PathVariable("id") int id) {
+    public ApiResponse discard(@ApiParam("文章id") @PathVariable("id") int id) {
         articleService.discard(id);
         articleRecommendService.remove(id);
         return createResponse();
@@ -109,7 +109,7 @@ public class ArticleController extends BaseController {
 
     @GetMapping("/detail/{id}")
     @PreAuthorize("hasAuthority('admin')")
-    @ApiOperation(value = "获取文章详情信息", notes = "需要accessToken,用于后台文章管理，比列表返回的多一个文章内容，文章分类列表")
+    @ApiOperation(value = "后台管理，获取文章详情信息", notes = "需要accessToken,用于后台文章管理，比列表返回的多一个文章内容，文章分类列表")
     public ApiResponse<ArticleVo> detail(@ApiParam("文章id") @PathVariable("id") int id) {
         return createResponse(articleService.selectArticleVoById(id));
     }
@@ -142,7 +142,7 @@ public class ArticleController extends BaseController {
         return createResponse(articleService.selectTagStatistic());
     }
 
-    @PostMapping("/recommend/add")
+    @PostMapping("/recommend/save")
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "添加到推荐，如果已存在则更新", notes = "需要accessToken，需要管理员权限")
     public ApiResponse recommendAdd(@ApiParam("文章id") @NotNull(message = "文章id不能为空") @RequestParam(value = "articleId") Integer articleId,
@@ -158,22 +158,37 @@ public class ArticleController extends BaseController {
         return createResponse(articleRecommendService.list());
     }
 
-    @DeleteMapping("/recommend/delete")
+    @DeleteMapping("/recommend/delete/{articleId}")
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "从推荐列表中删除", notes = "需要accessToken，需要管理员权限")
-    public ApiResponse recommendDelete(@ApiParam("文章id") @NotNull(message = "文章id不能为空") @RequestParam(value = "articleId") Integer articleId) {
+    public ApiResponse recommendDelete(@ApiParam("文章id") @NotNull(message = "文章id不能为空") @PathVariable(value = "articleId") Integer articleId) {
         articleRecommendService.remove(articleId);
         return createResponse();
     }
 
-    @GetMapping("/interrelated/list")
-    @ApiOperation(value = "相关文章", notes = "相关文章")
+    @GetMapping("/interrelated/userIdList")
+    @ApiOperation(value = "相关文章", notes = "根据分类查询，分类为空则根据标签查询")
     public ApiResponse<List<ArticleVo>> interrelated(@ApiParam("文章id") @NotNull(message = "文章id不能为空") @RequestParam(value = "articleId") Integer articleId,
-                                    @ApiParam("数量") @RequestParam(value = "limit", required = false, defaultValue = "5") Long limit
+                                                     @ApiParam("数量") @RequestParam(value = "limit", required = false, defaultValue = "5") Long limit
     ) {
-
-        return createResponse( articleService.selectInterrelatedById(articleId, limit));
+        return createResponse(articleService.selectInterrelatedById(articleId, limit));
     }
 
+    @GetMapping("/count")
+    @ApiOperation(value = "已发布文章总数")
+    public ApiResponse<Integer> count() {
+        return createResponse(articleService.count());
+    }
+
+    @PostMapping("/status/update")
+    @ApiOperation(value = "修改文章发布或保存状态",notes = "可用于发布文章回撤到保存状态或保存状态修改到发布状态")
+    public ApiResponse status(
+            @ApiParam("文章id") @NotNull(message = "文章id不能为空") @RequestParam("articleId") Integer articleId,
+            @ApiParam("文章状态，仅限0或1（发布状态或保存状态）") @NotNull(message = "文章状态不能为空") @RequestParam("status") Integer status
+    ) {
+        articleService.updateStatus(articleId, status);
+        articleRecommendService.asyncRefresh(articleId);
+        return createResponse();
+    }
 
 }

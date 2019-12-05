@@ -85,7 +85,7 @@ public class RateLimiterAspect implements ApplicationContextAware {
                 key = rateLimiter.name() + SEPARATOR + generateKeyBySpEL(key, point);
             }
             if (rateLimiter.appendIp()) {
-                key = key + SEPARATOR + IpUtil.getIpAddr();
+                key = key + SEPARATOR + IpUtil.getIpAddress();
             }
             long max = rateLimiter.max();
             long timeout = rateLimiter.timeout();

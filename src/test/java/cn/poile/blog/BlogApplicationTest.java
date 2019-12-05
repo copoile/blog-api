@@ -36,12 +36,9 @@ public class BlogApplicationTest {
     public void test() {
         //Category category = categoryService.selectOneByParentId(0);
         //log.info("分页:{}",category);
-       //articleRecommendService.list();
-        List<Integer> list = new ArrayList<>(3);
-        list.add(1);
-        list.add(2);
-        list.add(3);
-        List<ArticleVo> articleVos = articleMapper.selectByTagList(list, 10);
+       //articleRecommendService.userIdList();
+
+        List<ArticleVo> articleVos = articleMapper.selectCollectByUserId(0,5,1);
         log.info("分页:{}",articleVos);
     }
 

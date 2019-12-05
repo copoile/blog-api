@@ -8,6 +8,7 @@ import cn.poile.blog.vo.ArticleTagStatisticsVo;
 import cn.poile.blog.vo.ArticleVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -113,5 +114,57 @@ public interface IArticleService extends IService<Article> {
      * @return
      */
     List<ArticleVo> selectInterrelatedById(Integer id,Long limit);
+
+    /**
+     * 更新文章状态
+     * @param articleId
+     * @param status 0或1
+     */
+    void updateStatus(Integer articleId,Integer status);
+
+    /**
+     * 点赞数自增
+     * @param articleId
+     */
+    void likeCountIncrement(int articleId);
+
+    /**
+     * 点赞数自减
+     * @param articleId
+     */
+    void likeCountDecrement(int articleId);
+
+    /**
+     * 评论数自增
+     * @param articleId
+     */
+    void commentCountIncrement(int articleId);
+
+    /**
+     * 评论数自减
+     * @param articleId
+     */
+    void commentCountDecrement(int articleId);
+
+    /**
+     * 收藏数自增
+     * @param articleId
+     */
+    void collectCountIncrement(int articleId);
+
+    /**
+     * 收藏数自减
+     * @param articleId
+     */
+    void collectCountDecrement(int articleId);
+
+    /**
+     * 分页查询用户收藏文章
+     * @param offset
+     * @param limit
+     * @param userId
+     * @return
+     */
+    List<ArticleVo> selectCollectByUserId(@Param("offset") long offset, @Param("limit") long limit, @Param("userId") Integer userId);
 
 }

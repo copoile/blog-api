@@ -96,4 +96,48 @@ public interface ArticleMapper extends BaseMapper<Article> {
      */
     List<ArticleVo> selectByTagList(@Param("tagList") List<Integer> tagList,@Param("limit") long limit );
 
+    /**
+     * 点赞数自增
+     * @param id
+     */
+    void likeCountIncrement(@Param("id") int id);
+
+    /**
+     * 点赞数自减
+     * @param id
+     */
+    void likeCountDecrement(@Param("id") int id);
+
+    /**
+     * 评论数自增
+     * @param id
+     */
+    void commentCountIncrement(@Param("id") int id);
+
+    /**
+     * 评论数自减
+     * @param id
+     */
+    void commentCountDecrement(@Param("id") int id);
+
+    /**
+     * 收藏数自增
+     * @param id
+     */
+    void collectCountIncrement(@Param("id") int id);
+
+    /**
+     * 收藏数自减
+     * @param id
+     */
+    void collectCountDecrement(@Param("id") int id);
+
+    /**
+     * 分页查询用户收藏文章
+     * @param offset
+     * @param limit
+     * @param userId
+     * @return
+     */
+    List<ArticleVo> selectCollectByUserId(@Param("offset") long offset,@Param("limit") long limit,@Param("userId") Integer userId);
 }

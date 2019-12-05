@@ -42,14 +42,14 @@ public class Article implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    @ApiModelProperty(value = "是否原创，1:是，0:否")
+    private Integer original;
+
     @JsonIgnore
     @ApiModelProperty(value = "用户id")
     private Integer userId;
 
-    @ApiModelProperty(value = "作者")
-    private String author;
-
-    @ApiModelProperty(value = "作者头像")
+    @ApiModelProperty(value = "用户头像")
     private String avatar;
 
     @ApiModelProperty(value = "分类名称-冗余字段")
@@ -82,17 +82,19 @@ public class Article implements Serializable {
     @ApiModelProperty(value = "点赞数-冗余字段")
     private Integer likeCount;
 
-    @ApiModelProperty(value = "发布时间")
+    @ApiModelProperty(value = "收藏数-冗余字段")
+    private Integer collectCount;
 
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @ApiModelProperty(value = "发布时间")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private LocalDateTime publishTime;
 
     @ApiModelProperty(value = "更新时间")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private LocalDateTime updateTime;
 
     @TableLogic
@@ -100,8 +102,8 @@ public class Article implements Serializable {
     @ApiModelProperty(value = "是否已删除,1:是，0:否")
     private Integer deleted;
 
-    @ApiModelProperty(value = "是否转载,1:是，0:否")
-    private Integer reproduce;
+    @ApiModelProperty(value = "转载地址")
+    private String reproduce;
 
 
 }

@@ -44,7 +44,7 @@ public class EmailService {
      * @param cc 抄送到
      */
     @Async
-    public void sendHtmlMail(String to, String subject, String template, Map<String, Object> params, String... cc) {
+    public void asyncSendHtmlMail(String to, String subject, String template, Map<String, Object> params, String... cc) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -59,10 +59,22 @@ public class EmailService {
                 helper.setCc(cc);
             }
             mailSender.send(message);
-            log.info("发送邮件成功");
+            log.info("邮件成功发送到:{}",to);
         } catch (Exception e) {
             log.error("发送邮件失败:{0}", e);
         }
+    }
+
+    /**
+     * 发送Html邮件
+     * @param to 发送给谁
+     * @param subject 主题
+     * @param template html模板名
+     * @param params 模板参数
+     * @param cc 抄送到
+     */
+    public void sendHtmlMail(String to, String subject, String template, Map<String, Object> params, String... cc) {
+        asyncSendHtmlMail(to, subject, template, params, cc);
     }
 
     /**
@@ -73,9 +85,20 @@ public class EmailService {
      * @param params 模板参数
      */
     @Async
-    public void sendHtmlMail(String to, String subject, String template, Map<String, Object> params) {
+    public void asyncSendHtmlMail(String to, String subject, String template, Map<String, Object> params) {
         String[] cc = new String[0];
-        sendHtmlMail(to, subject, template, params,cc);
+        asyncSendHtmlMail(to, subject, template, params,cc);
+    }
+
+    /**
+     * 发送Html邮件
+     * @param to 发送给谁
+     * @param subject 主题
+     * @param template html 模板
+     * @param params 模板参数
+     */
+    public void sendHtmlMail(String to, String subject, String template, Map<String, Object> params) {
+       asyncSendHtmlMail(to, subject, template, params);
     }
 
 }

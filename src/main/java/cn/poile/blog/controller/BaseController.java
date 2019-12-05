@@ -24,7 +24,7 @@ public class BaseController {
 
     protected <T> ApiResponse<T> createResponse(T body) {
         ApiResponse<T> response = createResponse();
-        response.setBody(body);
+        response.setData(body);
         return response;
     }
 }

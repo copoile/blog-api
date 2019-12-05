@@ -4,10 +4,10 @@
 
     <resultMap id="articleResultMap" type="cn.poile.blog.entity.Article">
         <id property="id" column="id"/>
+        <result property="original" column="original"/>
         <result property="categoryName" column="category_name"/>
         <result property="userId" column="user_id"/>
         <result property="author" column="author"/>
-        <result property="avatar" column="avatar"/>
         <result property="categoryId" column="category_id"/>
         <result property="title" column="title"/>
         <result property="summary" column="summary"/>
@@ -17,6 +17,7 @@
         <result property="viewCount" column="view_count"/>
         <result property="commentCount" column="comment_count"/>
         <result property="likeCount" column="like_count"/>
+        <result property="collectCount" column="collect_count"/>
         <result property="publishTime" column="publish_time"/>
         <result property="updateTime" column="update_time"/>
         <result property="reproduce" column="reproduce"/>
@@ -26,9 +27,9 @@
 
     <resultMap id="articleVoResultMap" type="cn.poile.blog.vo.ArticleVo">
         <id property="id" column="id"/>
+        <result property="original" column="original"/>
         <result property="categoryName" column="category_name"/>
         <result property="userId" column="user_id"/>
-        <result property="author" column="author"/>
         <result property="avatar" column="avatar"/>
         <result property="categoryId" column="category_id"/>
         <result property="title" column="title"/>
@@ -39,6 +40,7 @@
         <result property="viewCount" column="view_count"/>
         <result property="commentCount" column="comment_count"/>
         <result property="likeCount" column="like_count"/>
+        <result property="collectCount" column="collect_count"/>
         <result property="publishTime" column="publish_time"/>
         <result property="updateTime" column="update_time"/>
         <result property="reproduce" column="reproduce"/>
@@ -50,15 +52,16 @@
     </resultMap>
 
     <sql id="Article_Column_List">
-        id, user_id, author, avatar, category_name, category_id, title, summary, content, cover, status, view_count,
-        comment_count, like_count, publish_time, update_time, reproduce,deleted
+        inner_a.id, inner_a.original, inner_a.user_id, inner_a.avatar, inner_a.category_name, inner_a.category_id, inner_a.title, inner_a.summary, inner_a.content, inner_a.cover, inner_a.status, inner_a.view_count,
+        inner_a.comment_count, inner_a.like_count, inner_a.collect_count, inner_a.publish_time, inner_a.update_time, inner_a.reproduce, inner_a.deleted
     </sql>
 
+    <!--根据id查询-->
     <select id="selectArticleVoById" resultMap="articleVoResultMap">
         select
         outer_a.id,
+        outer_a.original,
         outer_a.user_id,
-        outer_a.author,
         outer_a.avatar,
         outer_a.category_name,
         outer_a.category_id,
@@ -70,6 +73,7 @@
         outer_a.view_count,
         outer_a.comment_count,
         outer_a.like_count,
+        outer_a.collect_count,
         outer_a.publish_time,
         outer_a.update_time,
         outer_a.reproduce,
@@ -116,8 +120,8 @@
     <select id="selectArticleVoPage" resultMap="articleVoResultMap">
         select
         outer_a.id,
+        outer_a.original,
         outer_a.user_id,
-        outer_a.author,
         outer_a.avatar,
         outer_a.category_name,
         outer_a.category_id,
@@ -128,6 +132,7 @@
         outer_a.view_count,
         outer_a.comment_count,
         outer_a.like_count,
+        outer_a.collect_count,
         outer_a.publish_time,
         outer_a.update_time,
         outer_a.reproduce,
@@ -177,12 +182,12 @@
         </choose>
     </select>
 
-    <!--标签列表查询文章列表-->
-    <select id="selectByTagList" resultMap="articleVoResultMap">
+    <!--查询用户收藏文章-->
+    <select id="selectCollectByUserId" resultMap="articleVoResultMap">
         select
         outer_a.id,
+        outer_a.original,
         outer_a.user_id,
-        outer_a.author,
         outer_a.avatar,
         outer_a.category_name,
         outer_a.category_id,
@@ -193,6 +198,44 @@
         outer_a.view_count,
         outer_a.comment_count,
         outer_a.like_count,
+        outer_a.collect_count,
+        outer_a.publish_time,
+        outer_a.update_time,
+        outer_a.reproduce,
+        outer_a.deleted,
+        t.id tag_id,
+        t.name tag_name
+        from
+        (
+        select
+        <include refid="Article_Column_List"/>
+        from article inner_a
+        inner join article_collect a_c on a_c.article_id = inner_a.id and a_c.user_id = #{userId}
+        where inner_a.deleted = 0
+        and inner_a.status = 0
+        limit #{offset},#{limit}
+        ) outer_a
+        left join article_tag a_t on a_t.article_id = outer_a.id
+        left join tag t on t.id = a_t.tag_id
+    </select>
+    
+    <!--标签列表查询文章列表-->
+    <select id="selectByTagList" resultMap="articleVoResultMap">
+        select
+        outer_a.id,
+        outer_a.original,
+        outer_a.user_id,
+        outer_a.avatar,
+        outer_a.category_name,
+        outer_a.category_id,
+        outer_a.title,
+        outer_a.summary,
+        outer_a.cover,
+        outer_a.status,
+        outer_a.view_count,
+        outer_a.comment_count,
+        outer_a.like_count,
+        outer_a.collect_count,
         outer_a.publish_time,
         outer_a.update_time,
         outer_a.reproduce,
@@ -249,7 +292,7 @@
         limit #{offset},#{limit}
     </select>
 
-    <!--查询上一篇下一篇-->
+    <!--查询上一篇和下一篇-->
     <select id="selectPreAndNext" resultMap="articleResultMap">
         (
         select
@@ -298,6 +341,7 @@
         c.deleted = 0
     </select>
 
+    <!--文章标签统计查询-->
     <select id="selectTagStatistic" resultType="cn.poile.blog.vo.ArticleTagStatisticsVo">
         select
         t.id,
@@ -325,5 +369,53 @@
         where
         t.deleted = 0
     </select>
+
+    <!--点赞数自增-->
+    <update id="likeCountIncrement">
+        update article a
+        set a.like_count = (a.like_count + 1)
+        where
+        a.id = #{id}
+    </update>
+
+    <!--点赞数自减-->
+    <update id="likeCountDecrement">
+        update article a
+        set a.like_count = (a.like_count - 1)
+        where
+        a.id = #{id}
+    </update>
+
+    <!--评论数自增-->
+    <update id="commentCountIncrement">
+        update article a
+        set a.comment_count = (a.comment_count + 1)
+        where
+        a.id = #{id}
+    </update>
+
+    <!--评论数自减-->
+    <update id="commentCountDecrement">
+        update article a
+        set a.comment_count = (a.comment_count - 1)
+        where
+        a.id = #{id}
+    </update>
+
+    <!--收藏数自增-->
+    <update id="collectCountIncrement">
+        update article a
+        set a.collect_count = (a.collect_count + 1)
+        where
+        a.id = #{id}
+    </update>
+
+    <!--收藏数自减-->
+    <update id="collectCountDecrement">
+        update article a
+        set a.collect_count = (a.collect_count - 1)
+        where
+        a.id = #{id}
+    </update>
 
 </mapper>

@@ -30,7 +30,7 @@ ignore:
     - /user/register
     - /email/bind
     - /category/tree
-    - /category/list
+    - /category/userIdList
     - /article/published/page
     - /article/view/**
     - /article/pre_next/**
@@ -39,6 +39,12 @@ ignore:
     - /article/tag/statistic
     - /article/recommend/list
     - /article/interrelated/list
+    - /article/count
+    - /article/like/list
+    - /friend/link/page
+    - /friend/link/list
+    - /article/comment/page
+    - /article/comment/latest
 
 mail:
   check:

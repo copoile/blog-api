@@ -27,8 +27,9 @@ public class ArticleRequest {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @ApiModelProperty(value = "作者，转载时不能为空")
-    private String author;
+    @NotNull(message = "是否原创标识不能为空")
+    @ApiModelProperty(value = "是否原创，1:是，0:否")
+    private Integer original;
 
     @NotNull(message = "文章分类id不能为空")
     @ApiModelProperty(value = "文章分类id")
@@ -54,8 +55,7 @@ public class ArticleRequest {
     @ApiModelProperty(value = "文章标签id列表")
     private List<Integer> tagIds;
 
-    @NotNull(message = "是否转载字段不能为空")
-    @ApiModelProperty(value = "是否转载,1:是，0:否")
-    private Integer reproduce;
+    @ApiModelProperty(value = "转载地址，转载非空")
+    private String reproduce;
 
 }

@@ -79,7 +79,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
 
     /**
      * 修改标签，这里修改不直接修改原来的标签，逻辑删除原标签新增一个标签
-     * 这么做是为了不改变已写文章已挂载的标签
+     * 这么做是为了不改变已在文章挂载的标签
      * @param id
      * @param tagName
      */

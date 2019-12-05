@@ -53,16 +53,10 @@ public abstract class BaseSmsCodeService implements SmsCodeService, Initializing
      */
     @Override
     public boolean sendSmsCode(long mobile) {
-        Map<String, Boolean> resultMap = handleSendSmsCode(mobile);
-        Set<Map.Entry<String, Boolean>> entrySet = resultMap.entrySet();
-        Iterator<Map.Entry<String, Boolean>> iterator = entrySet.iterator();
-        if (!iterator.hasNext()) {
-            return false;
-        }
-        Map.Entry<String, Boolean> item = iterator.next();
-        String code = item.getKey();
-        Boolean smsSuccess = item.getValue();
-        if (!StringUtils.isEmpty(code) && smsSuccess) {
+        SendResult sendResult = handleSendSmsCode(mobile);
+        String code = sendResult.getCode();
+        boolean smsSuccess = sendResult.isSuccess();
+        if (!StringUtils.isBlank(code) && smsSuccess) {
             cacheSmsCode(mobile, code);
             return true;
         }
@@ -73,9 +67,9 @@ public abstract class BaseSmsCodeService implements SmsCodeService, Initializing
      * 发送短信验证码实现
      *
      * @param mobile 手机号
-     * @return 返回要求为一个key为验证码，value为短信是否发送成功的一个map
+     * @return
      */
-    protected abstract Map<String, Boolean> handleSendSmsCode(long mobile);
+    protected abstract SendResult handleSendSmsCode(long mobile);
 
     /**
      * 缓存短信验证码

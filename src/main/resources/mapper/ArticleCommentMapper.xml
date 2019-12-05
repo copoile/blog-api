@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.poile.blog.mapper.ArticleCommentMapper">
+
+    <!--评论回复列表-->
+    <resultMap id="articleCommentVo" type="cn.poile.blog.vo.ArticleCommentVo">
+        <id property="id" column="id"/>
+        <result property="content" column="content"/>
+        <result property="commentTime" column="comment_time"/>
+        <association property="article" javaType="cn.poile.blog.entity.Article">
+            <id property="id" column="article_id"/>
+            <result property="title" column="article_title"/>
+        </association>
+        <association property="fromUser" javaType="cn.poile.blog.entity.User">
+            <id property="id" column="c_from_user_id"/>
+            <result property="nickname" column="c_from_user_nickname"/>
+            <result property="avatar" column="c_from_user_avatar"/>
+        </association>
+        <collection property="replyList" ofType="cn.poile.blog.vo.ArticleReplyVo">
+            <id property="id" column="reply_id"/>
+            <result property="content" column="reply_content"/>
+            <result property="replyTime" column="reply_time"/>
+            <association property="fromUser" javaType="cn.poile.blog.entity.User">
+                <id property="id" column="r_from_user_id"/>
+                <result property="nickname" column="r_from_user_nickname"/>
+                <result property="avatar" column="r_from_user_avatar"/>
+            </association>
+            <association property="toUser" javaType="cn.poile.blog.entity.User">
+                <id property="id" column="r_to_user_id"/>
+                <result property="nickname" column="r_to_user_nickname"/>
+                <result property="avatar" column="r_to_user_avatar"/>
+            </association>
+        </collection>
+    </resultMap>
+
+    <!--查询文章评论及回复列表，包括评论者和回复者信息-->
+    <select id="selectCommentAndReplyList" resultMap="articleCommentVo">
+        select
+        c.id,
+        c.content,
+        c.comment_time,
+        c_f_u.id c_from_user_id,
+        c_f_u.nickname c_from_user_nickname,
+        c_f_u.avatar c_from_user_avatar,
+        r.id reply_id,
+        r.content reply_content,
+        r.reply_time,
+        r_f_u.id r_from_user_id,
+        r_f_u.nickname r_from_user_nickname,
+        r_f_u.avatar r_from_user_avatar,
+        r_t_u.id r_to_user_id,
+        r_t_u.nickname r_to_user_nickname,
+        r_t_u.avatar r_to_user_avatar
+        from
+        (
+        select
+        inner_c.id,
+        inner_c.content,
+        inner_c.comment_time,
+        inner_c.from_user_id
+        from
+        article_comment inner_c
+        where
+        inner_c.deleted = 0
+        and inner_c.article_id = #{articleId}
+        order by inner_c.id desc
+        limit #{offset},#{limit}
+        ) c
+        left join user c_f_u on c_f_u.id = c.from_user_id
+        left join article_reply r on r.comment_id = c.id
+        left join user r_f_u on r_f_u.id = r.from_user_id
+        left join user r_t_u on r_t_u.id = r.to_user_id
+        order by c.id desc, r.id desc
+    </select>
+
+    <!--查询最新评论，包括评论者和文章信息-->
+    <select id="selectLatestComment" resultMap="articleCommentVo">
+        select
+        c.id,
+        c.content,
+        c.comment_time,
+        c_f_u.id c_from_user_id,
+        c_f_u.nickname c_from_user_nickname,
+        c_f_u.avatar c_from_user_avatar,
+        a.id article_id,
+        a.title article_title
+        from
+        (
+        select
+        inner_c.id,
+        inner_c.content,
+        inner_c.comment_time,
+        inner_c.from_user_id,
+        inner_c.article_id
+        from
+        article_comment inner_c
+        where
+        inner_c.deleted = 0
+        order by inner_c.id desc
+        limit 0,#{limit}
+        ) c
+        left join user c_f_u on c_f_u.id = c.from_user_id
+        left join article a on a.id = c.article_id
+        order by c.id desc
+    </select>
+
+</mapper>

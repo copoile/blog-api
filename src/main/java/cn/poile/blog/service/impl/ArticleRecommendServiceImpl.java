@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,10 @@ public class ArticleRecommendServiceImpl implements ArticleRecommendService {
         if (articleVo == null) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "文章不存在或未发布");
         }
+        if (!articleVo.getStatus().equals(0)) {
+            return;
+        }
+        remove(articleId);
         // 只存列表所需要字段
         articleVo.setContent(null);
         articleVo.setNext(null);
@@ -114,23 +119,18 @@ public class ArticleRecommendServiceImpl implements ArticleRecommendService {
         if (articleId == null) {
             return;
         }
+        ArticleVo articleVo;
         Set<ZSetOperations.TypedTuple<Object>> valueScoreSet = zSetOperations.reverseRangeWithScores(KEY, 0, -1);
-        boolean exist = false;
-        ArticleVo articleVo = null;
-        double score = 0;
         if (valueScoreSet != null) {
             for(ZSetOperations.TypedTuple<Object> item:valueScoreSet) {
                 ArticleVo value =(ArticleVo) item.getValue();
                 if (articleId.equals(value.getId())) {
                     articleVo = value;
-                    score = item.getScore();
-                    exist = true;
+                    double score = item.getScore();
+                    zSetOperations.remove(KEY,articleVo);
+                    add(articleId,score);
                 }
             }
-        }
-        if (exist) {
-            zSetOperations.remove(KEY,articleVo);
-            add(articleId,score);
         }
     }
 }

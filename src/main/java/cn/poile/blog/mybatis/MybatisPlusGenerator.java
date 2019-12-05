@@ -79,7 +79,7 @@ public class MybatisPlusGenerator {
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);
         strategy.setEntityLombokModel(true);
         strategy.setRestControllerStyle(true);
-        strategy.setInclude("article_tag");
+        strategy.setInclude("article_collect");
         // 设置
         // strategy.setInclude("")
         // 公共父类

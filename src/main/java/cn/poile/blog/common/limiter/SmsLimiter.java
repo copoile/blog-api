@@ -56,9 +56,7 @@ public class SmsLimiter implements ExtraLimiter {
     public List<Limit> limit(RateLimiter rateLimiter, ProceedingJoinPoint point) {
         List<Limit> list = new ArrayList<>();
         Limit ipLimit = ipLimit(rateLimiter);
-        if (ipLimit != null) {
-            list.add(ipLimit);
-        }
+        list.add(ipLimit);
         Limit dayLimit = dayLimit(rateLimiter, point);
         if (dayLimit != null) {
             list.add(dayLimit);
@@ -72,7 +70,7 @@ public class SmsLimiter implements ExtraLimiter {
      * @return
      */
     private Limit ipLimit(RateLimiter rateLimiter) {
-        String key = rateLimiter.name() + SEPARATOR + IpUtil.getIpAddr();
+        String key = rateLimiter.name() + SEPARATOR + IpUtil.getIpAddress();
         Limit limit = new Limit();
         limit.setKey(key);
         limit.setMax(rateLimiter.max());
