@@ -4,7 +4,7 @@
 <head>
   <meta name="viewport" content="width=device-width">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <title>个人悦读分享邮箱验证</title>
+  <title>回复提醒</title>
   <style>
     /* -------------------------------------
         INLINED WITH htmlemail.io/inline
@@ -103,7 +103,7 @@
       <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 580px; padding: 10px;">
 
         <!-- START CENTERED WHITE CONTAINER -->
-        <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">个人悦读分享邮箱验证</span>
+        <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">评论提醒</span>
         <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 3px;">
 
           <!-- START MAIN CONTENT AREA -->
@@ -113,9 +113,10 @@
                 <tr>
                   <td style="font-family: sans-serif; font-size: 14px; vertical-align: top;">
                     <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">您好,</p>
-                    <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">感谢使用个人悦读分享。请点击以下链接进行邮箱验证，以便完成个人悦读分享账号邮箱绑定。</p>
-                    <a th:href="@{ ${checkUrl} }" target="_blank" style="display: inline-block; color: #ffffff; background-color: #3498db; border: solid 1px #3498db; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 25px; text-transform: capitalize; border-color: #3498db;">马上验证</a>
-                    <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;Margin-top: 15px;">如果你并未在个人悦读分享进行邮箱验证，可能是其他用户误输入了你的邮箱。请忽略此邮件。</p>
+                    <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">您在个人悦读分享收到一条回复。</p>
+                    <a th:href="${ url }" th:text="'@' + ${ nickname }" target="_blank" style="display: inline-block; color: #00a4ff; cursor: pointer;  font-size: 14px; margin: 0;text-decoration: underline;"></a>
+                    :&ensp;
+                    <p th:utext="${ content }" style="display: inline-block; font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;"></p>
                     <p style="font-family: sans-serif; font-size: 14px; font-weight: normal; margin: 0; Margin-bottom: 15px;">生活愉快，工作顺利！</p>
                   </td>
                 </tr>

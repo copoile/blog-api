@@ -15,7 +15,6 @@ import java.util.function.Function;
 @Component
 public class AsyncService {
 
-
     @Async
     public void runAsync(Function<Boolean, Boolean> function) {
         try {
@@ -23,7 +22,6 @@ public class AsyncService {
         } catch (Exception e) {
             log.error("异步任务执行错误:{0}",e);
         }
-
     }
 
 }

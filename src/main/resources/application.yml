@@ -14,6 +14,7 @@ spring:
     cache: true
     encoding: UTF-8
 
+# 忽略安全校验url列表，不可修改
 ignore:
   list:
     - /actuator/**
@@ -45,7 +46,30 @@ ignore:
     - /friend/link/list
     - /article/comment/page
     - /article/comment/latest
+    - /leave/message/page
+    - /leave/message/latest
 
+# 邮件中的链接配置，按需求配置
 mail:
-  check:
-    prefix: http://127.0.0.1:8080/email/verify
+  # 邮箱绑定时发送的验证链接前缀
+  check: http://127.0.0.1:8080/email/verify
+  # 文章详情前缀，文章评论邮件提醒的链接前缀
+  article: http://www.poile.cn/article/#/
+  # 留言邮件提醒留言版页面链接
+  message: http://www.poile.cn/message
+
+# 登录时长配置，单位为秒，可按需求修改，一般配置2小时，30天
+login:
+  access_token_expire: 7200
+  refresh_token_expire: 2592000
+
+# mybatis-plus配置，不可修改
+mybatis-plus:
+  mapper-locations:
+  - classpath:/mapper/*.xml
+  type-aliases-package: cn.poile.bolg.entity
+  global-config:
+    db-config:
+      # 配置逻辑删除，1：是，0：否
+      logic-not-delete-value: 0
+      logic-delete-value: 1

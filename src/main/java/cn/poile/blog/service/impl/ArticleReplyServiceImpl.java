@@ -8,7 +8,7 @@ import cn.poile.blog.biz.AsyncService;
 import cn.poile.blog.common.constant.CommonConstant;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
-import cn.poile.blog.common.email.EmailService;
+import cn.poile.blog.biz.EmailService;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.security.ServeSecurityContext;
 import cn.poile.blog.entity.ArticleReply;
@@ -20,6 +20,7 @@ import cn.poile.blog.vo.CustomUserDetails;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,6 +42,9 @@ public class ArticleReplyServiceImpl extends ServiceImpl<ArticleReplyMapper, Art
 
     @Autowired
     private EmailService emailService;
+
+    @Value("${mail.article}")
+    private String prefix;
 
     /**
      * 新增文章评论回复
@@ -88,6 +92,7 @@ public class ArticleReplyServiceImpl extends ServiceImpl<ArticleReplyMapper, Art
             Integer fromUserId = reply.getFromUserId();
             CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
             List<String> roleList = userDetail.getRoleList();
+            // 不是本人，也不是管理员不允许删除
             if (!fromUserId.equals(userDetail.getId()) & !roleList.contains(RoleConstant.ADMIN)) {
                 throw new ApiException(ErrorEnum.PERMISSION_DENIED.getErrorCode(),ErrorEnum.PERMISSION_DENIED.getErrorMsg());
             }
@@ -106,10 +111,11 @@ public class ArticleReplyServiceImpl extends ServiceImpl<ArticleReplyMapper, Art
         User user = userService.getById(toUserId);
         if (user != null && !StringUtils.isBlank(user.getEmail())) {
             Map<String,Object> params = new HashMap<>(3);
-            params.put("url","http://www.baidu.com/" + articleId);
+            prefix = prefix.endsWith("/") ? prefix : prefix + "/";
+            params.put("url",prefix + articleId);
             params.put("nickname",user.getNickname());
             params.put("content",content);
-            emailService.sendHtmlMail(user.getEmail(),"回复提醒","reply",params);
+            emailService.sendHtmlMail(user.getEmail(),"回复提醒","article_reply",params);
         }
         return Boolean.TRUE;
     }

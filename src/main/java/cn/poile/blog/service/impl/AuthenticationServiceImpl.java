@@ -34,7 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @return cn.poile.blog.vo.TokenVo
      */
     @Override
-    public AuthenticationToken usernameOrMobilePasswordAuthenticate(String s, String password) {
+    public AuthenticationToken usernameOrMobilePasswordAuthenticate(String s, String password,String clientId) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(s, password);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         return tokenStore.storeAccessToken(authenticate);
@@ -47,7 +47,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @return
      */
     @Override
-    public AuthenticationToken mobileCodeAuthenticate(long mobile, String code) {
+    public AuthenticationToken mobileCodeAuthenticate(long mobile, String code,String clientId) {
         MobileCodeAuthenticationToken authenticationToken = new MobileCodeAuthenticationToken(mobile, code);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
         AuthenticationToken storeAccessToken = tokenStore.storeAccessToken(authenticate);
@@ -58,9 +58,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     /**
      * 移除 accessToken 相关
      * @param accessToken
+     * @param clientId
      */
     @Override
-    public void remove(String accessToken) {
+    public void remove(String accessToken,String clientId) {
         tokenStore.remove(accessToken);
     }
 
@@ -70,7 +71,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * @return
      */
     @Override
-    public AuthenticationToken refreshAccessToken(String refreshToken) {
+    public AuthenticationToken refreshAccessToken(String refreshToken,String clientId) {
         return tokenStore.refreshAccessToken(refreshToken);
     }
 

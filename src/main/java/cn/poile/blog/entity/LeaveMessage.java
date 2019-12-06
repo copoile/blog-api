@@ -2,8 +2,10 @@ package cn.poile.blog.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import java.time.LocalDateTime;
 import java.io.Serializable;
 
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,22 +13,20 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
-import javax.validation.constraints.NotBlank;
-
 /**
  * <p>
- * 友链表
+ * 留言表
  * </p>
  *
  * @author yaohw
- * @since 2019-12-02
+ * @since 2019-12-05
  */
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@ApiModel(value="FriendLink对象", description="友链表")
-public class FriendLink implements Serializable {
+@ApiModel(value="LeaveMessage对象", description="留言表")
+public class LeaveMessage implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -34,16 +34,23 @@ public class FriendLink implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @ApiModelProperty(value = "名称")
-    @NotBlank(message = "名称不能为空")
-    private String name;
+    @ApiModelProperty(value = "父id")
+    private Integer pid;
 
-    @ApiModelProperty(value = "链接")
-    @NotBlank(message = "链接不能为空")
-    private String url;
+    @ApiModelProperty(value = "留言者id")
+    private Integer fromUserId;
 
-    @ApiModelProperty(value = "图标")
-    private String icon;
+    private Integer toUserId;
+
+    @ApiModelProperty(value = "内容")
+    private String content;
+
+    @ApiModelProperty(value = "时间")
+    private LocalDateTime createTime;
+
+    @TableLogic
+    @ApiModelProperty(value = "是否删除，1：是，0：否")
+    private Integer deleted;
 
 
 }

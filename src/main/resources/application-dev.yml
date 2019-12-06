@@ -61,7 +61,7 @@ spring:
     host: smtp.163.com
     port: 25
     username: 15625295093@163.com
-    password: abc452637
+    password: abc
     protocol: smtp
     test-connection: true
     default-encoding: UTF-8
@@ -97,20 +97,10 @@ sms:
   expire: 300
   ali:
     regionId: cn-hangzhou
-    accessKeyId: LTAIaEeboqn0kR
-    accessKeySecret: bU54eGKPugUj03LJm8eE
+    accessKeyId: LTAIaEeboqn
+    accessKeySecret: bU54eGKPugUj03LJm8eELN
     signName: 个人悦读分享
-    templateCode: SMS_176942
-
-mybatis-plus:
-  mapper-locations:
-    - classpath:/mapper/*.xml
-  type-aliases-package: cn.poile.bolg.entity
-  global-config:
-    db-config:
-      # 配置逻辑删除，1：是，0：否
-      logic-not-delete-value: 0
-      logic-delete-value: 1
+    templateCode: SMS_176942058
 
 logging:
   level:

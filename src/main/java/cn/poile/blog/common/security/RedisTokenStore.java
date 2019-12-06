@@ -6,6 +6,7 @@ import cn.poile.blog.vo.CustomUserDetails;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands;
@@ -45,24 +46,26 @@ public class RedisTokenStore {
     private static final String AUTH_REFRESH_TOKEN = "auth:refresh_token:";
 
     /**
-     * accessToken : refreshToken
+     * key为accessToken ， value为refreshToken，用于accessToken获取refreshToken
      */
-    private static final String AUTH_ACCESS = "auth:access_to_refresh:";
+    private static final String AUTH_ACCESS_TO_REFRESH = "auth:access_to_refresh:";
 
     /**
-     * user md5 : accessToken
+     * user md5 : accessToken，这是zset的key，列表里放此用户登录的accessToken
      */
     private static final String AUTH_USER_ACCESS = "auth:user_to_access:";
 
     /**
      * accessToken 时效
      */
-    private static final long ACCESS_TOKEN_VALIDITY_SECONDS = 43200L;
+    @Value("${login.access_token_expire:7200}")
+    private long accessTokenExpire;
 
     /**
      * accessToken 时效
      */
-    private static final long REFRESH_TOKEN_VALIDITY_SECONDS = 2592000L;
+    @Value("${login.refresh_token_expire:2592000}")
+    private long refreshTokenExpire;
 
     @Autowired
     private RedisConnectionFactory connectionFactory;
@@ -145,28 +148,29 @@ public class RedisTokenStore {
         String refreshToken = createToken();
         AuthenticationToken token = new AuthenticationToken();
         token.setAccessToken(accessToken);
-        token.setExpire(ACCESS_TOKEN_VALIDITY_SECONDS);
+        token.setExpire(accessTokenExpire);
         token.setRefreshToken(refreshToken);
         token.setPrincipal(customUserDetails);
-        RedisConnection conn = getConnection();
         byte[] serializedAuthentication = serializedAuthentication(token);
         byte[] accessTokenKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
         byte[] refreshTokenKey = serializedKey(AUTH_REFRESH_TOKEN + refreshToken);
-        byte[] accessKey = serializedKey((AUTH_ACCESS + accessToken));
+        byte[] accessKey = serializedKey((AUTH_ACCESS_TO_REFRESH + accessToken));
         byte[] serializeRefreshToken = serialized(refreshToken);
         String extract = extractKey(customUserDetails.getId());
         byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
         byte[] serializedAccessToken = serialized(accessToken);
         long now = Instant.now().toEpochMilli();
-        long expired = now - TimeUnit.SECONDS.toMillis(ACCESS_TOKEN_VALIDITY_SECONDS);
+        long expired = now - TimeUnit.SECONDS.toMillis(accessTokenExpire);
+        RedisConnection conn = getConnection();
         try {
             conn.openPipeline();
-            conn.set(accessTokenKey, serializedAuthentication, Expiration.seconds(ACCESS_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
-            conn.set(refreshTokenKey, serializedAuthentication, Expiration.seconds(REFRESH_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
-            conn.set(accessKey, serializeRefreshToken, Expiration.seconds(REFRESH_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
+            conn.set(accessTokenKey, serializedAuthentication, Expiration.seconds(accessTokenExpire), RedisStringCommands.SetOption.UPSERT);
+            conn.set(refreshTokenKey, serializedAuthentication, Expiration.seconds(refreshTokenExpire), RedisStringCommands.SetOption.UPSERT);
+            conn.set(accessKey, serializeRefreshToken, Expiration.seconds(refreshTokenExpire), RedisStringCommands.SetOption.UPSERT);
+            // 清除同一用户过期数据，这里（三行）这么做是为了更新缓存用户信息时能使用userId找到对应的所有登录信息，进而进行更新缓存
             conn.zSetCommands().zRemRangeByScore(extractKey, 0, expired);
             conn.zSetCommands().zAdd(extractKey, now, serializedAccessToken);
-            conn.expire(extractKey, REFRESH_TOKEN_VALIDITY_SECONDS);
+            conn.expire(extractKey, refreshTokenExpire);
             conn.closePipeline();
         } finally {
             conn.close();
@@ -228,14 +232,14 @@ public class RedisTokenStore {
         byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
         byte[] serializedAccessToken = serialized(accessToken);
         long now = Instant.now().toEpochMilli();
-        long expired = now - TimeUnit.SECONDS.toMillis(ACCESS_TOKEN_VALIDITY_SECONDS);
+        long expired = now - TimeUnit.SECONDS.toMillis(accessTokenExpire);
         RedisConnection conn = getConnection();
         try {
             conn.openPipeline();
-            conn.set(serializedKey, serializedAuthentication, Expiration.seconds(ACCESS_TOKEN_VALIDITY_SECONDS), RedisStringCommands.SetOption.UPSERT);
+            conn.set(serializedKey, serializedAuthentication, Expiration.seconds(accessTokenExpire), RedisStringCommands.SetOption.UPSERT);
             conn.zSetCommands().zRemRangeByScore(extractKey, 0, expired);
             conn.zSetCommands().zAdd(extractKey, now, serializedAccessToken);
-            conn.expire(extractKey, REFRESH_TOKEN_VALIDITY_SECONDS);
+            conn.expire(extractKey, refreshTokenExpire);
         } finally {
             conn.close();
 
@@ -255,14 +259,14 @@ public class RedisTokenStore {
         byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
         byte[] serializedAccessToken = serialized(accessToken);
         long now = Instant.now().toEpochMilli();
-        long expired = now - TimeUnit.SECONDS.toMillis(ACCESS_TOKEN_VALIDITY_SECONDS);
+        long expired = now - TimeUnit.SECONDS.toMillis(accessTokenExpire);
         RedisConnection conn = getConnection();
         try {
             conn.openPipeline();
-            conn.expire(serializedKey,ACCESS_TOKEN_VALIDITY_SECONDS);
+            conn.expire(serializedKey, accessTokenExpire);
             conn.zSetCommands().zRemRangeByScore(extractKey, 0, expired);
             conn.zSetCommands().zAdd(extractKey, now, serializedAccessToken);
-            conn.expire(extractKey, REFRESH_TOKEN_VALIDITY_SECONDS);
+            conn.expire(extractKey, refreshTokenExpire);
         } finally {
             conn.close();
 
@@ -314,7 +318,7 @@ public class RedisTokenStore {
      */
     private String readAccessToRefreshToken(String accessToken) {
         RedisConnection conn = getConnection();
-        byte[] serializedKey = serializedKey(AUTH_ACCESS + accessToken);
+        byte[] serializedKey = serializedKey(AUTH_ACCESS_TO_REFRESH + accessToken);
         byte[] bytes;
         try {
             bytes = conn.get(serializedKey);
@@ -340,7 +344,7 @@ public class RedisTokenStore {
         byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
         byte[] accessTokenKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
         byte[] refreshTokenKey = serializedKey(AUTH_REFRESH_TOKEN + refreshToken);
-        byte[] accessKey = serializedKey((AUTH_ACCESS + accessToken));
+        byte[] accessKey = serializedKey((AUTH_ACCESS_TO_REFRESH + accessToken));
         byte[] serializedAccessToken = serialized(accessToken);
         RedisConnection conn = getConnection();
         try {
@@ -363,7 +367,7 @@ public class RedisTokenStore {
         String extract = extractKey(userId);
         byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
         long now = Instant.now().toEpochMilli();
-        long expired = now - TimeUnit.SECONDS.toMillis(ACCESS_TOKEN_VALIDITY_SECONDS);
+        long expired = now - TimeUnit.SECONDS.toMillis(accessTokenExpire);
         RedisConnection conn = getConnection();
         Set<byte[]> set;
         try {
@@ -395,7 +399,7 @@ public class RedisTokenStore {
                         long refreshTokenExpire = readRefreshTokenExpire(AUTH_REFRESH_TOKEN + refreshToken);
                         byte[] accessTokenKey = serializedKey(AUTH_ACCESS_TOKEN + accessToken);
                         byte[] refreshTokenKey = serializedKey(AUTH_REFRESH_TOKEN + refreshToken);
-                        byte[] accessKey = serializedKey((AUTH_ACCESS + accessToken));
+                        byte[] accessKey = serializedKey((AUTH_ACCESS_TO_REFRESH + accessToken));
                         conn.openPipeline();
                         conn.set(accessTokenKey, serializedAuthentication, Expiration.seconds(accessTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
                         conn.set(refreshTokenKey, serializedAuthentication, Expiration.seconds(refreshTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);

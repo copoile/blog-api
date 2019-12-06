@@ -17,7 +17,6 @@ public class SmsServiceProperties  {
 
     private final SmsServiceProperties.Ali ali = new SmsServiceProperties.Ali();
 
-
     @Data
     public static class Ali {
        private String regionId = "cn-hangzhou";

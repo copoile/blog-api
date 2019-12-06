@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.poile.blog.mapper.LeaveMessageMapper">
+
+   <!--留言及留言回复-->
+    <resultMap id="leaveMessageVo" type="cn.poile.blog.vo.LeaveMessageVo">
+        <id property="id" column="id"/>
+        <result property="content" column="content"/>
+        <result property="createTime" column="create_time"/>
+        <association property="fromUser" javaType="cn.poile.blog.entity.User">
+            <id property="id" column="l_from_user_id"/>
+            <result property="nickname" column="l_from_user_nickname"/>
+            <result property="avatar" column="l_from_user_avatar"/>
+        </association>
+        <collection property="replyList" ofType="cn.poile.blog.vo.LeaveMessageReplyVo">
+            <id property="id" column="reply_id"/>
+            <result property="content" column="reply_content"/>
+            <result property="createTime" column="reply_time"/>
+            <association property="fromUser" javaType="cn.poile.blog.entity.User">
+                <id property="id" column="r_from_user_id"/>
+                <result property="nickname" column="r_from_user_nickname"/>
+                <result property="avatar" column="r_from_user_avatar"/>
+            </association>
+            <association property="toUser" javaType="cn.poile.blog.entity.User">
+                <id property="id" column="r_to_user_id"/>
+                <result property="nickname" column="r_to_user_nickname"/>
+                <result property="avatar" column="r_to_user_avatar"/>
+            </association>
+        </collection>
+    </resultMap>
+
+
+    <!--查询留言及留言回复列表，包括留言者和回复者信息-->
+    <select id="selectLeaveMessageAndReplyList" resultMap="leaveMessageVo">
+        select
+        l.id,
+        l.content,
+        l.create_time,
+        l_f_u.id l_from_user_id,
+        l_f_u.nickname l_from_user_nickname,
+        l_f_u.avatar l_from_user_avatar,
+        r.id reply_id,
+        r.content reply_content,
+        r.create_time reply_time,
+        r_f_u.id r_from_user_id,
+        r_f_u.nickname r_from_user_nickname,
+        r_f_u.avatar r_from_user_avatar,
+        r_t_u.id r_to_user_id,
+        r_t_u.nickname r_to_user_nickname,
+        r_t_u.avatar r_to_user_avatar
+        from
+        (
+        select
+        inner_l.id,
+        inner_l.content,
+        inner_l.create_time,
+        inner_l.from_user_id
+        from
+        leave_message inner_l
+        where
+        inner_l.deleted = 0
+        and inner_l.pid is null
+        order by inner_l.id desc
+        limit #{offset},#{limit}
+        ) l
+        left join user l_f_u on l_f_u.id = l.from_user_id
+        left join leave_message r on r.pid = l.id and r.deleted = 0
+        left join user r_f_u on r_f_u.id = r.from_user_id
+        left join user r_t_u on r_t_u.id = r.to_user_id
+        order by l.id desc, r.id desc
+    </select>
+
+    <!--最新留言-->
+    <select id="selectLatest" resultMap="leaveMessageVo">
+        select
+        l.id,
+        l.content,
+        l.create_time,
+        l_f_u.id l_from_user_id,
+        l_f_u.nickname l_from_user_nickname,
+        l_f_u.avatar l_from_user_avatar
+        from
+        (
+        select
+        inner_l.id,
+        inner_l.content,
+        inner_l.create_time,
+        inner_l.from_user_id
+        from
+        leave_message inner_l
+        where
+        inner_l.deleted = 0
+        and inner_l.pid is null
+        order by inner_l.id desc
+        limit 0,#{limit}
+        ) l
+        left join user l_f_u on l_f_u.id = l.from_user_id
+        order by l.id desc
+    </select>
+
+</mapper>

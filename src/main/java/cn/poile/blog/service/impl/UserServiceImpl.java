@@ -3,7 +3,7 @@ package cn.poile.blog.service.impl;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.common.constant.UserConstant;
-import cn.poile.blog.common.email.EmailService;
+import cn.poile.blog.biz.EmailService;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.oss.Storage;
 import cn.poile.blog.common.security.AuthenticationToken;
@@ -69,7 +69,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Autowired
     private Storage storage;
 
-    @Value("${mail.check.prefix}")
+    @Value("${mail.check}")
     private String prefix;
 
     @Autowired
@@ -176,6 +176,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public void validateEmail(String email) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(User::getEmail,email);
+        int count = count(queryWrapper);
+        if (count != 0) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"邮箱已被使用");
+        }
         AuthenticationToken authenticationToken = ServeSecurityContext.getAuthenticationToken(true);
         Map<String, Object> params = new HashMap<>(1);
         RandomValueStringGenerator generator = new RandomValueStringGenerator();

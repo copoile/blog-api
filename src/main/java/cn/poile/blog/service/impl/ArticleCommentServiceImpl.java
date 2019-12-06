@@ -4,7 +4,7 @@ import cn.poile.blog.biz.AsyncService;
 import cn.poile.blog.common.constant.CommonConstant;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
-import cn.poile.blog.common.email.EmailService;
+import cn.poile.blog.biz.EmailService;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.security.ServeSecurityContext;
 import cn.poile.blog.entity.Article;
@@ -15,7 +15,6 @@ import cn.poile.blog.service.ArticleRecommendService;
 import cn.poile.blog.service.IArticleCommentService;
 import cn.poile.blog.service.IArticleService;
 import cn.poile.blog.service.IUserService;
-import cn.poile.blog.vo.ArticleArchivesVo;
 import cn.poile.blog.vo.ArticleCommentVo;
 import cn.poile.blog.vo.CustomUserDetails;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -24,6 +23,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +58,8 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
     @Autowired
     private AsyncService asyncService;
 
+    @Value("${mail.article}")
+    private String prefix;
 
 
     /**
@@ -82,17 +84,19 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
 
     /**
      * 异步刷新推荐列表中的评论数、发送评论提醒邮件
+     *
      * @param articleId
      * @param content
      * @return
      */
     @Override
-    public void asyncRefreshRecommendAndSendCommentMail(Integer articleId,String content) {
-        asyncService.runAsync((s)-> refreshRecommendAndSendCommentMail(articleId,content));
+    public void asyncRefreshRecommendAndSendCommentMail(Integer articleId, String content) {
+        asyncService.runAsync((s) -> refreshRecommendAndSendCommentMail(articleId, content));
     }
 
     /**
      * 删除评论(逻辑删除),发表评论者和管理员可删除
+     *
      * @param commentId
      */
     @Override
@@ -102,8 +106,9 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
         if (comment != null) {
             CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
             List<String> roleList = userDetail.getRoleList();
-            if (!comment.getId().equals(userDetail.getId()) & !roleList.contains(RoleConstant.ADMIN)) {
-                throw new ApiException(ErrorEnum.PERMISSION_DENIED.getErrorCode(),ErrorEnum.PERMISSION_DENIED.getErrorMsg());
+            // 不是本人，也不是管理员不允许删除
+            if (!comment.getFromUserId().equals(userDetail.getId()) & !roleList.contains(RoleConstant.ADMIN)) {
+                throw new ApiException(ErrorEnum.PERMISSION_DENIED.getErrorCode(), ErrorEnum.PERMISSION_DENIED.getErrorMsg());
             }
             removeById(commentId);
             Integer articleId = comment.getArticleId();
@@ -121,12 +126,12 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
     @Override
     public IPage<ArticleCommentVo> selectCommentAndReplyList(long current, long size, Integer articleId) {
         QueryWrapper<ArticleComment> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(ArticleComment::getArticleId,articleId);
+        queryWrapper.lambda().eq(ArticleComment::getArticleId, articleId);
         int count = count(queryWrapper);
         if (count == 0) {
             return new Page<>(current, size);
         }
-        List<ArticleCommentVo> records = this.baseMapper.selectCommentAndReplyList((current - 1) * size, size,articleId);
+        List<ArticleCommentVo> records = this.baseMapper.selectCommentAndReplyList((current - 1) * size, size, articleId);
         Page<ArticleCommentVo> page = new Page<>(current, size, count);
         page.setRecords(records);
         return page;
@@ -145,6 +150,7 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
 
     /**
      * 刷新推荐列表中的评论数、发送评论提醒邮件
+     *
      * @param articleId
      * @param content
      * @return
@@ -157,11 +163,12 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
             User user = userService.getById(userId);
             if (user != null && !StringUtils.isBlank(user.getEmail())) {
                 Map<String, Object> params = new HashMap<>(3);
-                params.put("url","http://www.baidu.com");
-                params.put("nickname",user.getNickname());
-                params.put("content",content);
+                prefix = prefix.endsWith("/") ? prefix : prefix + "/";
+                params.put("url", prefix + articleId);
+                params.put("nickname", user.getNickname());
+                params.put("content", content);
                 String topic = "评论提醒";
-                emailService.sendHtmlMail(user.getEmail(),topic,"comment",params);
+                emailService.sendHtmlMail(user.getEmail(), topic, "article_comment", params);
             }
         }
         return Boolean.TRUE;

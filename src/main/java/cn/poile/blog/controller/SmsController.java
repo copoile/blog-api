@@ -1,7 +1,7 @@
 package cn.poile.blog.controller;
 
 import cn.poile.blog.common.limiter.annotation.RateLimiter;
-import cn.poile.blog.common.email.EmailService;
+import cn.poile.blog.biz.EmailService;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.sms.SmsCodeService;
 import cn.poile.blog.common.validator.annotation.IsPhone;

@@ -1,4 +1,4 @@
-package cn.poile.blog.common.email;
+package cn.poile.blog.biz;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
