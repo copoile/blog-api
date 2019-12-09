@@ -213,15 +213,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String accessToken = (String) resultMap.get("access_token");
         String email = (String) resultMap.get("email");
         redisTemplate.delete(REDIS_MAIL_CODE_PREFIX + code);
-        AuthenticationToken authenticationToken = tokenStore.readAccessToken(accessToken);
-        tokenStore.refreshAccessTokenExpire(authenticationToken);
+        // 读取认证信息
+        AuthenticationToken authenticationToken = tokenStore.readByAccessToken(accessToken);
+        tokenStore.refreshAccessExpire(authenticationToken);
+
         CustomUserDetails principal = authenticationToken.getPrincipal();
         User user = new User();
         user.setId(principal.getId());
         user.setEmail(email);
+        // 数据库数据更新
         updateById(user);
+        // 返回认证信息，以便（前端使用sessionStorage新tab页会用到）能直接查看到邮箱绑定情况
         AccessTokenDTO accessTokenDTO = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken, accessTokenDTO);
+        // 更新认证信息中的用户信息
+        principal.setEmail(email);
+        tokenStore.updatePrincipal(principal);
         return accessTokenDTO;
     }
 
@@ -390,10 +397,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     private User selectUserByUsernameOtherwiseMobile(String username, Long mobile) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        if (StringUtils.isBlank(username)) {
-            queryWrapper.lambda().eq(User::getMobile,mobile);
-        }else {
+        if (StringUtils.isNotBlank(username)) {
             queryWrapper.lambda().eq(User::getUsername,username);
+        }else {
+            queryWrapper.lambda().eq(User::getMobile,mobile);
         }
         return getOne(queryWrapper,false);
     }

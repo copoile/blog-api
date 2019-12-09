@@ -18,10 +18,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import sun.misc.BASE64Decoder;
 
 import javax.validation.constraints.NotBlank;
@@ -61,8 +58,8 @@ public class AuthenticationController extends BaseController {
     public ApiResponse<AccessTokenDTO> accountLogin(@ApiParam("用户名或手机号") @NotBlank(message = "账号不能为空") @RequestParam String username,
                                                     @ApiParam("密码") @NotBlank(message = "密码不能为空") @RequestParam String password,
                                                     @ApiParam("客户端认证请求头") @RequestHeader(value = "Authorization") String authorization) {
-        String clientId = getAndValidatedClientId(authorization);
-        AuthenticationToken authenticationToken = authenticationService.usernameOrMobilePasswordAuthenticate(username, password, clientId);
+        Client client = getAndValidatedClient(authorization);
+        AuthenticationToken authenticationToken = authenticationService.usernameOrMobilePasswordAuthenticate(username, password, client);
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken, response);
         return createResponse(response);
@@ -73,19 +70,19 @@ public class AuthenticationController extends BaseController {
     public ApiResponse<AccessTokenDTO> mobileLogin(@ApiParam("手机号") @NotNull(message = "手机号不能为空") @IsPhone @RequestParam long mobile,
                                                    @ApiParam("手机号验证码") @NotBlank(message = "验证码不能为空") @RequestParam String code,
                                                    @ApiParam("客户端认证请求头") @RequestHeader(value = "Authorization") String authorization) {
-        String clientId = getAndValidatedClientId(authorization);
-        AuthenticationToken authenticationToken = authenticationService.mobileCodeAuthenticate(mobile, code, clientId);
+        Client client = getAndValidatedClient(authorization);
+        AuthenticationToken authenticationToken = authenticationService.mobileCodeAuthenticate(mobile, code, client);
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken, response);
         return createResponse(response);
     }
 
-    @PostMapping("/logout")
+    @DeleteMapping("/logout")
     @ApiOperation(value = "用户登出")
     public ApiResponse logout(@RequestHeader(value = "Authorization") String authorization,
                               @ApiParam("accessToken") @RequestParam("accessToken") String accessToken) {
-        String clientId = getAndValidatedClientId(authorization);
-        authenticationService.remove(accessToken, clientId);
+        Client client = getAndValidatedClient(authorization);
+        authenticationService.remove(accessToken, client);
         return createResponse();
     }
 
@@ -94,20 +91,20 @@ public class AuthenticationController extends BaseController {
     public ApiResponse<AccessTokenDTO> refreshAccessToken(
             @ApiParam("客户端认证请求头") @RequestHeader(value = "Authorization") String authorization,
             @ApiParam("refreshToken") @NotBlank(message = "refreshToken不能为空") @RequestParam("refreshToken") String refreshToken) {
-        String clientId = getAndValidatedClientId(authorization);
-        AuthenticationToken authenticationToken = authenticationService.refreshAccessToken(refreshToken, clientId);
+        Client client = getAndValidatedClient(authorization);
+        AuthenticationToken authenticationToken = authenticationService.refreshAccessToken(refreshToken, client);
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken, response);
         return createResponse(response);
     }
 
     /**
-     * 获取并校验clientId
+     * 获取并校验client
      *
      * @param authorization
      * @return
      */
-    private String getAndValidatedClientId(String authorization) {
+    private Client getAndValidatedClient(String authorization) {
         String[] clientIdAndClientSecret = extractClientIdAndClientSecret(authorization);
         String clientId = clientIdAndClientSecret[0];
         String clientSecret = clientIdAndClientSecret[1];
@@ -115,7 +112,7 @@ public class AuthenticationController extends BaseController {
         if (client == null || !passwordEncoder.matches(clientSecret, client.getClientSecret())) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效客户端");
         }
-        return null;
+        return client;
     }
 
     /**

@@ -8,7 +8,6 @@ import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -39,7 +38,7 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
         if (authorization != null && authorization.startsWith(TOKEN_TYPE)) {
            String accessToken = authorization.substring(7);
            if (!accessToken.isEmpty()) {
-               AuthenticationToken cacheAuthenticationToken = tokenStore.readAccessToken(accessToken);
+               AuthenticationToken cacheAuthenticationToken = tokenStore.readByAccessToken(accessToken);
                if (cacheAuthenticationToken == null) {
                    httpServletResponse.setCharacterEncoding("UTF-8");
                    httpServletResponse.setContentType("application/json; charset=utf-8");

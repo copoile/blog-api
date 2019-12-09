@@ -40,6 +40,7 @@ public class LeaveMessage implements Serializable {
     @ApiModelProperty(value = "留言者id")
     private Integer fromUserId;
 
+    @ApiModelProperty(value = "被回复者id")
     private Integer toUserId;
 
     @ApiModelProperty(value = "内容")

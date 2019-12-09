@@ -3,7 +3,7 @@ spring:
     active:
       - dev
   application:
-    name: ucs-blog
+    name: blog-api
   servlet:
     multipart:
       enabled: true
@@ -27,6 +27,7 @@ ignore:
     - /sms/**
     - /account/login
     - /mobile/login
+    - /logout
     - /refresh_access_token
     - /user/register
     - /email/bind
@@ -57,11 +58,6 @@ mail:
   article: http://www.poile.cn/article/#/
   # 留言邮件提醒留言版页面链接
   message: http://www.poile.cn/message
-
-# 登录时长配置，单位为秒，可按需求修改，一般配置2小时，30天
-login:
-  access_token_expire: 7200
-  refresh_token_expire: 2592000
 
 # mybatis-plus配置，不可修改
 mybatis-plus:

@@ -4,6 +4,7 @@ import cn.poile.blog.common.security.AuthenticationToken;
 import cn.poile.blog.common.security.MobileCodeAuthenticationToken;
 import cn.poile.blog.common.security.RedisTokenStore;
 import cn.poile.blog.common.sms.SmsCodeService;
+import cn.poile.blog.entity.Client;
 import cn.poile.blog.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,26 +32,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
      * 用户名或手机号密码认证
      * @param s  手机号或用户名
      * @param password 密码
-     * @return cn.poile.blog.vo.TokenVo
+     * @param client
+     * @return
      */
     @Override
-    public AuthenticationToken usernameOrMobilePasswordAuthenticate(String s, String password,String clientId) {
+    public AuthenticationToken usernameOrMobilePasswordAuthenticate(String s, String password, Client client) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(s, password);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-        return tokenStore.storeAccessToken(authenticate);
+        return tokenStore.storeAccessToken(authenticate,client);
     }
 
     /**
      * 手机号验证码认证
      * @param mobile
      * @param code
+     * @param client 客户端
      * @return
      */
     @Override
-    public AuthenticationToken mobileCodeAuthenticate(long mobile, String code,String clientId) {
+    public AuthenticationToken mobileCodeAuthenticate(long mobile, String code,Client client) {
         MobileCodeAuthenticationToken authenticationToken = new MobileCodeAuthenticationToken(mobile, code);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-        AuthenticationToken storeAccessToken = tokenStore.storeAccessToken(authenticate);
+        AuthenticationToken storeAccessToken = tokenStore.storeAccessToken(authenticate,client);
         smsCodeService.deleteSmsCode(mobile);
         return storeAccessToken;
     }
@@ -58,21 +61,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     /**
      * 移除 accessToken 相关
      * @param accessToken
-     * @param clientId
+     * @param client 客户端
      */
     @Override
-    public void remove(String accessToken,String clientId) {
-        tokenStore.remove(accessToken);
+    public void remove(String accessToken,Client client) {
+        tokenStore.remove(accessToken,client);
     }
 
     /**
      * 刷新accessToken
      * @param refreshToken
+     * @param client 客户端
      * @return
      */
     @Override
-    public AuthenticationToken refreshAccessToken(String refreshToken,String clientId) {
-        return tokenStore.refreshAccessToken(refreshToken);
+    public AuthenticationToken refreshAccessToken(String refreshToken,Client client) {
+        return tokenStore.refreshAuthToken(refreshToken,client);
     }
 
 
