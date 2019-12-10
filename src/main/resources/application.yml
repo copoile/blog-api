@@ -1,7 +1,7 @@
 spring:
   profiles:
     active:
-      - dev
+      - prod
   application:
     name: blog-api
   servlet:
@@ -49,15 +49,6 @@ ignore:
     - /article/comment/latest
     - /leave/message/page
     - /leave/message/latest
-
-# 邮件中的链接配置，按需求配置
-mail:
-  # 邮箱绑定时发送的验证链接前缀
-  check: http://127.0.0.1:8080/email/verify
-  # 文章详情前缀，文章评论邮件提醒的链接前缀
-  article: http://www.poile.cn/article/#/
-  # 留言邮件提醒留言版页面链接
-  message: http://www.poile.cn/message
 
 # mybatis-plus配置，不可修改
 mybatis-plus:

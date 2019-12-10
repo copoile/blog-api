@@ -20,4 +20,9 @@ public interface IClientService extends IService<Client> {
      */
     Client getClientByClientId(String clientId);
 
+    /**
+     * 清空缓存
+     */
+    void clearCache();
+
 }

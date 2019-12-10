@@ -17,10 +17,10 @@ import java.time.LocalDate;
  * @author: yaohw
  * @create: 2019-11-08 16:04
  **/
-@ApiModel(value = "用户更新json",description = "用户更新")
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ApiModel(value = "用户更新json",description = "用户更新")
 public class UpdateUserRequest {
 
     @ApiModelProperty(value = "用户id")

@@ -7,7 +7,9 @@ import cn.poile.blog.common.validator.annotation.IsPhone;
 import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
+import cn.poile.blog.entity.User;
 import cn.poile.blog.service.IUserService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -39,7 +41,6 @@ public class UserController extends BaseController {
 
     @Autowired
     private IUserService userService;
-
 
 
     @GetMapping("/info")
@@ -115,5 +116,21 @@ public class UserController extends BaseController {
         return createResponse(userService.bindEmail(code));
     }
 
+    @GetMapping("/page")
+    @ApiOperation(value = "分页获取用户信息，用于后台管理", notes = "需要accessToken，需要管理员权限")
+    public ApiResponse<IPage<User>> page(@ApiParam("页码") @RequestParam(value = "current", required = false, defaultValue = "1") long current,
+                                         @ApiParam("每页数量") @RequestParam(value = "size", required = false, defaultValue = "5") long size,
+                                         @ApiParam("用户名") @RequestParam(value = "username", required = false) String username,
+                                         @ApiParam("昵称") @RequestParam(value = "nickname", required = false) String nickname) {
+        return createResponse(userService.page(current, size, username, nickname));
+    }
+
+    @PostMapping("/status")
+    @ApiOperation(value = "修改用户状态,用于禁用、锁定用户等操作", notes = "需要accessToken，需要管理员权限")
+    public ApiResponse status(@ApiParam("用户id") @RequestParam("userId") Integer userId,
+                              @ApiParam("状态,0:正常，1:锁定，2:禁用，3:过期") @RequestParam("status") Integer status) {
+        userService.status(userId, status);
+        return createResponse();
+    }
 
 }

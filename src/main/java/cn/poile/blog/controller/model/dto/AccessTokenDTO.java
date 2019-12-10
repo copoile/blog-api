@@ -1,5 +1,6 @@
 package cn.poile.blog.controller.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,15 +14,18 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ApiModel(value="AccessTokenDTO", description="AccessTokenDTO")
 public class AccessTokenDTO {
-    @ApiModelProperty("accessToken")
+    @ApiModelProperty("access_token")
+    @JsonProperty("access_token")
     private String accessToken;
 
     @ApiModelProperty("token类型:Bearer")
-    private String tokenType = "Bearer";
+    @JsonProperty("token_type")
+    private String tokenType;
 
     @ApiModelProperty("时效")
-    private long expire;
+    private Long expire;
 
-    @ApiModelProperty("refreshToken")
+    @ApiModelProperty("refresh_token")
+    @JsonProperty("refresh_token")
     private String refreshToken;
 }

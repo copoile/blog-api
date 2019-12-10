@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
  * @create: 2019-11-28 19:17
  **/
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class ArticlePageQueryDTO {
 
     private Long current;

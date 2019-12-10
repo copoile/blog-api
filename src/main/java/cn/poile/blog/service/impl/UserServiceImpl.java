@@ -20,6 +20,8 @@ import cn.poile.blog.service.IUserService;
 import cn.poile.blog.vo.CustomUserDetails;
 import cn.poile.blog.vo.UserVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +29,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,7 +91,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final static String REDIS_MOBILE_VALIDATED_PREFIX = "mobile:validated:";
 
 
-
     /**
      * 根据用户名查询
      *
@@ -102,11 +104,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return null;
         }
         UserVo userVo = new UserVo();
-        BeanUtils.copyProperties(user,userVo);
+        BeanUtils.copyProperties(user, userVo);
         Integer admin = user.getAdmin();
         List<String> roleList = new ArrayList<>();
         if (admin.equals(UserConstant.ADMIN)) {
-           roleList.add(RoleConstant.ADMIN);
+            roleList.add(RoleConstant.ADMIN);
         }
         userVo.setRoleList(roleList);
         return userVo;
@@ -126,10 +128,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String username = request.getUsername();
         User userDao = selectUserByUsernameOrMobile(username, mobile);
         if (userDao != null && username.equals(userDao.getUsername())) {
-            throw new ApiException(ErrorEnum.USERNAME_READY_REGISTER.getErrorCode(), ErrorEnum.USERNAME_READY_REGISTER.getErrorMsg());
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), ErrorEnum.INVALID_REQUEST.getErrorMsg());
         }
         if (userDao != null && mobile == userDao.getMobile()) {
-            throw new ApiException(ErrorEnum.MOBILE_READY_REGISTER.getErrorCode(), ErrorEnum.MOBILE_READY_REGISTER.getErrorMsg());
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), ErrorEnum.INVALID_REQUEST.getErrorMsg());
         }
         User user = new User();
         user.setUsername(username);
@@ -177,10 +179,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void validateEmail(String email) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(User::getEmail,email);
+        queryWrapper.lambda().eq(User::getEmail, email);
         int count = count(queryWrapper);
         if (count != 0) {
-            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"邮箱已被使用");
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "邮箱已被使用");
         }
         AuthenticationToken authenticationToken = ServeSecurityContext.getAuthenticationToken(true);
         Map<String, Object> params = new HashMap<>(1);
@@ -352,7 +354,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 判断手机号是否已被注册
         User user = selectUserByUsernameOrMobile(null, mobile);
         if (user != null) {
-            throw new ApiException(ErrorEnum.MOBILE_READY_REGISTER.getErrorCode(), ErrorEnum.MOBILE_READY_REGISTER.getErrorMsg());
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), ErrorEnum.INVALID_REQUEST.getErrorMsg());
         }
         User newUser = new User();
         newUser.setId(userDetail.getId());
@@ -364,6 +366,68 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         smsCodeService.deleteSmsCode(mobile);
     }
 
+
+    /**
+     * 分页查询用户
+     *
+     * @param current
+     * @param size
+     * @param username
+     * @param nickname
+     * @return
+     */
+    @Override
+    public IPage<User> page(long current, long size, String username, String nickname) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(username)) {
+            queryWrapper.lambda().like(User::getUsername, username);
+        }
+        if (StringUtils.isNotBlank(nickname)) {
+            queryWrapper.lambda().like(User::getNickname, nickname);
+        }
+        return page(new Page<>(current, size), queryWrapper);
+    }
+
+    /**
+     * 修改用户状态
+     *
+     * @param userId
+     * @param status
+     */
+    @Override
+    public void status(Integer userId, Integer status) {
+        // 状态，0：正常，1：锁定，2：禁用，3：过期
+        int min = 0;
+        int max = 3;
+        if (status < min || status > max) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效状态值");
+        }
+        User daoUser = getById(userId);
+        if (daoUser == null) {
+            throw new ApiException(ErrorEnum.USER_NOT_FOUND.getErrorCode(), "用户不存在");
+        }
+        // 数据库数据更新
+        User user = new User();
+        user.setId(userId);
+        user.setStatus(status);
+        updateById(user);
+
+        // 缓存更新
+        daoUser.setStatus(status);
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(daoUser, userVo);
+        Integer admin = daoUser.getAdmin();
+        List<String> roleList = new ArrayList<>();
+        if (admin.equals(UserConstant.ADMIN)) {
+            roleList.add(RoleConstant.ADMIN);
+        }
+        userVo.setRoleList(roleList);
+        CustomUserDetails userDetails = new CustomUserDetails();
+        BeanUtils.copyProperties(userVo,userDetails);
+        // 更新token缓存
+        tokenStore.updatePrincipal(userDetails);
+    }
+
     /**
      * 校验短信验证码
      *
@@ -372,7 +436,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     private void checkSmsCode(long mobile, String code) {
         if (!smsCodeService.checkSmsCode(mobile, code)) {
-            throw new ApiException(ErrorEnum.BAD_MOBILE_CODE.getErrorCode(), "验证码不正确");
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "验证码不正确");
         }
     }
 
@@ -385,12 +449,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     private User selectUserByUsernameOrMobile(String username, Long mobile) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(User::getUsername,username).or().eq(User::getMobile,mobile);
-        return getOne(queryWrapper,false);
+        queryWrapper.lambda().eq(User::getUsername, username).or().eq(User::getMobile, mobile);
+        return getOne(queryWrapper, false);
     }
 
     /**
      * username 不为空时使用username查询，否则使用mobile查询
+     *
      * @param username
      * @param mobile
      * @return
@@ -398,10 +463,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private User selectUserByUsernameOtherwiseMobile(String username, Long mobile) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(username)) {
-            queryWrapper.lambda().eq(User::getUsername,username);
-        }else {
-            queryWrapper.lambda().eq(User::getMobile,mobile);
+            queryWrapper.lambda().eq(User::getUsername, username);
+        } else {
+            queryWrapper.lambda().eq(User::getMobile, mobile);
         }
-        return getOne(queryWrapper,false);
+        return getOne(queryWrapper, false);
     }
 }

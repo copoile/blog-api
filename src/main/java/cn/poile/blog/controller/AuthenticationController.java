@@ -15,11 +15,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import sun.misc.BASE64Decoder;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -109,7 +109,7 @@ public class AuthenticationController extends BaseController {
         String clientId = clientIdAndClientSecret[0];
         String clientSecret = clientIdAndClientSecret[1];
         Client client = clientService.getClientByClientId(clientId);
-        if (client == null || !passwordEncoder.matches(clientSecret, client.getClientSecret())) {
+        if (client == null || !clientSecret.equals(client.getClientSecret())) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效客户端");
         }
         return client;
@@ -126,9 +126,8 @@ public class AuthenticationController extends BaseController {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效客户端");
         }
         String base64Data = authorization.substring(6);
-        BASE64Decoder decoder = new BASE64Decoder();
         try {
-            String data = new String(decoder.decodeBuffer(base64Data));
+            String data = new String(Base64.decodeBase64(base64Data));
             String separator = ":";
             String[] split = data.split(separator);
             int length = split.length;

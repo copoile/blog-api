@@ -1,5 +1,6 @@
 package cn.poile.blog.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -24,6 +25,12 @@ import java.util.List;
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
+    /**
+     * 是否开启swagger,默认开启
+     */
+    @Value(value = "${swagger.enabled:true}")
+    private Boolean swaggerEnabled;
+
     @Bean
     public Docket createRestApi() {
         ParameterBuilder parameterBuilder = new ParameterBuilder();
@@ -34,6 +41,7 @@ public class SwaggerConfig {
         parameterList.add(parameterBuilder.build());
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
+                .enable(swaggerEnabled)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("cn.poile.blog"))
                 .paths(PathSelectors.any())
@@ -48,4 +56,5 @@ public class SwaggerConfig {
                 .version("2.0")
                 .build();
     }
+
 }

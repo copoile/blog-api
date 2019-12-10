@@ -9,6 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -89,6 +90,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      * @return
      */
     @Bean
+    @Lazy
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }

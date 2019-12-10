@@ -14,8 +14,8 @@ import java.util.List;
  * @create: 2019-11-14 17:38
  **/
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CategoryNodeDTO {
 

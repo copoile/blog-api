@@ -1,15 +1,21 @@
 package cn.poile.blog.config;
 
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.scripting.support.ResourceScriptSource;
+
+import java.time.Duration;
 
 /**
  * redis 配置
@@ -32,6 +38,19 @@ public class RedisConfig {
         template.setKeySerializer(new StringRedisSerializer());
         template.afterPropertiesSet();
         return template;
+    }
+
+    /**
+     * redis缓存管理器
+     * @param redisConnectionFactory
+     * @return
+     */
+    @Bean
+    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+        RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration.defaultCacheConfig();
+        return RedisCacheManager.builder(redisConnectionFactory)
+                .cacheDefaults(cacheConfiguration)
+                .build();
     }
 
 
@@ -104,6 +123,10 @@ public class RedisConfig {
         return template;
     }
 
+    /**
+     * redis限流lua脚本
+     * @return
+     */
     @Bean
     @SuppressWarnings("unchecked")
     public RedisScript<Long> limitRedisScript() {

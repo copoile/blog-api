@@ -37,6 +37,11 @@ import java.util.stream.Collectors;
 public class RedisTokenStore {
 
     /**
+     * token类型
+     */
+    private static final String TOKEN_TYPE = "Bearer";
+
+    /**
      * accessToken key前缀
      */
     private static final String AUTH_ACCESS = "auth:access:";
@@ -169,6 +174,7 @@ public class RedisTokenStore {
             authToken.setRefreshToken(refresh);
             authToken.setPrincipal(userDetails);
             authToken.setClientId(clientId);
+            authToken.setTokenType(TOKEN_TYPE);
             byte[] serializedAuthentication = serializedAuthentication(authToken);
             restAccessExpireAndRefreshExpire(user2accessKey, uname2accessKey, access, accessExpire, refresh, refreshExpire, serializedAuthentication);
             return authToken;
@@ -183,6 +189,7 @@ public class RedisTokenStore {
         authToken.setRefreshToken(refresh2);
         authToken.setPrincipal(userDetails);
         authToken.setClientId(clientId);
+        authToken.setTokenType(TOKEN_TYPE);
         // redis缓存
         byte[] accessKey = serializedKey(AUTH_ACCESS + access2);
         byte[] access2refreshKey = serializedKey(AUTH_ACCESS_TO_REFRESH + access2);

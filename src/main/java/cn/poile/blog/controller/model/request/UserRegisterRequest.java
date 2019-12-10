@@ -15,10 +15,10 @@ import javax.validation.constraints.Pattern;
  * @author: yaohw
  * @create: 2019-10-04 22:13
  */
-@ApiModel(value = "用户注册请json",description = "用户注册")
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ApiModel(value = "用户注册请json",description = "用户注册")
 public class UserRegisterRequest {
 
     @NotBlank(message = "用户名不能为空")

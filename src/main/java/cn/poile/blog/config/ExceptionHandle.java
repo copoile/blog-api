@@ -45,7 +45,6 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(SQLException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResponse handleSqlException( SQLException ex ) {
         log.error("sql执行异常:{0}", ex);
         return new ApiResponse(SYSTEM_ERROR.getErrorCode(),SYSTEM_ERROR.getErrorMsg());
@@ -57,7 +56,6 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(MissingServletRequestParameterException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
         return new ApiResponse(INVALID_REQUEST.getErrorCode(),ex.getParameterName() + "参数不能为空");
     }
@@ -67,7 +65,6 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(MissingRequestHeaderException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse handleMissingRequestHeaderException(MissingRequestHeaderException ex) {
         return new ApiResponse(INVALID_REQUEST.getErrorCode(),ex.getHeaderName() + "请求头不能为空");
     }
@@ -77,107 +74,88 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
         return new ApiResponse(INVALID_REQUEST.getErrorCode(),ex.getName() + "参数类型不匹配");
     }
 
     /**
      *  手机号验证不正确 异常
-     * @param ex
      * @return
      */
     @ExceptionHandler(BadMobileCodeException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponse handleBadMobileCodeException(BadMobileCodeException ex) {
-        return new ApiResponse(BAD_MOBILE_CODE.getErrorCode(),BAD_MOBILE_CODE.getErrorMsg());
+    public ApiResponse handleBadMobileCodeException() {
+        return new ApiResponse(INVALID_REQUEST.getErrorCode(),INVALID_REQUEST.getErrorMsg());
     }
 
     /**
      *  用户不存在 异常
-     * @param ex
      * @return
      */
     @ExceptionHandler(UsernameNotFoundException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponse handleUsernameNotFoundException(UsernameNotFoundException ex) {
+    public ApiResponse handleUsernameNotFoundException() {
         return new ApiResponse(USER_NOT_FOUND.getErrorCode(),USER_NOT_FOUND.getErrorMsg());
     }
 
     /**
      * 认证失败
-     * @param ex
      * @return
      */
     @ExceptionHandler(BadCredentialsException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponse handleBadCredentialsException(BadCredentialsException ex) {
+    public ApiResponse handleBadCredentialsException() {
         return new ApiResponse(BAD_CREDENTIALS.getErrorCode(),BAD_CREDENTIALS.getErrorMsg());
     }
 
     /**
      * 账号锁定
-     * @param ex
      * @return
      */
     @ExceptionHandler(LockedException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponse handleLockedException(LockedException ex) {
+    public ApiResponse handleLockedException() {
         return new ApiResponse(ACCOUNT_LOCKED.getErrorCode(),ACCOUNT_LOCKED.getErrorMsg());
     }
 
     /**
      * 账号超时
-     * @param ex
      * @return
      */
     @ExceptionHandler(AccountExpiredException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponse handleAccountExpiredException(AccountExpiredException ex) {
+    public ApiResponse handleAccountExpiredException() {
         return new ApiResponse(ACCOUNT_EXPIRED.getErrorCode(),ACCOUNT_EXPIRED.getErrorMsg());
     }
 
     /**
      * 账号禁用
-     * @param ex
      * @return
      */
     @ExceptionHandler(DisabledException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponse handleDisabledException(DisabledException ex) {
+    public ApiResponse handleDisabledException() {
         return new ApiResponse(ACCOUNT_DISABLE.getErrorCode(),ACCOUNT_DISABLE.getErrorMsg());
     }
 
     /**
      * 凭证已过期
-     * @param ex
      * @return
      */
     @ExceptionHandler(CredentialsExpiredException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponse handleCredentialsExpiredException(CredentialsExpiredException ex) {
+    public ApiResponse handleCredentialsExpiredException() {
         return new ApiResponse(CREDENTIALS_EXPIRED.getErrorCode(),CREDENTIALS_EXPIRED.getErrorMsg());
     }
 
     /**
      * 不允许访问
-     * @param ex
      * @return
      */
     @ExceptionHandler(InsufficientAuthenticationException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ApiResponse handleInsufficientAuthenticationException(InsufficientAuthenticationException ex) {
+    public ApiResponse handleInsufficientAuthenticationException() {
         return new ApiResponse(ACCESS_DENIED.getErrorCode(),ACCESS_DENIED.getErrorMsg());
     }
 
     /**
      * 权限不足
-     * @param ex
      * @return
      */
     @ExceptionHandler(AccessDeniedException.class)
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ApiResponse handleAccessDeniedException(AccessDeniedException ex) {
+    public ApiResponse handleAccessDeniedException() {
         return new ApiResponse(PERMISSION_DENIED.getErrorCode(),PERMISSION_DENIED.getErrorMsg());
     }
 
@@ -186,7 +164,6 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse handleConstraintViolationException(ConstraintViolationException ex) {
         Set<ConstraintViolation<?>> constraintViolations = ex.getConstraintViolations();
         List<ConstraintViolation<?>> list = new ArrayList<>(constraintViolations);
@@ -200,7 +177,6 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         BindingResult bindingResult = ex.getBindingResult();
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -209,12 +185,10 @@ public class ExceptionHandle {
 
     /**
      * 请求json绑定 异常
-     * @param ex
      * @return
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiResponse handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+    public ApiResponse handleHttpMessageNotReadableException() {
         return new ApiResponse(INVALID_REQUEST.getErrorCode(),"请求json格式不正确");
     }
 
@@ -224,7 +198,6 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     public ApiResponse handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
         return new ApiResponse(INVALID_REQUEST.getErrorCode(),ex.getMethod() + "请求方法不支持");
     }
@@ -235,7 +208,6 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(ApiException.class)
-    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     public ApiResponse handleApiException(ApiException ex) {
        return new ApiResponse(ex.getErrorCode(),ex.getErrorMsg());
     }
@@ -246,7 +218,6 @@ public class ExceptionHandle {
      * @return
      */
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiResponse handleException(Exception ex) {
         log.error("未知异常:{0}",ex);
         return new ApiResponse(SYSTEM_ERROR.getErrorCode(),SYSTEM_ERROR.getErrorMsg());

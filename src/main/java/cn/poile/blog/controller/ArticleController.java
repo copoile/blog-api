@@ -158,8 +158,9 @@ public class ArticleController extends BaseController {
         return createResponse(articleRecommendService.list());
     }
 
-    @DeleteMapping("/recommend/delete/{articleId}")
+
     @PreAuthorize("hasAuthority('admin')")
+    @DeleteMapping("/recommend/delete/{articleId}")
     @ApiOperation(value = "从推荐列表中删除", notes = "需要accessToken，需要管理员权限")
     public ApiResponse recommendDelete(@ApiParam("文章id") @NotNull(message = "文章id不能为空") @PathVariable(value = "articleId") Integer articleId) {
         articleRecommendService.remove(articleId);

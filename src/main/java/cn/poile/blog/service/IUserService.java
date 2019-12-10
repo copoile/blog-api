@@ -5,6 +5,7 @@ import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.entity.User;
 import cn.poile.blog.vo.UserVo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -91,4 +92,21 @@ public interface IUserService extends IService<User> {
      * @return void
      */
     void rebindMobile(long mobile,String code);
+
+    /**
+     * 分页查询用户
+     * @param current
+     * @param size
+     * @param username
+     * @param nickname
+     * @return
+     */
+    IPage<User> page(long current,long size,String username,String nickname);
+
+ /**
+  * 修改用户状态
+  * @param userId
+  * @param status
+  */
+ void status(Integer userId,Integer status);
 }

@@ -32,7 +32,7 @@ public class MybatisPlusGenerator {
         autoGenerator.setGlobalConfig(gc);
         // 数据源配置
         DataSourceConfig dataSource = new DataSourceConfig();
-        dataSource.setUrl("jdbc:mysql://193.112.43.235:3306/blog_db?useSSL=false");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/blog_db?useSSL=false");
         dataSource.setDriverName("com.mysql.jdbc.Driver");
         dataSource.setUsername("root");
         dataSource.setPassword("root");

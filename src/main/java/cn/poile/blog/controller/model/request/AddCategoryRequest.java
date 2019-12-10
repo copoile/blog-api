@@ -13,10 +13,11 @@ import javax.validation.constraints.NotNull;
  * @author: yaohw
  * @create: 2019-11-14 17:15
  **/
-@ApiModel(value = "添加分类json",description = "添加分类")
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ApiModel(value = "添加分类json",description = "添加分类")
 public class AddCategoryRequest {
 
     @NotBlank(message = "分类名称不能为空")

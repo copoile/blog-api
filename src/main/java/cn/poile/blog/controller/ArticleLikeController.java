@@ -35,7 +35,7 @@ public class ArticleLikeController extends BaseController {
 
     @GetMapping("/liked/{articleId}")
     @ApiOperation(value = "查询文章是否已点赞",notes = "1：是，0：否")
-    public ApiResponse<Integer> liked(@ApiParam("文章id") @RequestParam("articleId") Integer articleId) {
+    public ApiResponse<Integer> liked(@ApiParam("文章id") @PathVariable("articleId") Integer articleId) {
         return createResponse(articleLikeService.liked(articleId));
     }
 

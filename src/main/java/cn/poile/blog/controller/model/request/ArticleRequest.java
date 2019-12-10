@@ -17,10 +17,10 @@ import java.util.List;
  * @author: yaohw
  * @create: 2019-11-15 15:08
  **/
-@ApiModel(value = "文章请求json",description = "文章请求体")
-@AllArgsConstructor
-@NoArgsConstructor
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ApiModel(value = "文章请求json",description = "文章请求体")
 public class ArticleRequest {
 
     @ApiModelProperty(value = "文章id，编辑时不可空")

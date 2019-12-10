@@ -13,7 +13,7 @@ spring:
         allow-core-thread-timeout: true
   # redis配置
   redis:
-    host: localhost
+    host: 127.0.0.1
     port: 6379
     password:
     timeout: 3000
@@ -27,7 +27,7 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/blog_db?useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/blog_db?useSSL=false
     username: root
     password: root
     druid:
@@ -69,7 +69,6 @@ spring:
     # 这里的密码为密码授权码
     password: abc
     protocol: smtp
-    test-connection: true
     default-encoding: UTF-8
     jndi-name: 个人悦读分享
 
@@ -112,6 +111,15 @@ sms:
     accessKeySecret: bU54eGKPugUj03LJm
     signName: 个人悦读分享
     templateCode: SMS_176942058
+
+# 邮件中的链接配置，按需求配置
+mail:
+  # 邮箱绑定时发送的验证链接前缀
+  check: http://127.0.0.1:8080/email/verify
+  # 文章详情前缀，文章评论邮件提醒的链接前缀
+  article: http://127.0.0.1:8080/article/#/
+  # 留言邮件提醒留言版页面链接
+  message: http://127.0.0.1:8080/message
 
 # 开发环境，为调试方便，降低日志级别
 logging:
