@@ -1,6 +1,6 @@
 package cn.poile.blog.service;
 
-import cn.poile.blog.entity.FriendLink;
+import cn.poile.blog.entity.FriendChain;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author yaohw
  * @since 2019-12-02
  */
-public interface IFriendLinkService extends IService<FriendLink> {
+public interface IFriendLinkService extends IService<FriendChain> {
 
 }

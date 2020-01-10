@@ -49,9 +49,6 @@ public class Article implements Serializable {
     @ApiModelProperty(value = "用户id")
     private Integer userId;
 
-    @ApiModelProperty(value = "用户头像")
-    private String avatar;
-
     @ApiModelProperty(value = "分类名称-冗余字段")
     private String categoryName;
 

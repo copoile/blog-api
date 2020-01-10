@@ -42,11 +42,6 @@ public class Tag implements Serializable {
     @ApiModelProperty(value = "标签名")
     private String name;
 
-    @JsonIgnore
-    @Null(message = "不需要传创建时间")
-    @ApiModelProperty(value = "创建时间")
-    private LocalDateTime createTime;
-
     @TableLogic
     @ApiModelProperty(value = "是否已删除,1:是，0:否")
     private Integer deleted;

@@ -1,6 +1,6 @@
 package cn.poile.blog.mapper;
 
-import cn.poile.blog.entity.FriendLink;
+import cn.poile.blog.entity.FriendChain;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author yaohw
  * @since 2019-12-02
  */
-public interface FriendLinkMapper extends BaseMapper<FriendLink> {
+public interface FriendLinkMapper extends BaseMapper<FriendChain> {
 
 }

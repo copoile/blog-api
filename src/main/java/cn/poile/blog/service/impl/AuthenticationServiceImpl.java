@@ -39,7 +39,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthenticationToken usernameOrMobilePasswordAuthenticate(String s, String password, Client client) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(s, password);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-        return tokenStore.storeAccessToken(authenticate,client);
+        return tokenStore.storeToken(authenticate,client);
     }
 
     /**
@@ -53,7 +53,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthenticationToken mobileCodeAuthenticate(long mobile, String code,Client client) {
         MobileCodeAuthenticationToken authenticationToken = new MobileCodeAuthenticationToken(mobile, code);
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
-        AuthenticationToken storeAccessToken = tokenStore.storeAccessToken(authenticate,client);
+        AuthenticationToken storeAccessToken = tokenStore.storeToken(authenticate,client);
         smsCodeService.deleteSmsCode(mobile);
         return storeAccessToken;
     }

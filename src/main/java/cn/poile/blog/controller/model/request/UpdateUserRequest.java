@@ -25,7 +25,7 @@ public class UpdateUserRequest {
 
     @ApiModelProperty(value = "用户id")
     @NotNull(message = "用户id不能为空")
-    private long userId;
+    private Integer userId;
 
     @ApiModelProperty(value = "昵称")
     private String nickname;

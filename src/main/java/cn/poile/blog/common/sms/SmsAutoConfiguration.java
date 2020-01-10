@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Configuration;
  * @author: yaohw
  * @create: 2019-11-05 10:36
  **/
+@Log4j2
 @Configuration
 @EnableConfigurationProperties({SmsServiceProperties.class})
-@Log4j2
 public class SmsAutoConfiguration {
 
     @Bean

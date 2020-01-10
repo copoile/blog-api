@@ -55,8 +55,8 @@ public class AuthorizationTokenFilter extends OncePerRequestFilter {
 
     private ApiResponse createErrorResponse() {
         ApiResponse response = new ApiResponse();
-        response.setErrorCode(ErrorEnum.CREDENTIALS_INVALID.getErrorCode());
-        response.setErrorMsg(ErrorEnum.CREDENTIALS_INVALID.getErrorMsg());
+        response.setCode(ErrorEnum.CREDENTIALS_INVALID.getErrorCode());
+        response.setMessage(ErrorEnum.CREDENTIALS_INVALID.getErrorMsg());
         return response;
     }
 }

@@ -30,7 +30,7 @@ ignore:
     - /logout
     - /refresh_access_token
     - /user/register
-    - /email/bind
+    - /user/email/bind
     - /category/tree
     - /category/userIdList
     - /article/published/page

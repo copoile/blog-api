@@ -1,10 +1,10 @@
 package cn.poile.blog.common.limiter.aspect;
 
-import cn.poile.blog.common.limiter.annotation.RateLimiter;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.limiter.ExtraLimiter;
 import cn.poile.blog.common.limiter.Limit;
+import cn.poile.blog.common.limiter.annotation.RateLimiter;
 import cn.poile.blog.common.util.IpUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.expression.EvaluationContext;
@@ -40,11 +41,12 @@ import java.util.concurrent.TimeUnit;
  * @author: yaohw
  * @create: 2019/11/5 10:49 下午
  */
+@Log4j2
 @Aspect
+@Order
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Log4j2
-public class RateLimiterAspect implements ApplicationContextAware {
+public class RateLimiterAspect implements ApplicationContextAware{
 
     private final static String SEPARATOR = ":";
     private final static String REDIS_LIMIT_KEY_PREFIX = "limit:";

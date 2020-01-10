@@ -105,7 +105,7 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
         ArticleComment comment = getById(commentId);
         if (comment != null) {
             CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
-            List<String> roleList = userDetail.getRoleList();
+            List<String> roleList = userDetail.getRoles();
             // 不是本人，也不是管理员不允许删除
             if (!comment.getFromUserId().equals(userDetail.getId()) & !roleList.contains(RoleConstant.ADMIN)) {
                 throw new ApiException(ErrorEnum.PERMISSION_DENIED.getErrorCode(), ErrorEnum.PERMISSION_DENIED.getErrorMsg());

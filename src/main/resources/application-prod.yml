@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 9090
 spring:
   task:
     execution:
@@ -55,12 +55,12 @@ spring:
         url-pattern: "/druid/*"
         reset-enable: false
         login-username: admin
-        login-password: admin
+        login-password: yaohw321!
   mail:
     host: smtp.163.com
     port: 25
     username: 15625295093@163.com
-    password: abc
+    password:
     protocol: smtp
     default-encoding: UTF-8
     jndi-name: 个人悦读分享
@@ -70,18 +70,19 @@ spring:
 oss:
   type: 3
   netease:
-    accessKey: 2bec4d8797e64f99b967c88
-    secretKey: ca8bb777179949a4b0767
+    accessKey: 2bec4d8797e64f99b967c88fa
+    secretKey: ca8bb777179949a4b07671
     endpoint: nos-eastchina1.126.net
     bucket: poile-img
 
 sms:
   type: 1
   expire: 300
+  day_max: 10
   ali:
     regionId: cn-hangzhou
-    accessKeyId: LTAIaEeboq
-    accessKeySecret: bU54eGKPugUj03
+    accessKeyId: LTAIaEeboqn0
+    accessKeySecret: bU54eGKPugUj03LJm8eELNE
     signName: 个人悦读分享
     templateCode: SMS_176942058
 

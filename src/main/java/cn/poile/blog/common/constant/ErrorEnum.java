@@ -14,47 +14,52 @@ public enum ErrorEnum {
     /**
      * 用户名或密码错误
      */
-    BAD_CREDENTIALS(1002,"用户名或密码错误"),
+    BAD_CREDENTIALS(1001,"用户名或密码错误"),
 
     /**
      * 用户不存在
      */
-    USER_NOT_FOUND(1003,"用户不存在"),
+    USER_NOT_FOUND(1002,"用户不存在"),
 
     /**
      * 账号禁用
      */
-    ACCOUNT_DISABLE(1004,"账号已禁用"),
+    ACCOUNT_DISABLE(1003,"账号已禁用"),
 
     /**
      * 账号已过期
      */
-    ACCOUNT_EXPIRED(1005,"账号已过期"),
+    ACCOUNT_EXPIRED(1004,"账号已过期"),
 
     /**
      * 账号已锁定
      */
-    ACCOUNT_LOCKED(1006,"账号已锁定"),
+    ACCOUNT_LOCKED(1005,"账号已锁定"),
 
     /**
      * 凭证已过期
      */
-    CREDENTIALS_EXPIRED(1007,"凭证已过期"),
+    CREDENTIALS_EXPIRED(1006,"凭证已过期"),
 
     /**
      * 不允许访问
      */
-    ACCESS_DENIED(1008,"不允许访问"),
+    ACCESS_DENIED(1007,"不允许访问"),
 
     /**
      * 无权限访问
      */
-    PERMISSION_DENIED(1009,"无权限访问"),
+    PERMISSION_DENIED(1008,"无权限访问"),
 
     /**
      * 凭证无效或已过期
      */
-    CREDENTIALS_INVALID(1010,"凭证无效或已过期"),
+    CREDENTIALS_INVALID(1009,"凭证无效或已过期"),
+
+    /**
+     * 刷新凭证无效或已过期
+     */
+    REFRESH_CREDENTIALS_INVALID(1010,"刷新凭证无效或已过期"),
 
     /**
      * 无效请求

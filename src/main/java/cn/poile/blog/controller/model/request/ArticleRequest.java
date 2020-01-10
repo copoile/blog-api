@@ -31,6 +31,10 @@ public class ArticleRequest {
     @ApiModelProperty(value = "是否原创，1:是，0:否")
     private Integer original;
 
+    @NotNull(message = "状态不能为空")
+    @ApiModelProperty(value = "状态，0:发布，1:保存")
+    private Integer status;
+
     @NotNull(message = "文章分类id不能为空")
     @ApiModelProperty(value = "文章分类id")
     private Integer categoryId;
@@ -51,7 +55,7 @@ public class ArticleRequest {
     @ApiModelProperty(value = "文章封面")
     private String cover;
 
-    @ListSize(max = 5,message = "一篇文章最多只允许添加5个标签")
+    @ListSize(max = 4,message = "一篇文章最多只允许添加4个标签")
     @ApiModelProperty(value = "文章标签id列表")
     private List<Integer> tagIds;
 

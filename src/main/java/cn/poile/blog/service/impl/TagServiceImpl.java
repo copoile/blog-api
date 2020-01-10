@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -44,7 +43,6 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         Tag tag = new Tag();
         tag.setName(tagName);
         tag.setDeleted(CommonConstant.NOT_DELETED);
-        tag.setCreateTime(LocalDateTime.now());
         save(tag);
     }
 
@@ -68,18 +66,21 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
 
     /**
      * 标签列表
-     *
+     * @param tagName
      * @return java.util.List<cn.poile.blog.entity.Tag>
      */
     @Override
-    public List<Tag> selectTagList() {
-        return list();
+    public List<Tag> selectTagList(String tagName) {
+        QueryWrapper<Tag> queryWrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(tagName)) {
+            queryWrapper.lambda().like(Tag::getName,tagName);
+        }
+        return list(queryWrapper);
     }
 
 
     /**
-     * 修改标签，这里修改不直接修改原来的标签，逻辑删除原标签新增一个标签
-     * 这么做是为了不改变已在文章挂载的标签
+     * 修改标签
      * @param id
      * @param tagName
      */
@@ -92,9 +93,8 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         removeById(id);
         Tag tag = new Tag();
         tag.setName(tagName);
-        tag.setCreateTime(LocalDateTime.now());
-        tag.setDeleted(CommonConstant.NOT_DELETED);
-        save(tag);
+        tag.setId(id);
+        updateById(tag);
     }
 
     /**
@@ -108,7 +108,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
     }
 
     /**
-     *  根据标签名查询
+     * 根据标签名查询
      * @param tagName
      * @return cn.poile.blog.entity.Tag
      */

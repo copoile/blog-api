@@ -75,7 +75,7 @@ public class UserController extends BaseController {
     @ApiOperation(value = "重置密码", notes = "不需要传accessToken,需要验证手机号")
     public ApiResponse resetPassword(@ApiParam("手机号") @NotNull(message = "手机号不能为空") @IsPhone @RequestParam("mobile") long mobile,
                                      @ApiParam("验证码") @NotBlank(message = "验证码不能为空") @RequestParam("code") String code,
-                                     @ApiParam("密码") @NotBlank(message = "密码不能为空") @RequestParam("password") String password) {
+                                     @ApiParam("密码") @NotBlank(message = "密码不能为空") @Length(min = 6, message = "密码至少6位数") @RequestParam("password") String password) {
         userService.resetPassword(mobile, code, password);
         return createResponse();
     }
@@ -111,9 +111,10 @@ public class UserController extends BaseController {
     }
 
     @PostMapping("/email/bind")
-    @ApiOperation(value = "code绑定邮箱", notes = "不需要accessToken，code有效2小时，绑定成功后返回accessToken相关信息")
-    public ApiResponse<AccessTokenDTO> bindEmail(@ApiParam("邮箱链接中的code") @NotBlank(message = "code不能为空") @RequestParam("code") String code) {
-        return createResponse(userService.bindEmail(code));
+    @ApiOperation(value = "code绑定邮箱", notes = "不需要accessToken，code有效2小时")
+    public ApiResponse bindEmail(@ApiParam("邮箱链接中的code") @NotBlank(message = "code不能为空") @RequestParam("code") String code) {
+        userService.bindEmail(code);
+        return createResponse();
     }
 
     @GetMapping("/page")
@@ -125,7 +126,7 @@ public class UserController extends BaseController {
         return createResponse(userService.page(current, size, username, nickname));
     }
 
-    @PostMapping("/status")
+    @PostMapping("/status/update")
     @ApiOperation(value = "修改用户状态,用于禁用、锁定用户等操作", notes = "需要accessToken，需要管理员权限")
     public ApiResponse status(@ApiParam("用户id") @RequestParam("userId") Integer userId,
                               @ApiParam("状态,0:正常，1:锁定，2:禁用，3:过期") @RequestParam("status") Integer status) {

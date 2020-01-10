@@ -19,10 +19,10 @@ public class ApiResponse<T> {
 
     @NonNull
     @ApiModelProperty("响应码")
-    private int errorCode;
+    private int code;
     @NonNull
     @ApiModelProperty("响应信息")
-    private String errorMsg;
+    private String message;
 
     @ApiModelProperty("响应数据")
     private T data;

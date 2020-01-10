@@ -37,16 +37,16 @@ public class Client implements Serializable {
     private String clientId;
 
     @ApiModelProperty(value = "客户端密码")
-    @JsonProperty("client_secret")
     private String clientSecret;
 
     @ApiModelProperty(value = "access_token有效时长")
-    @JsonProperty("access_token_expire")
     private Long accessTokenExpire;
 
-    @ApiModelProperty(value = "refresh_token_expire有效时长")
-    @JsonProperty("refresh_token_expire有效时长")
+    @ApiModelProperty(value = "refresh_token有效时长")
     private Long refreshTokenExpire;
+
+    @ApiModelProperty(value = "是否启用refresh_token,1:是，0:否")
+    private Integer enableRefreshToken;
 
 
 }

@@ -46,20 +46,11 @@ public class ArticleController extends BaseController {
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "保存文章", notes = "需要accessToken，需要管理员权限")
     public ApiResponse save(@Validated @RequestBody ArticleRequest request) {
-        articleService.save(request);
+        articleService.saveOrUpdate(request);
         articleRecommendService.remove(request.getId());
         return createResponse();
     }
 
-
-    @PostMapping("/publish")
-    @PreAuthorize("hasAuthority('admin')")
-    @ApiOperation(value = "保存并发布文章", notes = "需要accessToken，需要管理员权限")
-    public ApiResponse publish(@Validated @RequestBody ArticleRequest request) {
-        articleService.publish(request);
-        articleRecommendService.asyncRefresh(request.getId());
-        return createResponse();
-    }
 
     @GetMapping("/published/page")
     @ApiOperation(value = "分页获取文章(已发布)", notes = "用于前台页面展示,默认按发布时间倒序排序")
@@ -89,20 +80,20 @@ public class ArticleController extends BaseController {
         return createResponse(articleService.selectArticleVoPage(current, size, status, title, categoryId, tagId, yearMonth));
     }
 
-    @DeleteMapping("/delete/{id}")
-    @PreAuthorize("hasAuthority('admin')")
-    @ApiOperation(value = "删除文章", notes = "逻辑删除，需要accessToken，需要管理员权限")
-    public ApiResponse delete(@ApiParam("文章id") @PathVariable("id") int id) {
-        articleService.delete(id);
-        articleRecommendService.remove(id);
-        return createResponse();
-    }
-
     @DeleteMapping("/discard/{id}")
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "丢弃文章(回收站)", notes = "需要accessToken，需要管理员权限")
     public ApiResponse discard(@ApiParam("文章id") @PathVariable("id") int id) {
         articleService.discard(id);
+        articleRecommendService.remove(id);
+        return createResponse();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAuthority('admin')")
+    @ApiOperation(value = "删除文章", notes = "逻辑删除，需要accessToken，需要管理员权限")
+    public ApiResponse delete(@ApiParam("文章id") @PathVariable("id") int id) {
+        articleService.delete(id);
         articleRecommendService.remove(id);
         return createResponse();
     }
@@ -167,7 +158,7 @@ public class ArticleController extends BaseController {
         return createResponse();
     }
 
-    @GetMapping("/interrelated/userIdList")
+    @GetMapping("/interrelated/list")
     @ApiOperation(value = "相关文章", notes = "根据分类查询，分类为空则根据标签查询")
     public ApiResponse<List<ArticleVo>> interrelated(@ApiParam("文章id") @NotNull(message = "文章id不能为空") @RequestParam(value = "articleId") Integer articleId,
                                                      @ApiParam("数量") @RequestParam(value = "limit", required = false, defaultValue = "5") Long limit
@@ -182,10 +173,10 @@ public class ArticleController extends BaseController {
     }
 
     @PostMapping("/status/update")
-    @ApiOperation(value = "修改文章发布或保存状态",notes = "可用于发布文章回撤到保存状态或保存状态修改到发布状态")
+    @ApiOperation(value = "修改文章发布或保存状态",notes = "需要accessToken，需要管理员权限")
     public ApiResponse status(
             @ApiParam("文章id") @NotNull(message = "文章id不能为空") @RequestParam("articleId") Integer articleId,
-            @ApiParam("文章状态，仅限0或1（发布状态或保存状态）") @NotNull(message = "文章状态不能为空") @RequestParam("status") Integer status
+            @ApiParam("文章状态，0为正常，1为待发布，2为回收站") @NotNull(message = "文章状态不能为空") @RequestParam("status") Integer status
     ) {
         articleService.updateStatus(articleId, status);
         articleRecommendService.asyncRefresh(articleId);

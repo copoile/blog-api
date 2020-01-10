@@ -104,6 +104,8 @@ sms:
   type: 1
   # 短信验证码有效时，单位为:秒
   expire: 300
+  # 短信同一手机号最大发送条数
+  day_max: 10
   # 阿里短信配置
   ali:
     regionId: cn-hangzhou

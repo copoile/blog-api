@@ -7,13 +7,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author: yaohw
  * @create: 2019-11-05 15:40
  **/
-@ConfigurationProperties(prefix = "sms",ignoreInvalidFields = true)
 @Data
+@ConfigurationProperties(prefix = "sms",ignoreInvalidFields = true)
 public class SmsServiceProperties  {
 
     private int type = 1;
 
     private long expire = 300L;
+
+    private long dayMax = 10L;
 
     private final SmsServiceProperties.Ali ali = new SmsServiceProperties.Ali();
 

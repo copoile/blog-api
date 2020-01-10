@@ -9,9 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -90,7 +88,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      * @return
      */
     @Bean
-    @Lazy
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -119,10 +116,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             if (var3 instanceof InsufficientAuthenticationException) {
                 var2.setCharacterEncoding("UTF-8");
                 var2.setContentType("application/json; charset=utf-8");
-                var2.setStatus(HttpStatus.FORBIDDEN.value());
                 ApiResponse response = new ApiResponse();
-                response.setErrorCode(ErrorEnum.PERMISSION_DENIED.getErrorCode());
-                response.setErrorMsg(ErrorEnum.PERMISSION_DENIED.getErrorMsg());
+                response.setCode(ErrorEnum.PERMISSION_DENIED.getErrorCode());
+                response.setMessage(ErrorEnum.PERMISSION_DENIED.getErrorMsg());
                 var2.getWriter().print(JSON.toJSON(response));
             }
         };

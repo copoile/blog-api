@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 目录分类表
+ * 分类表
  * </p>
  *
  * @author yaohw
@@ -25,7 +25,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@ApiModel(value="Category对象", description="目录分类表")
+@ApiModel(value="Category对象", description="分类表")
 public class Category implements Serializable {
 
     private static final long serialVersionUID = 1L;

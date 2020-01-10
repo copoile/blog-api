@@ -11,9 +11,9 @@ import org.springframework.context.annotation.Configuration;
  * @author: yaohw
  * @create: 2019-10-31 10:50
  **/
+@Log4j2
 @Configuration
 @EnableConfigurationProperties({StorageProperties.class})
-@Log4j2
 public class StorageAutoConfiguration {
 
     @Bean

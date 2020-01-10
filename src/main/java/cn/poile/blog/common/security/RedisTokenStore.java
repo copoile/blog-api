@@ -4,10 +4,14 @@ import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.entity.Client;
 import cn.poile.blog.service.IClientService;
+import cn.poile.blog.service.IUserService;
 import cn.poile.blog.vo.CustomUserDetails;
+import cn.poile.blog.vo.UserVo;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStringCommands;
@@ -21,10 +25,9 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * accessToken 生成、存储
@@ -52,7 +55,12 @@ public class RedisTokenStore {
     private static final String AUTH_REFRESH = "auth:refresh:";
 
     /**
-     * key为accessToken ， value为refreshToken，用于accessToken获取refreshToken
+     * key为refreshToken ， value为accessToken，用于refreshToken获取accessToken
+     */
+    private static final String AUTH_REFRESH_TO_ACCESS = "auth:refresh_to_access:";
+
+    /**
+     * key为accessToken ， value为refreshToken，用于refreshToken获取accessToken
      */
     private static final String AUTH_ACCESS_TO_REFRESH = "auth:access_to_refresh:";
 
@@ -82,6 +90,9 @@ public class RedisTokenStore {
     @Autowired
     private IClientService clientService;
 
+    @Autowired
+    private IUserService userService;
+
 
     private JdkSerializationRedisSerializer jdkSerializationRedisSerializer = new JdkSerializationRedisSerializer();
 
@@ -96,15 +107,6 @@ public class RedisTokenStore {
         return connectionFactory.getConnection();
     }
 
-    /**
-     * 对象value序列化
-     *
-     * @param object
-     * @return
-     */
-    private byte[] serializedAuthentication(Object object) {
-        return jdkSerializationRedisSerializer.serialize(object);
-    }
 
     /**
      * string value 序列化
@@ -138,81 +140,70 @@ public class RedisTokenStore {
 
 
     /**
-     * 反序列化
-     *
-     * @param bytes
-     * @return
-     */
-    private AuthenticationToken deserializeAuthentication(byte[] bytes) {
-        return (AuthenticationToken) jdkSerializationRedisSerializer.deserialize(bytes);
-    }
-
-
-    /**
      * 存 accessToken
      *
      * @param authentication
      * @return void
      */
-    public AuthenticationToken storeAccessToken(Authentication authentication, Client client) {
+    public AuthenticationToken storeToken(Authentication authentication, Client client) {
         // 同一客户端，同一用户是否已登录
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         Integer userId = userDetails.getId();
         String clientId = client.getClientId();
-        String uname = extractKey(userId, clientId);
-        byte[] uname2accessKey = serializedKey(UNAME_TO_ACCESS + uname);
-        byte[] user2accessKey = serializedKey(AUTH_USER_ACCESS + extractKey(userId, null));
+        byte[] uname2accessKey = serializedKey(UNAME_TO_ACCESS + extractKey(userId, clientId));
         String access = readAccessByUnameKey(uname2accessKey);
         long accessExpire = client.getAccessTokenExpire() == null ? ACCESS_EXPIRE : client.getAccessTokenExpire();
         long refreshExpire = client.getRefreshTokenExpire() == null ? REFRESH_EXPIRE : client.getRefreshTokenExpire();
-        // 已登录, 重置时效
-        if (!StringUtils.isBlank(access)) {
-            AuthenticationToken authToken = new AuthenticationToken();
-            authToken.setAccessToken(access);
-            authToken.setExpire(accessExpire);
-            String refresh = readRefreshByAccess(access);
-            authToken.setRefreshToken(refresh);
-            authToken.setPrincipal(userDetails);
-            authToken.setClientId(clientId);
-            authToken.setTokenType(TOKEN_TYPE);
-            byte[] serializedAuthentication = serializedAuthentication(authToken);
-            restAccessExpireAndRefreshExpire(user2accessKey, uname2accessKey, access, accessExpire, refresh, refreshExpire, serializedAuthentication);
-            return authToken;
+        if (StringUtils.isNotBlank(access)) {
+            return resetAccessExpire(client.getEnableRefreshToken().equals(1), uname2accessKey, access, accessExpire, userDetails);
         }
-        // 未登录
+        if (client.getEnableRefreshToken().equals(1)) {
+            return storeTokenOfAll(uname2accessKey, userId, accessExpire, refreshExpire, userDetails);
+        }
+        return storeTokenOfOnlyAccess(uname2accessKey, userId, accessExpire, userDetails);
+
+    }
+
+    /**
+     * 支持 refresh_token
+     *
+     * @param uname2accessKey
+     * @param userId
+     * @param accessExpire
+     * @param refreshExpire
+     * @param userDetails
+     * @return
+     */
+    private AuthenticationToken storeTokenOfAll(byte[] uname2accessKey, Integer userId, long accessExpire, long refreshExpire, CustomUserDetails userDetails) {
         String access2 = createToken();
         String refresh2 = createToken();
-        // 构建对象
         AuthenticationToken authToken = new AuthenticationToken();
+        authToken.setTokenType(TOKEN_TYPE);
         authToken.setAccessToken(access2);
-        authToken.setExpire(accessExpire);
         authToken.setRefreshToken(refresh2);
         authToken.setPrincipal(userDetails);
-        authToken.setClientId(clientId);
-        authToken.setTokenType(TOKEN_TYPE);
+
         // redis缓存
         byte[] accessKey = serializedKey(AUTH_ACCESS + access2);
+        byte[] refresh2accessKey = serializedKey(AUTH_REFRESH_TO_ACCESS + refresh2);
         byte[] access2refreshKey = serializedKey(AUTH_ACCESS_TO_REFRESH + access2);
         byte[] refreshKey = serializedKey(AUTH_REFRESH + refresh2);
-        byte[] serializedAuthentication = serializedAuthentication(authToken);
-        long now = Instant.now().toEpochMilli();
-        long expired = now - TimeUnit.SECONDS.toMillis(accessExpire);
+        // 用户id
+        byte[] value = serialized(Integer.toString(userId));
+        byte[] accessValue = serialized(access2);
         RedisConnection conn = getConnection();
         try {
             conn.openPipeline();
-            // accessToken : Authentication
-            conn.set(accessKey, serializedAuthentication, Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
-            // userId + clientId : accessToken
-            conn.set(uname2accessKey, serialized(access2), Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
-            // accessToken : refreshToken
-            conn.set(access2refreshKey, serialized(refresh2), Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
-            // refreshToken : Authentication
-            conn.set(refreshKey, serializedAuthentication, Expiration.seconds(refreshExpire), RedisStringCommands.SetOption.UPSERT);
-            // 移除 zset 中过期数据
-            conn.zSetCommands().zRemRangeByScore(user2accessKey, 0, expired);
-            // userId: accessToken
-            conn.zSetCommands().zAdd(user2accessKey, now, serialized(access2));
-            conn.expire(user2accessKey, refreshExpire);
+            // access_token : value
+            conn.set(accessKey, value, Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
+            // userId + clientId : access_token
+            conn.set(uname2accessKey, accessValue, Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
+            // refresh_token : access_token
+            conn.set(refresh2accessKey, accessValue, Expiration.seconds(refreshExpire), RedisStringCommands.SetOption.UPSERT);
+            // access_token : refresh_token
+            conn.set(access2refreshKey, serialized(refresh2), Expiration.seconds(refreshExpire), RedisStringCommands.SetOption.UPSERT);
+            // refresh_token : value
+            conn.set(refreshKey, value, Expiration.seconds(refreshExpire), RedisStringCommands.SetOption.UPSERT);
             conn.closePipeline();
         } finally {
             conn.close();
@@ -220,38 +211,73 @@ public class RedisTokenStore {
         return authToken;
     }
 
+
     /**
-     * 同一客户端，同一用户重复登录重置时效
+     * 不支持 refresh_token
      *
-     * @param user2accessKey
+     * @param uname2accessKey
+     * @param userId
+     * @param accessExpire
+     * @param userDetails
+     * @return
+     */
+    private AuthenticationToken storeTokenOfOnlyAccess(byte[] uname2accessKey, Integer userId, long accessExpire, CustomUserDetails userDetails) {
+        String access = createToken();
+        AuthenticationToken authToken = new AuthenticationToken();
+        authToken.setTokenType(TOKEN_TYPE);
+        authToken.setAccessToken(access);
+        authToken.setPrincipal(userDetails);
+
+        // redis缓存
+        byte[] accessKey = serializedKey(AUTH_ACCESS + access);
+        // 用户id
+        byte[] value = serialized(Integer.toString(userId));
+        byte[] accessValue = serialized(access);
+        RedisConnection conn = getConnection();
+        try {
+            conn.openPipeline();
+            // access_token : value
+            conn.set(accessKey, value, Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
+            // userId + clientId : access_token
+            conn.set(uname2accessKey, accessValue, Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
+            conn.closePipeline();
+        } finally {
+            conn.close();
+        }
+        return authToken;
+    }
+
+
+    /**
+     * access_token 有效时内重复登录处理
+     *
+     * @param enableRefreshToken
      * @param uname2accessKey
      * @param access
      * @param accessExpire
-     * @param refresh
-     * @param refreshExpire
+     * @param userDetails
+     * @return
      */
-    private void restAccessExpireAndRefreshExpire(byte[] user2accessKey, byte[] uname2accessKey, String access, long accessExpire, String refresh, long refreshExpire, byte[] serializedAuthentication) {
+    private AuthenticationToken resetAccessExpire(boolean enableRefreshToken, byte[] uname2accessKey, String access, long accessExpire, CustomUserDetails userDetails) {
+        AuthenticationToken authToken = new AuthenticationToken();
+        authToken.setAccessToken(access);
+        authToken.setTokenType(TOKEN_TYPE);
+        authToken.setPrincipal(userDetails);
+        if (enableRefreshToken) {
+            authToken.setRefreshToken(readRefreshTokenByAccessToken(access));
+        }
+        // redis缓存
         byte[] accessKey = serializedKey(AUTH_ACCESS + access);
-        byte[] refreshKey = serializedKey(AUTH_REFRESH + refresh);
-        byte[] access2refreshKey = serializedKey(AUTH_ACCESS_TO_REFRESH + access);
-        long now = Instant.now().toEpochMilli();
-        long expired = now - TimeUnit.SECONDS.toMillis(accessExpire);
-        byte[] accessSerialized = serialized(access);
         RedisConnection conn = getConnection();
         try {
             conn.openPipeline();
             conn.expire(accessKey, accessExpire);
             conn.expire(uname2accessKey, accessExpire);
-            conn.expire(refreshKey, refreshExpire);
-            conn.expire(access2refreshKey, refreshExpire);
-            conn.zSetCommands().zRemRangeByScore(user2accessKey, 0, expired);
-            conn.zSetCommands().zRem(user2accessKey, accessSerialized);
-            conn.zSetCommands().zAdd(user2accessKey, now,accessSerialized );
-            conn.expire(user2accessKey, refreshExpire);
             conn.closePipeline();
         } finally {
             conn.close();
         }
+        return authToken;
     }
 
     /**
@@ -265,24 +291,6 @@ public class RedisTokenStore {
         byte[] bytes;
         try {
             bytes = conn.get(unameKey);
-        } finally {
-            conn.close();
-        }
-        return deserializeString(bytes);
-    }
-
-    /**
-     * 根据 accessToken 读取refreshToken
-     *
-     * @param accessToken
-     * @return
-     */
-    private String readRefreshByAccess(String accessToken) {
-        byte[] access2refreshKey = serializedKey(AUTH_ACCESS_TO_REFRESH + accessToken);
-        RedisConnection conn = getConnection();
-        byte[] bytes;
-        try {
-            bytes = conn.get(access2refreshKey);
         } finally {
             conn.close();
         }
@@ -304,7 +312,17 @@ public class RedisTokenStore {
         } finally {
             conn.close();
         }
-        return deserializeAuthentication(bytes);
+        String idStr = deserializeString(bytes);
+        CustomUserDetails customUserDetails = getCustomUserDetails(Integer.parseInt(idStr));
+        if (customUserDetails == null) {
+            return null;
+        }
+        AuthenticationToken authToken = new AuthenticationToken();
+        authToken.setAccessToken(accessToken);
+        authToken.setPrincipal(customUserDetails);
+        authToken.setRefreshToken(readRefreshTokenByAccessToken(accessToken));
+        authToken.setTokenType(TOKEN_TYPE);
+        return authToken;
     }
 
     /**
@@ -313,7 +331,7 @@ public class RedisTokenStore {
      * @param refreshToken
      * @return AuthenticationToken
      */
-    public AuthenticationToken readByRefreshToken(String refreshToken) {
+    public CustomUserDetails getCustomUserDetailsByRefreshToken(String refreshToken) {
         byte[] serializedKey = serializedKey(AUTH_REFRESH + refreshToken);
         RedisConnection conn = getConnection();
         byte[] bytes;
@@ -322,122 +340,53 @@ public class RedisTokenStore {
         } finally {
             conn.close();
         }
-        return deserializeAuthentication(bytes);
+        if (bytes == null) {
+            throw new ApiException(ErrorEnum.REFRESH_CREDENTIALS_INVALID.getErrorCode(), ErrorEnum.REFRESH_CREDENTIALS_INVALID.getErrorMsg());
+        }
+        String idStr = deserializeString(bytes);
+        return getCustomUserDetails(Integer.parseInt(idStr));
     }
 
+
     /**
-     * 根据 refreshToken 刷新认证信息
+     * 根据 refreshToken 刷新认证信息, access_token 续签
      *
      * @param refreshToken
      * @return
      */
     public AuthenticationToken refreshAuthToken(String refreshToken, Client client) {
-        AuthenticationToken authToken = readByRefreshToken(refreshToken);
-        if (authToken == null) {
-            throw new ApiException(ErrorEnum.CREDENTIALS_INVALID.getErrorCode(), ErrorEnum.CREDENTIALS_INVALID.getErrorMsg());
+        CustomUserDetails userDetails = getCustomUserDetailsByRefreshToken(refreshToken);
+        String accessToken = readAccessTokenByRefreshToken(refreshToken);
+        if (userDetails == null || StringUtils.isBlank(accessToken)) {
+            throw new ApiException(ErrorEnum.REFRESH_CREDENTIALS_INVALID.getErrorCode(), ErrorEnum.REFRESH_CREDENTIALS_INVALID.getErrorMsg());
         }
-        CustomUserDetails userDetails = authToken.getPrincipal();
-        Integer userId = userDetails.getId();
-        String clientId = client.getClientId();
-        String uname = extractKey(userId, clientId);
-        byte[] uname2accessKey = serializedKey(UNAME_TO_ACCESS + uname);
-        byte[] user2accessKey = serializedKey(AUTH_USER_ACCESS + extractKey(userId, null));
+        AuthenticationToken authToken = new AuthenticationToken();
+        authToken.setAccessToken(accessToken);
+        authToken.setTokenType(TOKEN_TYPE);
         long accessExpire = client.getAccessTokenExpire() == null ? ACCESS_EXPIRE : client.getAccessTokenExpire();
-        long refreshExpire = client.getRefreshTokenExpire() == null ? REFRESH_EXPIRE : client.getRefreshTokenExpire();
-        long now = Instant.now().toEpochMilli();
-        long expired = now - TimeUnit.SECONDS.toMillis(accessExpire);
-        String access = authToken.getAccessToken();
-        String refresh = authToken.getRefreshToken();
-        byte[] accessKey = serializedKey(AUTH_ACCESS + access);
-        byte[] access2refreshKey = serializedKey(AUTH_ACCESS_TO_REFRESH + access);
-        byte[] serializedAuthentication = serializedAuthentication(authToken);
+        authToken.setRefreshToken(refreshToken);
+        authToken.setPrincipal(userDetails);
+        Integer userId = userDetails.getId();
+
+        byte[] uname2accessKey = serializedKey(UNAME_TO_ACCESS + extractKey(userId, client.getClientId()));
+        byte[] accessKey = serializedKey(AUTH_ACCESS + accessToken);
+        byte[] value = serialized(Integer.toString(userId));
+        byte[] accessValue = serialized(accessToken);
+
         RedisConnection conn = getConnection();
         try {
             conn.openPipeline();
-            conn.set(accessKey, serializedAuthentication, Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
-            conn.set(uname2accessKey, serialized(access), Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
-            conn.set(access2refreshKey, serialized(refresh), Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
-            conn.zSetCommands().zRemRangeByScore(user2accessKey, 0, expired);
-            conn.zSetCommands().zAdd(user2accessKey, now, serialized(access));
-            conn.expire(user2accessKey, refreshExpire);
+            // access_token : value
+            conn.set(accessKey, value, Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
+            // userId + clientId : access_token
+            conn.set(uname2accessKey, accessValue, Expiration.seconds(accessExpire), RedisStringCommands.SetOption.UPSERT);
+            conn.closePipeline();
         } finally {
             conn.close();
         }
         return authToken;
     }
 
-    /***
-     * 刷新 accessToken 时间
-     * @param authToken
-     * @return
-     */
-    public void refreshAccessExpire(AuthenticationToken authToken) {
-        String clientId = authToken.getClientId();
-        Client client = clientService.getClientByClientId(clientId);
-        long accessExpire = client.getAccessTokenExpire() == null ? ACCESS_EXPIRE : client.getAccessTokenExpire();
-        long refreshExpire = client.getRefreshTokenExpire() == null ? REFRESH_EXPIRE : client.getRefreshTokenExpire();
-        CustomUserDetails userDetails = authToken.getPrincipal();
-        Integer userId = userDetails.getId();
-        String uname = extractKey(userId, clientId);
-        byte[] uname2accessKey = serializedKey(UNAME_TO_ACCESS + uname);
-        byte[] user2accessKey = serializedKey(AUTH_USER_ACCESS + extractKey(userId, null));
-        String access = authToken.getAccessToken();
-        byte[] accessKey = serializedKey(AUTH_ACCESS + access);
-        byte[] access2refreshKey = serializedKey(AUTH_ACCESS_TO_REFRESH + access);
-        long now = Instant.now().toEpochMilli();
-        byte[] accessSerialized = serialized(access);
-        RedisConnection conn = getConnection();
-        try {
-            conn.openPipeline();
-            conn.expire(accessKey, accessExpire);
-            conn.expire(uname2accessKey, accessExpire);
-            conn.expire(access2refreshKey, refreshExpire);
-            conn.zSetCommands().zRem(user2accessKey, accessSerialized);
-            conn.zSetCommands().zAdd(user2accessKey, now, accessSerialized);
-            conn.expire(user2accessKey, refreshExpire);
-            conn.closePipeline();
-        } finally {
-            conn.close();
-
-        }
-    }
-
-
-    /**
-     * accessToken 过期时间
-     *
-     * @param accessToken
-     * @return
-     */
-    private Long accessTokenExpire(String accessToken) {
-        byte[] serializedKey = serializedKey(accessToken);
-        RedisConnection conn = getConnection();
-        Long ttl;
-        try {
-            ttl = conn.ttl(serializedKey, TimeUnit.SECONDS);
-        } finally {
-            conn.close();
-        }
-        return ttl == null ? -2 : ttl;
-    }
-
-    /**
-     * refreshToken 过期时间
-     *
-     * @param refreshToken
-     * @return
-     */
-    private long readRefreshTokenExpire(String refreshToken) {
-        byte[] serializedKey = serializedKey(refreshToken);
-        RedisConnection conn = getConnection();
-        Long ttl;
-        try {
-            ttl = conn.ttl(serializedKey, TimeUnit.SECONDS);
-        } finally {
-            conn.close();
-        }
-        return ttl == null ? -2 : ttl;
-    }
 
     /**
      * 根据accessToken 读取 refreshToken
@@ -448,6 +397,25 @@ public class RedisTokenStore {
     private String readRefreshTokenByAccessToken(String accessToken) {
         RedisConnection conn = getConnection();
         byte[] serializedKey = serializedKey(AUTH_ACCESS_TO_REFRESH + accessToken);
+        byte[] bytes;
+        try {
+            bytes = conn.get(serializedKey);
+        } finally {
+            conn.close();
+        }
+        return deserializeString(bytes);
+    }
+
+
+    /**
+     * 根据refreshToken 读取 accessToken
+     *
+     * @param refreshToken
+     * @return
+     */
+    private String readAccessTokenByRefreshToken(String refreshToken) {
+        RedisConnection conn = getConnection();
+        byte[] serializedKey = serializedKey(AUTH_REFRESH_TO_ACCESS + refreshToken);
         byte[] bytes;
         try {
             bytes = conn.get(serializedKey);
@@ -477,74 +445,27 @@ public class RedisTokenStore {
         String clientId = client.getClientId();
         String uname = extractKey(userId, clientId);
         byte[] uname2accessKey = serializedKey(UNAME_TO_ACCESS + uname);
-        byte[] user2accessKey = serializedKey(AUTH_USER_ACCESS + extractKey(userId, null));
         byte[] accessKey = serializedKey(AUTH_ACCESS + accessToken);
         byte[] access2refreshKey = serializedKey(AUTH_ACCESS_TO_REFRESH + accessToken);
+        byte[] refresh2accessKey = serializedKey(AUTH_REFRESH_TO_ACCESS + refreshToken);
         byte[] refreshKey = serializedKey(AUTH_REFRESH + refreshToken);
         RedisConnection conn = getConnection();
         try {
-            conn.openPipeline();
-            // 多key删除
-            conn.del(uname2accessKey, accessKey, access2refreshKey, refreshKey);
-            // zset指定删除
-            conn.zSetCommands().zRem(user2accessKey, serialized(accessToken));
-            conn.closePipeline();
+            conn.del(uname2accessKey, accessKey, access2refreshKey, refreshKey, refresh2accessKey);
         } finally {
             conn.close();
         }
     }
 
-    /**
-     * 获取用户登录所有 accessToken
-     *
-     * @param userId
-     * @return
-     */
-    private Set<String> extractAccessToken(Integer userId) {
-        String extract = extractKey(userId, null);
-        byte[] extractKey = serializedKey(AUTH_USER_ACCESS + extract);
-        RedisConnection conn = getConnection();
-        Set<byte[]> set;
-        try {
-            set = conn.zSetCommands().zRange(extractKey, 0, -1);
-        } finally {
-            conn.close();
-        }
-        return set == null ? new HashSet<>(0) : set.stream().map(this::deserializeString).collect(Collectors.toSet());
-    }
 
     /**
      * 更新认证信息中的用户信息
      *
-     * @param principal
+     * @param id
      */
-    public void updatePrincipal(CustomUserDetails principal) {
-        Integer userId = principal.getId();
-        Set<String> accessTokenSet = extractAccessToken(userId);
-        RedisConnection conn = getConnection();
-        try {
-            accessTokenSet.forEach(
-                    accessToken -> {
-                        AuthenticationToken accessAuthenticationToken = readByAccessToken(accessToken);
-                        long accessTokenExpire = accessTokenExpire(AUTH_ACCESS + accessToken);
-                        accessAuthenticationToken.setPrincipal(principal);
-                        byte[] serializedAuthentication = serializedAuthentication(accessAuthenticationToken);
-                        String refreshToken = readRefreshTokenByAccessToken(accessToken);
-                        byte[] serializeRefreshToken = serialized(refreshToken);
-                        long refreshTokenExpire = readRefreshTokenExpire(AUTH_REFRESH + refreshToken);
-                        byte[] accessKey = serializedKey(AUTH_ACCESS + accessToken);
-                        byte[] refreshKey = serializedKey(AUTH_REFRESH + refreshToken);
-                        byte[] access2refreshKey = serializedKey((AUTH_ACCESS_TO_REFRESH + accessToken));
-                        conn.openPipeline();
-                        conn.set(accessKey, serializedAuthentication, Expiration.seconds(accessTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
-                        conn.set(refreshKey, serializedAuthentication, Expiration.seconds(refreshTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
-                        conn.set(access2refreshKey, serializeRefreshToken, Expiration.seconds(refreshTokenExpire + 3), RedisStringCommands.SetOption.UPSERT);
-                        conn.closePipeline();
-                    }
-            );
-        } finally {
-            conn.close();
-        }
+    @CacheEvict(value="user",key="#id",beforeInvocation = true)
+    public void clearUserCacheById(Integer id) {
+        log.info("清除用户{}缓存", id);
     }
 
     /**
@@ -589,6 +510,23 @@ public class RedisTokenStore {
      */
     private String createToken() {
         return UUID.randomUUID().toString();
+    }
+
+
+    /**
+     * 获取 CustomUserDetails
+     *
+     * @param id
+     * @return
+     */
+    private CustomUserDetails getCustomUserDetails(Integer id) {
+        UserVo userVo = userService.selectUserVoById(id);
+        if (userVo == null) {
+            return null;
+        }
+        CustomUserDetails userDetails = new CustomUserDetails();
+        BeanUtils.copyProperties(userVo, userDetails);
+        return userDetails;
     }
 
 }

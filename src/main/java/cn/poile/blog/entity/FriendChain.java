@@ -25,8 +25,8 @@ import javax.validation.constraints.NotBlank;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@ApiModel(value="FriendLink对象", description="友链表")
-public class FriendLink implements Serializable {
+@ApiModel(value="FriendChain对象", description="友链表")
+public class FriendChain implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

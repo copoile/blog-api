@@ -23,7 +23,6 @@ CREATE TABLE `article` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '文章id',
   `original` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否原创，1：是，0：否',
   `user_id` int(11) NOT NULL COMMENT '用户id',
-  `avatar` varchar(255) DEFAULT NULL COMMENT '作者头像，原创时为当前用户头像，转载时为空',
   `category_name` varchar(50) NOT NULL COMMENT '分类名称-冗余字段',
   `category_id` int(11) NOT NULL COMMENT '文章分类id',
   `title` varchar(100) NOT NULL COMMENT '文章标题',
@@ -37,7 +36,7 @@ CREATE TABLE `article` (
   `collect_count` int(11) NOT NULL DEFAULT '0' COMMENT '收藏数',
   `publish_time` datetime NOT NULL COMMENT '发布时间',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `reproduce` varchar(1) DEFAULT NULL COMMENT '转载地址',
+  `reproduce` varchar(255) DEFAULT NULL COMMENT '转载地址',
   `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '已删除，1：是，0否',
   PRIMARY KEY (`id`),
   KEY `index_user_id` (`user_id`) USING BTREE,
@@ -151,7 +150,7 @@ CREATE TABLE `category` (
   `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '已删除，1：是，0：否',
   PRIMARY KEY (`id`),
   KEY `index_parent_id` (`parent_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='目录分类表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分类表';
 
 -- ----------------------------
 -- Records of category
@@ -167,20 +166,21 @@ CREATE TABLE `client` (
   `client_secret` varchar(255) NOT NULL COMMENT '客户端密码',
   `access_token_expire` bigint(20) DEFAULT NULL COMMENT 'access_token有效时长',
   `refresh_token_expire` bigint(20) DEFAULT NULL COMMENT 'refresh_token_expire有效时长',
+  `enable_refresh_token` tinyint(1) NOT NULL DEFAULT '1' COMMENT '是否支持刷新refresh_toke，1：是，0：否',
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_client_id` (`client_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='客户端表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='客户端表';
 
 -- ----------------------------
 -- Records of client
 -- ----------------------------
-INSERT INTO `client` VALUES ('1', 'pc', '123456', '7200', '2592000');
+INSERT INTO `client` VALUES ('1', 'pc', '123456', '7200', '2592000', '1');
 
 -- ----------------------------
--- Table structure for `friend_link`
+-- Table structure for `friend_chain`
 -- ----------------------------
-DROP TABLE IF EXISTS `friend_link`;
-CREATE TABLE `friend_link` (
+DROP TABLE IF EXISTS `friend_chain`;
+CREATE TABLE `friend_chain` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `name` varchar(50) DEFAULT NULL COMMENT '名称',
   `url` varchar(255) DEFAULT NULL COMMENT '链接',
@@ -221,7 +221,6 @@ DROP TABLE IF EXISTS `tag`;
 CREATE TABLE `tag` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `name` varchar(30) NOT NULL COMMENT '标签名',
-  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
   `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '已删除,1:是，0否',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='标签表';
@@ -251,7 +250,7 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   KEY `index_username` (`username`) USING BTREE,
   KEY `index` (`mobile`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 -- ----------------------------
 -- Records of user

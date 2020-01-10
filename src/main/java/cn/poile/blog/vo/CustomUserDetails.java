@@ -9,7 +9,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -27,8 +26,8 @@ public class CustomUserDetails extends UserVo implements UserDetails {
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (!CollectionUtils.isEmpty(roleList)) {
-            return roleList.stream().map(this::createAuthority).collect(Collectors.toSet());
+        if (!CollectionUtils.isEmpty(roles)) {
+            return roles.stream().map(this::createAuthority).collect(Collectors.toSet());
         }
         return Collections.emptyList();
     }

@@ -7,10 +7,12 @@ import cn.poile.blog.controller.model.dto.CategoryNodeDTO;
 import cn.poile.blog.controller.model.request.AddCategoryRequest;
 import cn.poile.blog.entity.Category;
 import cn.poile.blog.mapper.CategoryMapper;
+import cn.poile.blog.service.IArticleService;
 import cn.poile.blog.service.ICategoryService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -27,6 +29,9 @@ import java.util.*;
  */
 @Service
 public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements ICategoryService {
+
+    @Autowired
+    private IArticleService articleService;
 
     /**
      * 根目录父id
@@ -87,6 +92,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         category.setId(id);
         category.setName(name);
         updateById(category);
+        articleService.updateCategoryName(id,name);
     }
 
     /**

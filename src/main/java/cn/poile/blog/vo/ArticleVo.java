@@ -3,6 +3,7 @@ package cn.poile.blog.vo;
 import cn.poile.blog.entity.Article;
 import cn.poile.blog.entity.Category;
 import cn.poile.blog.entity.Tag;
+import cn.poile.blog.entity.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -24,6 +25,8 @@ import java.util.List;
 @ApiModel(value="ArticleVo对象", description="文章详细对象")
 public class ArticleVo extends Article {
 
+    @ApiModelProperty("作者")
+    private User user;
 
     @ApiModelProperty("标签列表")
     private List<Tag> tagList;

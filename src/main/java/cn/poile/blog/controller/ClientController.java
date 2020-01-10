@@ -1,21 +1,20 @@
 package cn.poile.blog.controller;
 
 
+import cn.poile.blog.common.constant.ErrorEnum;
+import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.entity.Client;
-import cn.poile.blog.entity.FriendLink;
 import cn.poile.blog.service.IClientService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import cn.poile.blog.controller.BaseController;
 
 /**
  * <p>
@@ -52,9 +51,25 @@ public class ClientController extends BaseController {
     @PostMapping("/save")
     @ApiOperation(value = "新增或更新客户端,id为null时新增",notes = "需要accessToken，需要管理员权限")
     public ApiResponse save(@RequestBody Client client) {
+        validateExist(client);
         clientService.saveOrUpdate(client);
         clientService.clearCache();
         return createResponse();
+    }
+
+    /**
+     * 校验是否已存在
+     * @param client
+     */
+    private void validateExist(Client client) {
+        if (client.getId() == null) {
+            QueryWrapper<Client> queryWrapper = new QueryWrapper<>();
+            queryWrapper.lambda().eq(Client::getClientId,client.getClientId());
+            int count = clientService.count(queryWrapper);
+            if (count != 0) {
+                throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"客户端已存在");
+            }
+        }
     }
 
 }

@@ -27,13 +27,7 @@ public interface IArticleService extends IService<Article> {
      *
      * @param request
      */
-    void save(ArticleRequest request);
-
-    /**
-     * 发表文章
-     * @param request
-     */
-    void publish(ArticleRequest request);
+    void saveOrUpdate(ArticleRequest request);
 
     /**
      * 分页查询文章
@@ -166,5 +160,12 @@ public interface IArticleService extends IService<Article> {
      * @return
      */
     List<ArticleVo> selectCollectByUserId(@Param("offset") long offset, @Param("limit") long limit, @Param("userId") Integer userId);
+
+    /**
+     * 更新分类名称（分类冗余字段）
+     * @param categoryId
+     * @param newName
+     */
+    void updateCategoryName(int categoryId,String newName);
 
 }

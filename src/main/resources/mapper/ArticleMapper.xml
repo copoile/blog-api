@@ -7,7 +7,6 @@
         <result property="original" column="original"/>
         <result property="categoryName" column="category_name"/>
         <result property="userId" column="user_id"/>
-        <result property="author" column="author"/>
         <result property="categoryId" column="category_id"/>
         <result property="title" column="title"/>
         <result property="summary" column="summary"/>
@@ -30,7 +29,6 @@
         <result property="original" column="original"/>
         <result property="categoryName" column="category_name"/>
         <result property="userId" column="user_id"/>
-        <result property="avatar" column="avatar"/>
         <result property="categoryId" column="category_id"/>
         <result property="title" column="title"/>
         <result property="summary" column="summary"/>
@@ -45,6 +43,11 @@
         <result property="updateTime" column="update_time"/>
         <result property="reproduce" column="reproduce"/>
         <result property="deleted" column="deleted"/>
+        <association property="user" javaType="cn.poile.blog.entity.User">
+            <id property="id" column="u_user_id" />
+            <result property="nickname" column="nickname" />
+            <result property="avatar" column="avatar" />
+        </association>
         <collection property="tagList" ofType="cn.poile.blog.entity.Tag">
             <id property="id" column="tag_id"/>
             <result property="name" column="tag_name"/>
@@ -52,7 +55,7 @@
     </resultMap>
 
     <sql id="Article_Column_List">
-        inner_a.id, inner_a.original, inner_a.user_id, inner_a.avatar, inner_a.category_name, inner_a.category_id, inner_a.title, inner_a.summary, inner_a.content, inner_a.cover, inner_a.status, inner_a.view_count,
+        inner_a.id, inner_a.original, inner_a.user_id, inner_a.category_name, inner_a.category_id, inner_a.title, inner_a.summary, inner_a.content, inner_a.cover, inner_a.status, inner_a.view_count,
         inner_a.comment_count, inner_a.like_count, inner_a.collect_count, inner_a.publish_time, inner_a.update_time, inner_a.reproduce, inner_a.deleted
     </sql>
 
@@ -61,8 +64,6 @@
         select
         outer_a.id,
         outer_a.original,
-        outer_a.user_id,
-        outer_a.avatar,
         outer_a.category_name,
         outer_a.category_id,
         outer_a.title,
@@ -78,6 +79,9 @@
         outer_a.update_time,
         outer_a.reproduce,
         outer_a.deleted,
+        u.id u_user_id,
+        u.avatar,
+        u.nickname,
         t.id tag_id,
         t.name tag_name
         from
@@ -90,6 +94,7 @@
             and inner_a.status = #{status}
         </if>
         ) outer_a
+        left join user u on u.id = outer_a.user_id
         left join article_tag a_t on a_t.article_id = outer_a.id
         left join tag t on t.id = a_t.tag_id
     </select>
@@ -122,7 +127,6 @@
         outer_a.id,
         outer_a.original,
         outer_a.user_id,
-        outer_a.avatar,
         outer_a.category_name,
         outer_a.category_id,
         outer_a.title,
@@ -137,6 +141,9 @@
         outer_a.update_time,
         outer_a.reproduce,
         outer_a.deleted,
+        u.id u_user_id,
+        u.avatar,
+        u.nickname,
         t.id tag_id,
         t.name tag_name
         from
@@ -170,6 +177,7 @@
         </choose>
         limit #{offset},#{limit}
         ) outer_a
+        left join user u on u.id = outer_a.user_id
         left join article_tag a_t on a_t.article_id = outer_a.id
         left join tag t on t.id = a_t.tag_id
         <choose>
@@ -188,7 +196,6 @@
         outer_a.id,
         outer_a.original,
         outer_a.user_id,
-        outer_a.avatar,
         outer_a.category_name,
         outer_a.category_id,
         outer_a.title,
@@ -203,6 +210,9 @@
         outer_a.update_time,
         outer_a.reproduce,
         outer_a.deleted,
+        u.id u_user_id,
+        u.avatar,
+        u.nickname,
         t.id tag_id,
         t.name tag_name
         from
@@ -215,6 +225,7 @@
         and inner_a.status = 0
         limit #{offset},#{limit}
         ) outer_a
+        left join user u on u.id = outer_a.user_id
         left join article_tag a_t on a_t.article_id = outer_a.id
         left join tag t on t.id = a_t.tag_id
     </select>
@@ -225,7 +236,6 @@
         outer_a.id,
         outer_a.original,
         outer_a.user_id,
-        outer_a.avatar,
         outer_a.category_name,
         outer_a.category_id,
         outer_a.title,
@@ -240,6 +250,9 @@
         outer_a.update_time,
         outer_a.reproduce,
         outer_a.deleted,
+        u.id u_user_id,
+        u.avatar,
+        u.nickname,
         t.id tag_id,
         t.name tag_name
         from
@@ -257,6 +270,7 @@
         )
         limit 0,#{limit}
         ) outer_a
+        left join user u on u.id = outer_a.user_id
         left join article_tag a_t on a_t.article_id = outer_a.id
         left join tag t on t.id = a_t.tag_id
     </select>

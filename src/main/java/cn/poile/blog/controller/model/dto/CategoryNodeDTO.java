@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * 目录分类节点
+ * 分类节点
  * @author: yaohw
  * @create: 2019-11-14 17:38
  **/

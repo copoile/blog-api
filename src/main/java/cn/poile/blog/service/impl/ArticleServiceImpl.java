@@ -30,7 +30,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -59,23 +61,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
 
     /**
-     * 保存文章
+     * 新增或更新
      *
      * @param request
      */
     @Override
-    public void save(ArticleRequest request) {
-        saveOrUpdate(request, ArticleStatusEnum.NOT_PUBLISH.getStatus());
-    }
-
-    /**
-     * 新增或更新
-     *
-     * @param request
-     * @param status
-     */
     @Transactional(rollbackFor = Exception.class)
-    private void saveOrUpdate(ArticleRequest request, final int status) {
+    public void saveOrUpdate(ArticleRequest request) {
+        Integer status = request.getStatus();
+        if (!status.equals(0) & !status.equals(1)) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效状态码");
+        }
         Article article = new Article();
         // 文章id处理
         article.setId(request.getId() == null ? null : request.getId() == 0 ? null : request.getId());
@@ -100,8 +96,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setUpdateTime(LocalDateTime.now());
         // 保存或更新文章
         saveOrUpdate(article);
+
+        Integer articleId = article.getId();
         // 文章-标签 关联
         List<Integer> tagIds = request.getTagIds();
+        if (CollectionUtils.isEmpty(tagIds)) {
+            deleteArticleTagByArticleId(articleId);
+            return;
+        }
         QueryWrapper<Tag> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(Tag::getId, tagIds);
         int count = tagService.count(queryWrapper);
@@ -109,24 +111,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "标签id不存在");
         }
         // 非逻辑删除-删除原来的
-        QueryWrapper<ArticleTag> deleteWrapper = new QueryWrapper<>();
-        Integer articleId = article.getId();
-        deleteWrapper.lambda().eq(ArticleTag::getArticleId, articleId);
-        articleTagService.remove(deleteWrapper);
+        deleteArticleTagByArticleId(articleId);
         // 批量新增
         List<ArticleTag> articleTagList = tagIds.stream().map((tagId) -> new ArticleTag(articleId, tagId)).collect(Collectors.toList());
         articleTagService.saveBatch(articleTagList);
     }
 
     /**
-     * 发表文章
-     *
-     * @param request
+     * 根据文章id删除文章标签
+     * @param articleId
      */
-    @Override
-    public void publish(ArticleRequest request) {
-        saveOrUpdate(request, ArticleStatusEnum.NORMAL.getStatus());
+    private void deleteArticleTagByArticleId(Integer articleId) {
+        QueryWrapper<ArticleTag> deleteWrapper = new QueryWrapper<>();
+        deleteWrapper.lambda().eq(ArticleTag::getArticleId, articleId);
+        articleTagService.remove(deleteWrapper);
     }
+
 
     /**
      * 分页查询文章
@@ -256,8 +256,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (articleVo == null) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "文章不存在");
         }
-        List<Category> categoryList = categoryService.parentList(articleVo.getCategoryId());
-        articleVo.setCategoryList(categoryList);
         // 浏览次数自增
         Article article = new Article();
         Integer viewCount = articleVo.getViewCount();
@@ -296,6 +294,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * 文章计数
      *
      * @param status 状态
+     * @param categoryId 分类id
+     * @param tagId 标签id
+     * @param start 开始日期
+     * @param end 结束日期
      * @param title  标题关键字
      * @return
      */
@@ -316,14 +318,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         int size = articleList.size();
         PreArtAndNextArtDTO dto = new PreArtAndNextArtDTO();
         if (size == two) {
-            Article pre = articleList.get(0);
-            dto.setPre(pre);
-            Article next = articleList.get(1);
-            dto.setNext(next);
+            dto.setPre(articleList.get(0));
+            dto.setNext(articleList.get(1));
         } else if (size == 1) {
             oneHandle(dto, articleList.get(0), id);
-        } else {
-            return dto;
         }
         return dto;
     }
@@ -386,11 +384,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      * 更新文章状态
      *
      * @param articleId
-     * @param status    0或1
+     * @param status 0为正常，1为待发布，2为回收站
      */
     @Override
     public void updateStatus(Integer articleId, Integer status) {
-        Integer[] array = {0, 1};
+        Integer[] array = {0, 1, 2};
         if (!ArrayUtils.contains(array, status)) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效状态码");
         }
@@ -476,6 +474,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
+     * 更新分类名称（分类冗余字段）
+     *
+     * @param categoryId
+     * @param newName
+     */
+    @Override
+    public void updateCategoryName(int categoryId, String newName) {
+        Article article = new Article();
+        article.setCategoryName(newName);
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(Article::getCategoryId, categoryId);
+        update(article,queryWrapper);
+    }
+
+    /**
      * 只有一篇文章判断是上一篇还是下一篇
      *
      * @param dto
@@ -534,7 +547,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
         article.setUserId(userDetail.getId());
-        article.setAvatar(userDetail.getAvatar());
         article.setOriginal(original);
     }
 

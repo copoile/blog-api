@@ -17,8 +17,8 @@ public class BaseController {
 
     protected <T> ApiResponse<T> createResponse() {
         ApiResponse<T> response = init();
-        response.setErrorCode(ErrorEnum.SUCCESS.getErrorCode());
-        response.setErrorMsg(ErrorEnum.SUCCESS.getErrorMsg());
+        response.setCode(ErrorEnum.SUCCESS.getErrorCode());
+        response.setMessage(ErrorEnum.SUCCESS.getErrorMsg());
         return response;
     }
 

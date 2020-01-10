@@ -47,7 +47,7 @@ public class ArticleLikeController extends BaseController {
         return createResponse();
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/cancel")
     @ApiOperation(value = "取消文章点赞")
     public ApiResponse cancel(@ApiParam("文章id") @NotNull(message = "文章id不能为空") @RequestParam("articleId") Integer articleId) {
         articleLikeService.cancel(articleId);

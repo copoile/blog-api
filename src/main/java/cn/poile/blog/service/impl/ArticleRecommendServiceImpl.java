@@ -51,6 +51,7 @@ public class ArticleRecommendServiceImpl implements ArticleRecommendService {
         if (!articleVo.getStatus().equals(0)) {
             return;
         }
+        // 先移除原有的
         remove(articleId);
         // 只存列表所需要字段
         articleVo.setContent(null);

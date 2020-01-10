@@ -35,14 +35,14 @@ public class SmsLimiter implements ExtraLimiter {
     /**
      * 限流次数
      */
-    private long max = 10L;
+    private long dayMax = 10L;
 
-    public long getMax() {
-        return max;
+    public long getDayMax() {
+        return dayMax;
     }
 
-    public void setMax(long max) {
-        this.max = max;
+    public void setDayMax(long dayMax) {
+        this.dayMax = dayMax;
     }
 
     /**
@@ -73,9 +73,9 @@ public class SmsLimiter implements ExtraLimiter {
         String key = rateLimiter.name() + SEPARATOR + IpUtil.getIpAddress();
         Limit limit = new Limit();
         limit.setKey(key);
-        limit.setMax(rateLimiter.max());
-        limit.setTimeout(rateLimiter.timeout());
-        limit.setTimeUnit(rateLimiter.timeUnit());
+        limit.setMax(dayMax);
+        limit.setTimeout(getRemainSecondsOneCurrentDay());
+        limit.setTimeUnit(TIMEUNIT);
         limit.setMessage("接口调用频繁，请稍后再试");
         return limit;
     }
@@ -96,10 +96,10 @@ public class SmsLimiter implements ExtraLimiter {
         }
         Limit limit = new Limit();
         limit.setKey(key);
-        limit.setMax(max);
+        limit.setMax(dayMax);
         limit.setTimeout(getRemainSecondsOneCurrentDay());
         limit.setTimeUnit(TIMEUNIT);
-        limit.setMessage("超出接口调上限，一天只能调用" + max + "次");
+        limit.setMessage("超出接口调上限，一天只能调用" + dayMax + "次");
        return limit;
     }
 

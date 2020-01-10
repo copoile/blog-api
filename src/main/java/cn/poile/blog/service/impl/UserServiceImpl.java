@@ -1,9 +1,9 @@
 package cn.poile.blog.service.impl;
 
+import cn.poile.blog.biz.EmailService;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.common.constant.UserConstant;
-import cn.poile.blog.biz.EmailService;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.oss.Storage;
 import cn.poile.blog.common.security.AuthenticationToken;
@@ -11,7 +11,6 @@ import cn.poile.blog.common.security.RedisTokenStore;
 import cn.poile.blog.common.security.ServeSecurityContext;
 import cn.poile.blog.common.sms.SmsCodeService;
 import cn.poile.blog.common.util.RandomValueStringGenerator;
-import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.entity.User;
@@ -28,9 +27,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,9 +58,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private SmsCodeService smsCodeService;
@@ -107,10 +103,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         BeanUtils.copyProperties(user, userVo);
         Integer admin = user.getAdmin();
         List<String> roleList = new ArrayList<>();
-        if (admin.equals(UserConstant.ADMIN)) {
-            roleList.add(RoleConstant.ADMIN);
+        roleList.add(admin.equals(UserConstant.ADMIN) ? RoleConstant.ADMIN : RoleConstant.ORDINARY);
+        userVo.setRoles(roleList);
+        return userVo;
+    }
+
+    /**
+     * 根据用户id获取userVo
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    @Cacheable(value = "user", key = "#id")
+    public UserVo selectUserVoById(Integer id) {
+        User user = getById(id);
+        if (user == null) {
+            return null;
         }
-        userVo.setRoleList(roleList);
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(user, userVo);
+        Integer admin = user.getAdmin();
+        List<String> roleList = new ArrayList<>();
+        roleList.add(admin.equals(UserConstant.ADMIN) ? RoleConstant.ADMIN : RoleConstant.ORDINARY);
+        userVo.setRoles(roleList);
         return userVo;
     }
 
@@ -119,8 +135,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      *
      * @param request
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void register(UserRegisterRequest request) {
         long mobile = request.getMobile();
         String code = request.getCode();
@@ -135,6 +151,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         User user = new User();
         user.setUsername(username);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setMobile(mobile);
         String suffix = String.valueOf(mobile).substring(7);
@@ -156,17 +173,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void update(UpdateUserRequest request) {
         CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
-        if (request.getUserId() != userDetail.getId()) {
-            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "用户id跟当前用户id不匹配或accessToken信息异常");
+        if (!request.getUserId().equals(userDetail.getId())) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "用户id跟当前用户id不匹配");
         }
         User user = new User();
         BeanUtils.copyProperties(request, user);
+        Integer userId = request.getUserId();
+        user.setId(userId);
         updateById(user);
-        userDetail.setBirthday(request.getBirthday());
-        userDetail.setGender(request.getGender());
-        userDetail.setNickname(request.getNickname());
-        userDetail.setBrief(request.getBrief());
-        tokenStore.updatePrincipal(userDetail);
+
+        tokenStore.clearUserCacheById(userId);
     }
 
 
@@ -191,6 +207,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String accessToken = authenticationToken.getAccessToken();
         String checkUrl = prefix + "?code=" + code;
         params.put("checkUrl", checkUrl);
+
         String key = REDIS_MAIL_CODE_PREFIX + code;
         Map<String, String> map = new HashMap<>(2);
         map.put("access_token", accessToken);
@@ -207,7 +224,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @return void
      */
     @Override
-    public AccessTokenDTO bindEmail(String code) {
+    public void bindEmail(String code) {
         Map<Object, Object> resultMap = redisTemplate.opsForHash().entries(REDIS_MAIL_CODE_PREFIX + code);
         if (resultMap.isEmpty()) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "code无效或code已过期");
@@ -216,22 +233,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String email = (String) resultMap.get("email");
         redisTemplate.delete(REDIS_MAIL_CODE_PREFIX + code);
         // 读取认证信息
-        AuthenticationToken authenticationToken = tokenStore.readByAccessToken(accessToken);
-        tokenStore.refreshAccessExpire(authenticationToken);
-
-        CustomUserDetails principal = authenticationToken.getPrincipal();
+        AuthenticationToken authToken = tokenStore.readByAccessToken(accessToken);
+        if (authToken == null) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "code无效或code已过期");
+        }
+        CustomUserDetails principal = authToken.getPrincipal();
         User user = new User();
-        user.setId(principal.getId());
+        Integer userId = principal.getId();
+        user.setId(userId);
         user.setEmail(email);
         // 数据库数据更新
         updateById(user);
-        // 返回认证信息，以便（前端使用sessionStorage新tab页会用到）能直接查看到邮箱绑定情况
-        AccessTokenDTO accessTokenDTO = new AccessTokenDTO();
-        BeanUtils.copyProperties(authenticationToken, accessTokenDTO);
-        // 更新认证信息中的用户信息
-        principal.setEmail(email);
-        tokenStore.updatePrincipal(principal);
-        return accessTokenDTO;
+        // 清空用户缓存
+        tokenStore.clearUserCacheById(userId);
     }
 
 
@@ -252,14 +266,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             String fullPath = storage.upload(file.getInputStream(), name, contentType);
             CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
             User user = new User();
-            user.setId(userDetail.getId());
+            Integer userId = userDetail.getId();
+            user.setId(userId);
             user.setAvatar(fullPath);
             updateById(user);
             // 删除原头像文件
             storage.delete(userDetail.getAvatar());
-            userDetail.setAvatar(fullPath);
-            // 更新token缓存
-            tokenStore.updatePrincipal(userDetail);
+
+            // 清空用户缓存
+            tokenStore.clearUserCacheById(userId);
         } catch (IOException e) {
             log.error("上传文件失败:{}", e);
             throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(), ErrorEnum.SYSTEM_ERROR.getErrorMsg());
@@ -276,17 +291,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void updatePassword(String oldPassword, String newPassword) {
         CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean matches = passwordEncoder.matches(oldPassword, userDetail.getPassword());
         if (!matches) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "原密码不正确");
         }
         User user = new User();
-        user.setId(userDetail.getId());
+        Integer userId = userDetail.getId();
+        user.setId(userId);
         String encodePassword = passwordEncoder.encode(newPassword);
         user.setPassword(encodePassword);
         updateById(user);
-        userDetail.setPassword(encodePassword);
-        tokenStore.updatePrincipal(userDetail);
+        // 清空用户缓存
+        tokenStore.clearUserCacheById(userId);
     }
 
     /**
@@ -309,13 +326,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         CustomUserDetails userDetails = new CustomUserDetails();
         BeanUtils.copyProperties(userVo, userDetails);
         User newUser = new User();
-        newUser.setId(userDetails.getId());
+        Integer userId = userDetails.getId();
+        newUser.setId(userId);
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String encodePassword = passwordEncoder.encode(password);
         newUser.setPassword(encodePassword);
         updateById(newUser);
-        userDetails.setPassword(encodePassword);
-        // 更新token缓存
-        tokenStore.updatePrincipal(userDetails);
+
+        // 清空用户缓存
+        tokenStore.clearUserCacheById(userId);
     }
 
     /**
@@ -357,12 +376,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), ErrorEnum.INVALID_REQUEST.getErrorMsg());
         }
         User newUser = new User();
-        newUser.setId(userDetail.getId());
+        Integer userId = userDetail.getId();
+        newUser.setId(userId);
         newUser.setMobile(mobile);
         updateById(newUser);
-        userDetail.setMobile(mobile);
-        // 更新token缓存
-        tokenStore.updatePrincipal(userDetail);
+        // 清空用户缓存
+        tokenStore.clearUserCacheById(userId);
         smsCodeService.deleteSmsCode(mobile);
     }
 
@@ -412,20 +431,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setStatus(status);
         updateById(user);
 
-        // 缓存更新
-        daoUser.setStatus(status);
-        UserVo userVo = new UserVo();
-        BeanUtils.copyProperties(daoUser, userVo);
-        Integer admin = daoUser.getAdmin();
-        List<String> roleList = new ArrayList<>();
-        if (admin.equals(UserConstant.ADMIN)) {
-            roleList.add(RoleConstant.ADMIN);
-        }
-        userVo.setRoleList(roleList);
-        CustomUserDetails userDetails = new CustomUserDetails();
-        BeanUtils.copyProperties(userVo,userDetails);
-        // 更新token缓存
-        tokenStore.updatePrincipal(userDetails);
+        // 清空用户缓存
+        tokenStore.clearUserCacheById(userId);
     }
 
     /**

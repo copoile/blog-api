@@ -25,7 +25,7 @@ public class UserVo extends User {
      * 角色列表
      */
     @ApiModelProperty(value = "角色列表")
-    protected List<String> roleList;
+    protected List<String> roles;
 
 
 }

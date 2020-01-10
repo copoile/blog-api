@@ -80,7 +80,7 @@ public class AuthenticationController extends BaseController {
     @DeleteMapping("/logout")
     @ApiOperation(value = "用户登出")
     public ApiResponse logout(@RequestHeader(value = "Authorization") String authorization,
-                              @ApiParam("accessToken") @RequestParam("accessToken") String accessToken) {
+                              @ApiParam("access_token") @RequestParam("access_token") String accessToken) {
         Client client = getAndValidatedClient(authorization);
         authenticationService.remove(accessToken, client);
         return createResponse();
@@ -90,7 +90,7 @@ public class AuthenticationController extends BaseController {
     @ApiOperation(value = "刷新accessToken")
     public ApiResponse<AccessTokenDTO> refreshAccessToken(
             @ApiParam("客户端认证请求头") @RequestHeader(value = "Authorization") String authorization,
-            @ApiParam("refreshToken") @NotBlank(message = "refreshToken不能为空") @RequestParam("refreshToken") String refreshToken) {
+            @ApiParam("refresh_token") @NotBlank(message = "refresh_token不能为空") @RequestParam("refresh_token") String refreshToken) {
         Client client = getAndValidatedClient(authorization);
         AuthenticationToken authenticationToken = authenticationService.refreshAccessToken(refreshToken, client);
         AccessTokenDTO response = new AccessTokenDTO();

@@ -33,9 +33,10 @@ public interface ITagService extends IService<Tag> {
 
     /**
      * 标签列表
+     * @param tagName
      * @return java.util.List<cn.poile.blog.entity.Tag>
      */
-    List<Tag> selectTagList();
+    List<Tag> selectTagList(String tagName);
 
 
     /**
