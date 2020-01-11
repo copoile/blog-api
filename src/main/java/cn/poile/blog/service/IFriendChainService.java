@@ -11,6 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author yaohw
  * @since 2019-12-02
  */
-public interface IFriendLinkService extends IService<FriendChain> {
+public interface IFriendChainService extends IService<FriendChain> {
 
 }

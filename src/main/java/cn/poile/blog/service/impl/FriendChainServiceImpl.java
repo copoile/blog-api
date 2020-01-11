@@ -2,7 +2,7 @@ package cn.poile.blog.service.impl;
 
 import cn.poile.blog.entity.FriendChain;
 import cn.poile.blog.mapper.FriendLinkMapper;
-import cn.poile.blog.service.IFriendLinkService;
+import cn.poile.blog.service.IFriendChainService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +15,6 @@ import org.springframework.stereotype.Service;
  * @since 2019-12-02
  */
 @Service
-public class FriendLinkServiceImpl extends ServiceImpl<FriendLinkMapper, FriendChain> implements IFriendLinkService {
+public class FriendChainServiceImpl extends ServiceImpl<FriendLinkMapper, FriendChain> implements IFriendChainService {
 
 }

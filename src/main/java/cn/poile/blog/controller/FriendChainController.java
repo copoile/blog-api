@@ -4,7 +4,7 @@ package cn.poile.blog.controller;
 import cn.poile.blog.common.oss.Storage;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.entity.FriendChain;
-import cn.poile.blog.service.IFriendLinkService;
+import cn.poile.blog.service.IFriendChainService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -30,7 +30,7 @@ import java.util.List;
 public class FriendChainController extends BaseController {
 
     @Autowired
-    private IFriendLinkService friendLinkService;
+    private IFriendChainService friendLinkService;
 
     @Autowired
     private Storage storage;

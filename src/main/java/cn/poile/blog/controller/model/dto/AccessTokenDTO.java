@@ -16,14 +16,16 @@ import lombok.experimental.Accessors;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ApiModel(value="AccessTokenDTO", description="AccessTokenDTO")
 public class AccessTokenDTO {
-    @ApiModelProperty("access_token")
+
     @JsonProperty("access_token")
+    @ApiModelProperty("access_token")
     private String accessToken;
 
+    @JsonProperty("token_type")
     @ApiModelProperty("token类型:Bearer")
     private String tokenType;
 
-    @ApiModelProperty("refresh_token")
     @JsonProperty("refresh_token")
+    @ApiModelProperty("refresh_token")
     private String refreshToken;
 }
