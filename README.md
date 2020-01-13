@@ -41,4 +41,4 @@
 - **Mysql 5.7 +**
 
 ## 文档
-[http://doc.poile.cn](http://doc.poile.cn?_blank)
+[http://doc.poile.cn](http://doc.poile.cn){:target="_blank"}
