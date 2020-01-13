@@ -41,4 +41,4 @@
 - **Mysql 5.7 +**
 
 ## 文档
-[http://doc.poile.cn](http://doc.poile.cn){:target="_blank"}
+<a href="http://doc.poile.cn" target="_black">http://doc.poile.cn</a>
