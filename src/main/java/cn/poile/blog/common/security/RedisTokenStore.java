@@ -436,7 +436,7 @@ public class RedisTokenStore {
      */
     public void remove(String accessToken, Client client) {
         String refreshToken = readRefreshTokenByAccessToken(accessToken);
-        if (StringUtils.isBlank(refreshToken)) {
+        if (client.getEnableRefreshToken().equals(1) && StringUtils.isBlank(refreshToken)) {
             return;
         }
         AuthenticationToken authToken = readByAccessToken(accessToken);
