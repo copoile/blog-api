@@ -313,6 +313,9 @@ public class RedisTokenStore {
             conn.close();
         }
         String idStr = deserializeString(bytes);
+        if (StringUtils.isBlank(idStr)) {
+            return null;
+        }
         CustomUserDetails customUserDetails = getCustomUserDetails(Integer.parseInt(idStr));
         if (customUserDetails == null) {
             return null;
