@@ -7,6 +7,8 @@ spring:
   servlet:
     multipart:
       enabled: true
+      file-size-threshold: 0
+      location: /var/tmp
       max-request-size: 5MB
       max-file-size: 5MB
   thymeleaf:
@@ -32,6 +34,7 @@ ignore:
     - /user/register
     - /user/email/bind
     - /category/tree
+    - /category/list
     - /category/userIdList
     - /article/published/page
     - /article/view/**
