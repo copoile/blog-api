@@ -52,8 +52,7 @@ public class TagController extends BaseController {
 
 
     @GetMapping("/list")
-    @PreAuthorize("hasAuthority('admin')")
-    @ApiOperation(value = "获取标签列表", notes = "需要accessToken，需要管理员权限")
+    @ApiOperation(value = "获取标签列表", notes = "不需要accessToke")
     public ApiResponse<List<Tag>> list(@ApiParam("标签名关键字，可空") @RequestParam(value = "tagName", required = false) String tagName) {
         return createResponse(tagService.selectTagList(tagName));
     }

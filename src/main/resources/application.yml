@@ -35,7 +35,7 @@ ignore:
     - /user/email/bind
     - /category/tree
     - /category/list
-    - /category/userIdList
+    - /tag/list
     - /article/published/page
     - /article/view/**
     - /article/pre_next/**
