@@ -52,7 +52,7 @@ public class TagController extends BaseController {
 
 
     @GetMapping("/list")
-    @ApiOperation(value = "获取标签列表", notes = "不需要accessToke")
+    @ApiOperation(value = "获取标签列表", notes = "不需要accessToken")
     public ApiResponse<List<Tag>> list(@ApiParam("标签名关键字，可空") @RequestParam(value = "tagName", required = false) String tagName) {
         return createResponse(tagService.selectTagList(tagName));
     }

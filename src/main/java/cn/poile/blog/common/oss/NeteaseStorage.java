@@ -8,6 +8,7 @@ import com.netease.cloud.auth.BasicCredentials;
 import com.netease.cloud.auth.Credentials;
 import com.netease.cloud.services.nos.NosClient;
 import com.netease.cloud.services.nos.model.DeleteObjectsRequest;
+import com.netease.cloud.services.nos.model.MultiObjectDeleteException;
 import com.netease.cloud.services.nos.model.ObjectMetadata;
 import com.netease.cloud.services.nos.model.PutObjectRequest;
 import com.netease.cloud.services.nos.transfer.TransferManager;
@@ -95,7 +96,12 @@ public class NeteaseStorage extends AbstractStorage{
             return false;
         }
         DeleteObjectsRequest request = new DeleteObjectsRequest(bucket).withKeys(getFileNameFromFullPath(fullPath));
-        nosClient.deleteObjects(request);
+        try {
+            nosClient.deleteObjects(request);
+        } catch (Exception e) {
+            log.error("删除图片失败:{}", e);
+            return false;
+        }
         return true;
     }
 }
