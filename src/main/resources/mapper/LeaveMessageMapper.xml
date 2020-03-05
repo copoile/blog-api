@@ -67,7 +67,7 @@
         left join leave_message r on r.pid = l.id and r.deleted = 0
         left join user r_f_u on r_f_u.id = r.from_user_id
         left join user r_t_u on r_t_u.id = r.to_user_id
-        order by l.id desc, r.id desc
+        order by l.id desc, r.id asc
     </select>
 
     <!--最新留言-->
