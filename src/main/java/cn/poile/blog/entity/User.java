@@ -74,10 +74,8 @@ public class User implements Serializable {
     @ApiModelProperty(value = "状态，0：正常，1：锁定，2：禁用，3：过期")
     private Integer status;
 
-    @JsonIgnore
     @ApiModelProperty(value = "是否管理员，1：是，0：否")
     private Integer admin;
-
 
     @ApiModelProperty(value = "创建时间")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)

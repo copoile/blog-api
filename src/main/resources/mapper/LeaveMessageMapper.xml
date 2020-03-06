@@ -11,6 +11,7 @@
             <id property="id" column="l_from_user_id"/>
             <result property="nickname" column="l_from_user_nickname"/>
             <result property="avatar" column="l_from_user_avatar"/>
+            <result property="admin" column="l_from_user_admin"/>
         </association>
         <collection property="replyList" ofType="cn.poile.blog.vo.LeaveMessageReplyVo">
             <id property="id" column="reply_id"/>
@@ -20,11 +21,13 @@
                 <id property="id" column="r_from_user_id"/>
                 <result property="nickname" column="r_from_user_nickname"/>
                 <result property="avatar" column="r_from_user_avatar"/>
+                <result property="admin" column="r_from_user_admin"/>
             </association>
             <association property="toUser" javaType="cn.poile.blog.entity.User">
                 <id property="id" column="r_to_user_id"/>
                 <result property="nickname" column="r_to_user_nickname"/>
                 <result property="avatar" column="r_to_user_avatar"/>
+                <result property="admin" column="r_to_user_admin"/>
             </association>
         </collection>
     </resultMap>
@@ -39,14 +42,17 @@
         l_f_u.id l_from_user_id,
         l_f_u.nickname l_from_user_nickname,
         l_f_u.avatar l_from_user_avatar,
+        l_f_u.admin l_from_user_admin,
         r.id reply_id,
         r.content reply_content,
         r.create_time reply_time,
         r_f_u.id r_from_user_id,
         r_f_u.nickname r_from_user_nickname,
         r_f_u.avatar r_from_user_avatar,
+        r_f_u.admin r_from_user_admin,
         r_t_u.id r_to_user_id,
         r_t_u.nickname r_to_user_nickname,
+        r_t_u.admin r_to_user_admin,
         r_t_u.avatar r_to_user_avatar
         from
         (
