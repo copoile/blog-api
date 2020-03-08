@@ -26,8 +26,9 @@ public interface IArticleService extends IService<Article> {
      * 保存文章
      *
      * @param request
+     * @return 返回文章id
      */
-    void saveOrUpdate(ArticleRequest request);
+    int saveOrUpdate(ArticleRequest request);
 
     /**
      * 分页查询文章

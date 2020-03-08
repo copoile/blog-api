@@ -46,9 +46,9 @@ public class ArticleController extends BaseController {
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "保存文章", notes = "需要accessToken，需要管理员权限")
     public ApiResponse save(@Validated @RequestBody ArticleRequest request) {
-        articleService.saveOrUpdate(request);
+        int id = articleService.saveOrUpdate(request);
         articleRecommendService.remove(request.getId());
-        return createResponse();
+        return createResponse(id);
     }
 
 

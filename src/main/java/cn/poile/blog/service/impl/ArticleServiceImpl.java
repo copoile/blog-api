@@ -23,6 +23,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ import java.util.stream.Collectors;
  * @since 2019-11-15
  */
 @Service
+@Log4j2
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements IArticleService {
 
     @Autowired
@@ -67,7 +69,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveOrUpdate(ArticleRequest request) {
+    public int saveOrUpdate(ArticleRequest request) {
         Integer status = request.getStatus();
         if (!status.equals(0) & !status.equals(1)) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效状态码");
@@ -96,13 +98,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setUpdateTime(LocalDateTime.now());
         // 保存或更新文章
         saveOrUpdate(article);
+        log.info("新增的id" + article.getId());
 
         Integer articleId = article.getId();
         // 文章-标签 关联
         List<Integer> tagIds = request.getTagIds();
         if (CollectionUtils.isEmpty(tagIds)) {
             deleteArticleTagByArticleId(articleId);
-            return;
+            return article.getId();
         }
         QueryWrapper<Tag> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(Tag::getId, tagIds);
@@ -115,6 +118,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 批量新增
         List<ArticleTag> articleTagList = tagIds.stream().map((tagId) -> new ArticleTag(articleId, tagId)).collect(Collectors.toList());
         articleTagService.saveBatch(articleTagList);
+        return article.getId();
     }
 
     /**
