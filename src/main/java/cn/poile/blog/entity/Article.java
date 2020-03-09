@@ -64,6 +64,9 @@ public class Article implements Serializable {
     @ApiModelProperty(value = "文章内容")
     private String content;
 
+    @ApiModelProperty(value = "文章富文本内容")
+    private String htmlContent;
+
     @ApiModelProperty(value = "文章封面")
     private String cover;
 

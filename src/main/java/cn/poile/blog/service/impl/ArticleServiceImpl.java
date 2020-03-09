@@ -91,6 +91,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setSummary(request.getSummary());
         article.setContent(request.getContent());
         article.setCover(request.getCover());
+        article.setHtmlContent(request.getHtmlContent());
         // 文章状态
         article.setStatus(status);
         // 时间

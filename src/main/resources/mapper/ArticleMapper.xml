@@ -11,6 +11,7 @@
         <result property="title" column="title"/>
         <result property="summary" column="summary"/>
         <result property="content" column="content"/>
+        <result property="htmlContent" column="html_content" />
         <result property="cover" column="cover"/>
         <result property="status" column="status"/>
         <result property="viewCount" column="view_count"/>
@@ -33,6 +34,7 @@
         <result property="title" column="title"/>
         <result property="summary" column="summary"/>
         <result property="content" column="content"/>
+        <result property="htmlContent" column="html_content" />
         <result property="cover" column="cover"/>
         <result property="status" column="status"/>
         <result property="viewCount" column="view_count"/>
@@ -55,7 +57,7 @@
     </resultMap>
 
     <sql id="Article_Column_List">
-        inner_a.id, inner_a.original, inner_a.user_id, inner_a.category_name, inner_a.category_id, inner_a.title, inner_a.summary, inner_a.content, inner_a.cover, inner_a.status, inner_a.view_count,
+        inner_a.id, inner_a.original, inner_a.user_id, inner_a.category_name, inner_a.category_id, inner_a.title, inner_a.summary, inner_a.content, inner_a.html_content, inner_a.cover, inner_a.status, inner_a.view_count,
         inner_a.comment_count, inner_a.like_count, inner_a.collect_count, inner_a.publish_time, inner_a.update_time, inner_a.reproduce, inner_a.deleted
     </sql>
 
@@ -69,6 +71,7 @@
         outer_a.title,
         outer_a.summary,
         outer_a.content,
+        outer_a.html_content,
         outer_a.cover,
         outer_a.status,
         outer_a.view_count,

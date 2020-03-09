@@ -51,6 +51,9 @@ public class ArticleRequest {
     @ApiModelProperty(value = "文章内容")
     private String content;
 
+    @ApiModelProperty(value = "文章内容")
+    private String htmlContent;
+
     @NotBlank(message = "文章封面不能为空")
     @ApiModelProperty(value = "文章封面")
     private String cover;
