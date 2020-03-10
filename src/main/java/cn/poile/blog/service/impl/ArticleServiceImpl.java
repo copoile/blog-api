@@ -19,6 +19,7 @@ import cn.poile.blog.service.ICategoryService;
 import cn.poile.blog.service.ITagService;
 import cn.poile.blog.vo.*;
 import cn.poile.blog.wrapper.ArticlePageQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -33,8 +34,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -69,7 +69,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int saveOrUpdate(ArticleRequest request) {
+    public Integer saveOrUpdate(ArticleRequest request) {
         Integer status = request.getStatus();
         if (!status.equals(0) & !status.equals(1)) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效状态码");
@@ -99,27 +99,33 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setUpdateTime(LocalDateTime.now());
         // 保存或更新文章
         saveOrUpdate(article);
-        log.info("新增的id" + article.getId());
-
         Integer articleId = article.getId();
         // 文章-标签 关联
         List<Integer> tagIds = request.getTagIds();
+        // 如果标签列表为空列表，则全部删除原文字标签
         if (CollectionUtils.isEmpty(tagIds)) {
             deleteArticleTagByArticleId(articleId);
-            return article.getId();
+            return articleId;
         }
+        // 判断传的标签id列表中的id是否存在该标签
         QueryWrapper<Tag> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().in(Tag::getId, tagIds);
         int count = tagService.count(queryWrapper);
         if (count == 0) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "标签id不存在");
         }
-        // 非逻辑删除-删除原来的
+        // 数据库文字标签列表
+        List<ArticleTag> artTagList = articleTagService.list(new  QueryWrapper<ArticleTag>().lambda().eq(ArticleTag::getArticleId,articleId));
+        // 请求的文章标签列表
+        List<ArticleTag> reqTagList = tagIds.stream().map((tagId) -> new ArticleTag(articleId, tagId)).collect(Collectors.toList());
+        // 标签是否不变
+        if (artTagList.containsAll(reqTagList) && reqTagList.containsAll(artTagList)) {
+            return articleId;
+        }
+        // 非逻辑删除-删除原来的 && 批量新增文章标签
         deleteArticleTagByArticleId(articleId);
-        // 批量新增
-        List<ArticleTag> articleTagList = tagIds.stream().map((tagId) -> new ArticleTag(articleId, tagId)).collect(Collectors.toList());
-        articleTagService.saveBatch(articleTagList);
-        return article.getId();
+        articleTagService.saveBatch(reqTagList);
+        return articleId;
     }
 
     /**

@@ -10,8 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 import lombok.experimental.Accessors;
 
-import javax.validation.constraints.NotBlank;
-
 /**
  * <p>
  * 文章-标签 关联表
@@ -25,7 +23,7 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @Accessors(chain = true)
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ApiModel(value="ArticleTag对象", description="文章-标签 关联表")
 public class ArticleTag implements Serializable {
@@ -33,6 +31,7 @@ public class ArticleTag implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @EqualsAndHashCode.Exclude
     @ApiModelProperty(value = "id")
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
