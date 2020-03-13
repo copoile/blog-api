@@ -15,6 +15,7 @@
             <id property="id" column="c_from_user_id"/>
             <result property="nickname" column="c_from_user_nickname"/>
             <result property="avatar" column="c_from_user_avatar"/>
+            <result property="admin" column="c_from_user_admin"/>
         </association>
         <collection property="replyList" ofType="cn.poile.blog.vo.ArticleReplyVo">
             <id property="id" column="reply_id"/>
@@ -42,6 +43,7 @@
         c_f_u.id c_from_user_id,
         c_f_u.nickname c_from_user_nickname,
         c_f_u.avatar c_from_user_avatar,
+        c_f_u.admin c_from_user_admin,
         r.id reply_id,
         r.content reply_content,
         r.reply_time,
@@ -67,10 +69,10 @@
         limit #{offset},#{limit}
         ) c
         left join user c_f_u on c_f_u.id = c.from_user_id
-        left join article_reply r on r.comment_id = c.id
+        left join article_reply r on r.comment_id = c.id and r.deleted = 0
         left join user r_f_u on r_f_u.id = r.from_user_id
         left join user r_t_u on r_t_u.id = r.to_user_id
-        order by c.id desc, r.id desc
+        order by c.id desc, r.id asc
     </select>
 
     <!--查询最新评论，包括评论者和文章信息-->
