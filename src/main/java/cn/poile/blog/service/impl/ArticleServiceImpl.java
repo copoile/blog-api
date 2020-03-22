@@ -1,11 +1,12 @@
 package cn.poile.blog.service.impl;
 
 import cn.poile.blog.common.constant.ArticleStatusEnum;
-import cn.poile.blog.common.constant.CommonConstant;
 import cn.poile.blog.common.constant.ErrorEnum;
+import cn.poile.blog.common.constant.RedisConstant;
 import cn.poile.blog.common.exception.ApiException;
-import cn.poile.blog.common.security.ServeSecurityContext;
+import cn.poile.blog.common.security.ServerSecurityContext;
 import cn.poile.blog.common.util.DateUtil;
+import cn.poile.blog.common.util.IpUtil;
 import cn.poile.blog.controller.model.dto.PreArtAndNextArtDTO;
 import cn.poile.blog.controller.model.request.ArticleRequest;
 import cn.poile.blog.entity.Article;
@@ -19,7 +20,6 @@ import cn.poile.blog.service.ICategoryService;
 import cn.poile.blog.service.ITagService;
 import cn.poile.blog.vo.*;
 import cn.poile.blog.wrapper.ArticlePageQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,14 +28,14 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Predicate;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -58,6 +58,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Autowired
     private IArticleTagService articleTagService;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     private static final String SEPARATION = ",";
 
@@ -262,17 +265,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ArticleVo selectOneAndAddViewCount(int id) {
+    public ArticleVo selectOne(int id) {
         ArticleVo articleVo = this.baseMapper.selectArticleVoById(id, ArticleStatusEnum.NORMAL.getStatus());
         if (articleVo == null) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "文章不存在");
         }
-        // 浏览次数自增
-        Article article = new Article();
-        Integer viewCount = articleVo.getViewCount();
-        article.setViewCount(viewCount + 1);
-        article.setId(articleVo.getId());
-        updateById(article);
         // 上一篇和下一篇
         PreArtAndNextArtDTO preAndNext = selectPreAndNext(id);
         articleVo.setPrevious(preAndNext.getPre());
@@ -280,6 +277,30 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         return articleVo;
     }
 
+    /**
+     * 新增浏览次数
+     *
+     * @param id
+     */
+    @Override
+    public boolean incrementView(int id) {
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(false);
+        String  key = userDetail != null? RedisConstant.ART_VIEW + userDetail.getId() + ":" + id
+                : RedisConstant.ART_VIEW + IpUtil.getIpAddress() + ":" + id;
+        Boolean notViewed = stringRedisTemplate.opsForValue().setIfAbsent(key, "viewed",20L,TimeUnit.MINUTES);
+        if (notViewed != null && notViewed) {
+            // 浏览次数自增
+            Article article = getById(id);
+            if (article != null) {
+                Article newArticle = new Article();
+                newArticle.setId(id);
+                newArticle.setViewCount(article.getViewCount() + 1);
+                updateById(newArticle);
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * 分页年月归档查询
@@ -556,7 +577,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         } else {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "无效转载标识");
         }
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         article.setUserId(userDetail.getId());
         article.setOriginal(original);
     }

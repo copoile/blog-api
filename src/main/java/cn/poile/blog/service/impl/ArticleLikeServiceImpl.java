@@ -2,7 +2,7 @@ package cn.poile.blog.service.impl;
 
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
-import cn.poile.blog.common.security.ServeSecurityContext;
+import cn.poile.blog.common.security.ServerSecurityContext;
 import cn.poile.blog.entity.ArticleLike;
 import cn.poile.blog.mapper.ArticleLikeMapper;
 import cn.poile.blog.service.IArticleLikeService;
@@ -39,7 +39,7 @@ public class ArticleLikeServiceImpl extends ServiceImpl<ArticleLikeMapper, Artic
     @Override
     public Integer liked(Integer articleId) {
         QueryWrapper<ArticleLike> queryWrapper = new QueryWrapper<>();
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         queryWrapper.lambda().eq(ArticleLike::getArticleId, articleId).eq(ArticleLike::getUserId,userDetail.getId());
         return count(queryWrapper);
     }
@@ -53,7 +53,7 @@ public class ArticleLikeServiceImpl extends ServiceImpl<ArticleLikeMapper, Artic
     @Transactional(rollbackFor = Exception.class)
     public void like(Integer articleId) {
         QueryWrapper<ArticleLike> queryWrapper = new QueryWrapper<>();
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         Integer userId = userDetail.getId();
         queryWrapper.lambda().eq(ArticleLike::getArticleId, articleId).eq(ArticleLike::getUserId,userId);
         int count = count(queryWrapper);
@@ -77,7 +77,7 @@ public class ArticleLikeServiceImpl extends ServiceImpl<ArticleLikeMapper, Artic
     @Transactional(rollbackFor = Exception.class)
     public void cancel(Integer articleId) {
         QueryWrapper<ArticleLike> queryWrapper = new QueryWrapper<>();
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         queryWrapper.lambda().eq(ArticleLike::getArticleId, articleId).eq(ArticleLike::getUserId,userDetail.getId());
         int count = count(queryWrapper);
         if (count == 0) {

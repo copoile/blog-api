@@ -10,7 +10,7 @@ import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.biz.EmailService;
 import cn.poile.blog.common.exception.ApiException;
-import cn.poile.blog.common.security.ServeSecurityContext;
+import cn.poile.blog.common.security.ServerSecurityContext;
 import cn.poile.blog.entity.ArticleReply;
 import cn.poile.blog.entity.User;
 import cn.poile.blog.mapper.ArticleReplyMapper;
@@ -60,7 +60,7 @@ public class ArticleReplyServiceImpl extends ServiceImpl<ArticleReplyMapper, Art
         reply.setCommentId(commentId);
         reply.setToUserId(toUserId);
         reply.setContent(content);
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         reply.setFromUserId(userDetail.getId());
         reply.setReplyTime(LocalDateTime.now());
         reply.setDeleted(CommonConstant.NOT_DELETED);
@@ -90,7 +90,7 @@ public class ArticleReplyServiceImpl extends ServiceImpl<ArticleReplyMapper, Art
         ArticleReply reply = getById(replyId);
         if (reply != null) {
             Integer fromUserId = reply.getFromUserId();
-            CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+            CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
             List<String> roleList = userDetail.getRoles();
             // 不是本人，也不是管理员不允许删除
             if (!fromUserId.equals(userDetail.getId()) & !roleList.contains(RoleConstant.ADMIN)) {

@@ -7,7 +7,7 @@ import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.common.constant.UserConstant;
 import cn.poile.blog.common.exception.ApiException;
-import cn.poile.blog.common.security.ServeSecurityContext;
+import cn.poile.blog.common.security.ServerSecurityContext;
 import cn.poile.blog.entity.LeaveMessage;
 import cn.poile.blog.entity.User;
 import cn.poile.blog.mapper.LeaveMessageMapper;
@@ -62,7 +62,7 @@ public class LeaveMessageServiceImpl extends ServiceImpl<LeaveMessageMapper, Lea
     @Override
     public void add(String content) {
         LeaveMessage leaveMessage = new LeaveMessage();
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         leaveMessage.setFromUserId(userDetail.getId());
         leaveMessage.setContent(content);
         leaveMessage.setCreateTime(LocalDateTime.now());
@@ -83,7 +83,7 @@ public class LeaveMessageServiceImpl extends ServiceImpl<LeaveMessageMapper, Lea
     public void reply(Integer pid, Integer toUserId, String content) {
         LeaveMessage leaveMessage = new LeaveMessage();
         leaveMessage.setPid(pid);
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         leaveMessage.setFromUserId(userDetail.getId());
         leaveMessage.setToUserId(toUserId);
         leaveMessage.setContent(content);
@@ -136,7 +136,7 @@ public class LeaveMessageServiceImpl extends ServiceImpl<LeaveMessageMapper, Lea
     public void delete(Integer id) {
         LeaveMessage message = getById(id);
         if (message != null) {
-            CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+            CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
             List<String> roleList = userDetail.getRoles();
             // 不是本人，也不是管理员不允许删除
             if (!message.getFromUserId().equals(userDetail.getId()) & !roleList.contains(RoleConstant.ADMIN)) {

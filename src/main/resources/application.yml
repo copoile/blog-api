@@ -38,6 +38,7 @@ ignore:
     - /tag/list
     - /article/published/page
     - /article/view/**
+    - /article/increment_view/**
     - /article/pre_next/**
     - /article/archives/page
     - /article/category/statistic

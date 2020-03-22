@@ -2,12 +2,11 @@ package cn.poile.blog.service.impl;
 
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
-import cn.poile.blog.common.security.ServeSecurityContext;
+import cn.poile.blog.common.security.ServerSecurityContext;
 import cn.poile.blog.entity.ArticleCollect;
 import cn.poile.blog.mapper.ArticleCollectMapper;
 import cn.poile.blog.service.IArticleCollectService;
 import cn.poile.blog.service.IArticleService;
-import cn.poile.blog.vo.ArticleArchivesVo;
 import cn.poile.blog.vo.ArticleVo;
 import cn.poile.blog.vo.CustomUserDetails;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -42,7 +41,7 @@ public class ArticleCollectServiceImpl extends ServiceImpl<ArticleCollectMapper,
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void add(Integer articleId) {
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         QueryWrapper<ArticleCollect> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(ArticleCollect::getUserId,userDetail.getId()).eq(ArticleCollect::getArticleId,articleId);
         int count = count(queryWrapper);
@@ -65,7 +64,7 @@ public class ArticleCollectServiceImpl extends ServiceImpl<ArticleCollectMapper,
     @Override
     public void delete(Integer articleId) {
         QueryWrapper<ArticleCollect> queryWrapper = new QueryWrapper<>();
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         queryWrapper.lambda().eq(ArticleCollect::getUserId,userDetail.getId()).eq(ArticleCollect::getArticleId,articleId);
         int count = count(queryWrapper);
         if (count == 0) {
@@ -85,7 +84,7 @@ public class ArticleCollectServiceImpl extends ServiceImpl<ArticleCollectMapper,
      */
     @Override
     public IPage<ArticleVo> page(long current, long size) {
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         Integer userId = userDetail.getId();
         QueryWrapper<ArticleCollect> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(ArticleCollect::getUserId,userId);
@@ -93,7 +92,7 @@ public class ArticleCollectServiceImpl extends ServiceImpl<ArticleCollectMapper,
         if (count == 0) {
             return new Page<>(current, size);
         }
-        List<ArticleVo> articleVoList = articleService.selectCollectByUserId((count - 1) * size,size,userId);
+        List<ArticleVo> articleVoList = articleService.selectCollectByUserId((current - 1) * size,size,userId);
         Page<ArticleVo> page = new Page<>(current, size, count);
         page.setRecords(articleVoList);
         return page;
@@ -108,7 +107,7 @@ public class ArticleCollectServiceImpl extends ServiceImpl<ArticleCollectMapper,
     @Override
     public Integer collected(Integer articleId) {
         QueryWrapper<ArticleCollect> queryWrapper = new QueryWrapper<>();
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         queryWrapper.lambda().eq(ArticleCollect::getUserId,userDetail.getId()).eq(ArticleCollect::getArticleId,articleId);
         return count(queryWrapper);
     }

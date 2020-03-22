@@ -106,12 +106,22 @@ public class ArticleController extends BaseController {
     }
 
     @GetMapping("/view/{id}")
-    @ApiOperation(value = "获取文章详情信息并增加浏览次数", notes = "比列表返回的多一个文章内容，文章分类列表")
+    @ApiOperation(value = "获取文章详情信息", notes = "比列表返回的多一个文章内容，文章分类列表")
     public ApiResponse<ArticleVo> view(@ApiParam("文章id") @PathVariable("id") int id) {
-        ArticleVo articleVo = articleService.selectOneAndAddViewCount(id);
-        articleRecommendService.asyncRefresh(id);
+        ArticleVo articleVo = articleService.selectOne(id);
         return createResponse(articleVo);
     }
+
+    @PutMapping("/increment_view/{id}")
+    @ApiOperation(value = "新增浏览次数", notes = "20分钟内ip或用户浏览计数")
+    public ApiResponse incrementView(@ApiParam("文章id") @PathVariable("id") int id) {
+        boolean viewed = articleService.incrementView(id);
+        if (viewed) {
+            articleRecommendService.asyncRefresh(id);
+        }
+        return createResponse(viewed);
+    }
+
 
     @GetMapping("/archives/page")
     @ApiOperation(value = "文章归档分页查询", notes = "按年月归档，月份文章计数")

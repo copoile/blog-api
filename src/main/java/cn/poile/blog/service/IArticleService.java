@@ -64,11 +64,18 @@ public interface IArticleService extends IService<Article> {
     ArticleVo selectArticleVoById(int id);
 
     /**
-     * 获取文章详情并增长浏览次数
+     * 获取文章详情
      * @param id
      * @return
      */
-    ArticleVo selectOneAndAddViewCount(int id);
+    ArticleVo selectOne(int id);
+
+    /**
+     * 新增浏览次数
+     * @param id
+     * @return
+     */
+    boolean incrementView(int id);
 
     /**
      * 丢弃文章

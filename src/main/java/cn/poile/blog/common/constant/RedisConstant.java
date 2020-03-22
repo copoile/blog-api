@@ -11,4 +11,9 @@ public class RedisConstant {
      */
     public static final String SMS_CODE = "sms:code:";
 
+    /**
+     * 文章浏览 key前缀
+     */
+    public static final String ART_VIEW = "art:view:";
+
 }

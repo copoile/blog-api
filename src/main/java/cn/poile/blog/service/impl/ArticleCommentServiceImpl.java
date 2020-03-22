@@ -6,7 +6,7 @@ import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.constant.RoleConstant;
 import cn.poile.blog.biz.EmailService;
 import cn.poile.blog.common.exception.ApiException;
-import cn.poile.blog.common.security.ServeSecurityContext;
+import cn.poile.blog.common.security.ServerSecurityContext;
 import cn.poile.blog.entity.Article;
 import cn.poile.blog.entity.ArticleComment;
 import cn.poile.blog.entity.User;
@@ -75,7 +75,7 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
         comment.setArticleId(articleId);
         comment.setContent(content);
         comment.setCommentTime(LocalDateTime.now());
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         comment.setFromUserId(userDetail.getId());
         comment.setDeleted(CommonConstant.NOT_DELETED);
         save(comment);
@@ -104,7 +104,7 @@ public class ArticleCommentServiceImpl extends ServiceImpl<ArticleCommentMapper,
     public void delete(Integer commentId) {
         ArticleComment comment = getById(commentId);
         if (comment != null) {
-            CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+            CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
             List<String> roleList = userDetail.getRoles();
             // 不是本人，也不是管理员不允许删除
             if (!comment.getFromUserId().equals(userDetail.getId()) & !roleList.contains(RoleConstant.ADMIN)) {

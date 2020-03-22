@@ -26,7 +26,7 @@ import java.util.Set;
 @Service
 public class ArticleRecommendServiceImpl implements ArticleRecommendService {
 
-    private static final String KEY = "article:recommend:";
+    private static final String KEY = "art:recommend:";
 
     @Autowired
     private ZSetOperations<String, Object> zSetOperations;

@@ -13,7 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @author: yaohw
  * @create: 2019-11-03 15:00
  **/
-public class ServeSecurityContext {
+public class ServerSecurityContext {
     /**
      * 获取当前用户相信信息
      *
@@ -31,6 +31,10 @@ public class ServeSecurityContext {
         Object principal = authentication.getPrincipal();
         if (principal == null && throwEx) {
             throw new ApiException(ErrorEnum.CREDENTIALS_INVALID.getErrorCode(), ErrorEnum.CREDENTIALS_INVALID.getErrorMsg());
+        }
+        String noneUser = "anonymousUser";
+        if (noneUser.equals(principal)) {
+            return null;
         }
         return (CustomUserDetails) principal;
     }

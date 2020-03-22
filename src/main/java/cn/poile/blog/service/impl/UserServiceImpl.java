@@ -8,7 +8,7 @@ import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.oss.Storage;
 import cn.poile.blog.common.security.AuthenticationToken;
 import cn.poile.blog.common.security.RedisTokenStore;
-import cn.poile.blog.common.security.ServeSecurityContext;
+import cn.poile.blog.common.security.ServerSecurityContext;
 import cn.poile.blog.common.sms.SmsCodeService;
 import cn.poile.blog.common.util.RandomValueStringGenerator;
 import cn.poile.blog.controller.model.request.UpdateUserRequest;
@@ -144,17 +144,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String username = request.getUsername();
         User userDao = selectUserByUsernameOrMobile(username, mobile);
         if (userDao != null && username.equals(userDao.getUsername())) {
-            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), ErrorEnum.INVALID_REQUEST.getErrorMsg());
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "用户名已存在");
         }
         if (userDao != null && mobile == userDao.getMobile()) {
-            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), ErrorEnum.INVALID_REQUEST.getErrorMsg());
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "手机号已被使用");
         }
         User user = new User();
         user.setUsername(username);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setMobile(mobile);
-        String suffix = String.valueOf(mobile).substring(7);
+        String suffix = String.valueOf(mobile).substring(5);
         user.setNickname("用户" + suffix);
         user.setGender(UserConstant.GENDER_MALE);
         user.setBirthday(LocalDate.now());
@@ -172,7 +172,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public void update(UpdateUserRequest request) {
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         if (!request.getUserId().equals(userDetail.getId())) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "用户id跟当前用户id不匹配");
         }
@@ -200,7 +200,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (count != 0) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "邮箱已被使用");
         }
-        AuthenticationToken authenticationToken = ServeSecurityContext.getAuthenticationToken(true);
+        AuthenticationToken authenticationToken = ServerSecurityContext.getAuthenticationToken(true);
         Map<String, Object> params = new HashMap<>(1);
         RandomValueStringGenerator generator = new RandomValueStringGenerator();
         String code = generator.generate();
@@ -264,7 +264,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         try {
             // 上传头像
             String fullPath = storage.upload(file.getInputStream(), name, contentType);
-            CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+            CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
             User user = new User();
             Integer userId = userDetail.getId();
             user.setId(userId);
@@ -290,7 +290,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public void updatePassword(String oldPassword, String newPassword) {
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean matches = passwordEncoder.matches(oldPassword, userDetail.getPassword());
         if (!matches) {
@@ -361,7 +361,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public void rebindMobile(long mobile, String code) {
-        CustomUserDetails userDetail = ServeSecurityContext.getUserDetail(true);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         long cacheKey = userDetail.getMobile();
         // 判断是否经过步骤一
         String validated = redisTemplate.opsForValue().get(REDIS_MOBILE_VALIDATED_PREFIX + cacheKey);
