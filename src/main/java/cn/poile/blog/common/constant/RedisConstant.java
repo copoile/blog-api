@@ -16,4 +16,15 @@ public class RedisConstant {
      */
     public static final String ART_VIEW = "art:view:";
 
+
+    /**
+     * 限流前缀
+     */
+    public static final String REDIS_LIMIT_KEY_PREFIX = "limit:";
+
+    /**
+     * 短信限流key前缀（命名空间）
+     */
+    public static final String SMS_LIMIT_NAME ="sms";
+
 }

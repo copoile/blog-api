@@ -1,6 +1,7 @@
 package cn.poile.blog.common.limiter.aspect;
 
 import cn.poile.blog.common.constant.ErrorEnum;
+import cn.poile.blog.common.constant.RedisConstant;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.limiter.ExtraLimiter;
 import cn.poile.blog.common.limiter.Limit;
@@ -49,7 +50,6 @@ import java.util.concurrent.TimeUnit;
 public class RateLimiterAspect implements ApplicationContextAware{
 
     private final static String SEPARATOR = ":";
-    private final static String REDIS_LIMIT_KEY_PREFIX = "limit:";
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisScript<Long> limitRedisScript;
     private ApplicationContext applicationContext;
@@ -136,7 +136,7 @@ public class RateLimiterAspect implements ApplicationContextAware{
      * @return
      */
     private void handleLimit(Limit limit) {
-        String key = REDIS_LIMIT_KEY_PREFIX + limit.getKey();
+        String key = RedisConstant.REDIS_LIMIT_KEY_PREFIX + limit.getKey();
         long ttl = limit.getTimeUnit().toMillis(limit.getTimeout());
         long now = Instant.now().toEpochMilli();
         long max = limit.getMax();

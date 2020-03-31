@@ -75,7 +75,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private EmailService emailService;
 
     @Autowired
-    private StringRedisTemplate redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
     /**
      * 邮箱绑定code的redis前缀
      */
@@ -212,8 +212,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         Map<String, String> map = new HashMap<>(2);
         map.put("access_token", accessToken);
         map.put("email", email);
-        redisTemplate.opsForHash().putAll(key, map);
-        redisTemplate.expire(key, 2L, TimeUnit.HOURS);
+        stringRedisTemplate.opsForHash().putAll(key, map);
+        stringRedisTemplate.expire(key, 2L, TimeUnit.HOURS);
         emailService.asyncSendHtmlMail(email, "邮箱验证", "email", params);
     }
 
@@ -225,13 +225,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public void bindEmail(String code) {
-        Map<Object, Object> resultMap = redisTemplate.opsForHash().entries(REDIS_MAIL_CODE_PREFIX + code);
+        Map<Object, Object> resultMap = stringRedisTemplate.opsForHash().entries(REDIS_MAIL_CODE_PREFIX + code);
         if (resultMap.isEmpty()) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "code无效或code已过期");
         }
         String accessToken = (String) resultMap.get("access_token");
         String email = (String) resultMap.get("email");
-        redisTemplate.delete(REDIS_MAIL_CODE_PREFIX + code);
+        stringRedisTemplate.delete(REDIS_MAIL_CODE_PREFIX + code);
         // 读取认证信息
         AuthenticationToken authToken = tokenStore.readByAccessToken(accessToken);
         if (authToken == null) {
@@ -348,7 +348,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public void validateMobile(long mobile, String code) {
         checkSmsCode(mobile, code);
         // 经过原手机号验证标识
-        redisTemplate.opsForValue().set(REDIS_MOBILE_VALIDATED_PREFIX + mobile, Long.toString(mobile), 5L, TimeUnit.MINUTES);
+        stringRedisTemplate.opsForValue().set(REDIS_MOBILE_VALIDATED_PREFIX + mobile, Long.toString(mobile), 5L, TimeUnit.MINUTES);
         smsCodeService.deleteSmsCode(mobile);
     }
 
@@ -364,7 +364,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         long cacheKey = userDetail.getMobile();
         // 判断是否经过步骤一
-        String validated = redisTemplate.opsForValue().get(REDIS_MOBILE_VALIDATED_PREFIX + cacheKey);
+        String validated = stringRedisTemplate.opsForValue().get(REDIS_MOBILE_VALIDATED_PREFIX + cacheKey);
         if (StringUtils.isBlank(validated)) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "未经原手机号验证或验证已超时，请验证原手机号通过后再试");
         }
