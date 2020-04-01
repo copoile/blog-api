@@ -347,6 +347,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public void validateMobile(long mobile, String code) {
         checkSmsCode(mobile, code);
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
+        if (!userDetail.getMobile().equals(mobile)) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "手机号与当前用户手机号不匹配");
+        }
         // 经过原手机号验证标识
         stringRedisTemplate.opsForValue().set(REDIS_MOBILE_VALIDATED_PREFIX + mobile, Long.toString(mobile), 5L, TimeUnit.MINUTES);
         smsCodeService.deleteSmsCode(mobile);

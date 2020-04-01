@@ -33,13 +33,13 @@ ignore:
     - /refresh_access_token
     - /user/register
     - /user/email/bind
+    - /user/password/reset
     - /category/tree
     - /category/list
     - /tag/list
     - /article/published/page
     - /article/view/**
     - /article/increment_view/**
-    - /article/pre_next/**
     - /article/archives/page
     - /article/category/statistic
     - /article/tag/statistic
