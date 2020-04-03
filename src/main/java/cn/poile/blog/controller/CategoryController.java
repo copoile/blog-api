@@ -65,12 +65,12 @@ public class CategoryController extends BaseController {
     }
 
 
-    @PostMapping("/update/{id}")
+    @PostMapping("/update")
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "修改分类名",notes = "需要accessToken，需要管理员权限")
-    public ApiResponse update(@ApiParam("分类id") @PathVariable("id") int id,
-                              @ApiParam("标签名") @RequestParam(value = "categoryName") String categoryName) {
-        categoryService.updateCategoryById(id,categoryName);
+    public ApiResponse update(@ApiParam("分类id") @RequestParam("id") int id,
+                              @ApiParam("标签名") @RequestParam(value = "name") String name) {
+        categoryService.updateCategoryById(id,name);
         return createResponse();
     }
 

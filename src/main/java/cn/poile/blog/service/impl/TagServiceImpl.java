@@ -90,7 +90,6 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
         if (daoTag != null) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"标签已存在");
         }
-        removeById(id);
         Tag tag = new Tag();
         tag.setName(tagName);
         tag.setId(id);

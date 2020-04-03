@@ -58,12 +58,12 @@ public class TagController extends BaseController {
     }
 
 
-    @PostMapping("/update/{id}")
+    @PostMapping("/update")
     @PreAuthorize("hasAuthority('admin')")
     @ApiOperation(value = "修改标签名",notes = "需要accessToken，需要管理员权限")
-    public ApiResponse update(@ApiParam("标签id") @PathVariable("id") int id,
-                              @ApiParam("标签名") @RequestParam(value = "tagName") String tagName) {
-        tagService.update(id,tagName);
+    public ApiResponse update(@ApiParam("标签id") @RequestParam("id") int id,
+                              @ApiParam("标签名") @RequestParam(value = "name") String name) {
+        tagService.update(id,name);
         return createResponse();
     }
 

@@ -108,7 +108,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         if (daoCategory == null) {
             return;
         }
-        Category childrenCategory = selectOneByParentId(daoCategory.getParentId());
+        QueryWrapper<Category> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(Category::getParentId,id);
+        Category childrenCategory = getOne(queryWrapper,false);
         if (childrenCategory != null) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"该分类存在子类,不允许删除");
         }
@@ -152,17 +154,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         parentList.add(category);
         Category parent = map.get(category.getParentId());
         return addParent(parent,parentList,map);
-    }
-
-    /**
-     *  parentId 查询一个
-     * @param parentId
-     * @return
-     */
-    private Category selectOneByParentId(int parentId) {
-        QueryWrapper<Category> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(Category::getParentId,parentId);
-        return getOne(queryWrapper,false);
     }
 
     /**
