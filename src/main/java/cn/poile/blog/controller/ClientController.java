@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -50,7 +51,7 @@ public class ClientController extends BaseController {
 
     @PostMapping("/save")
     @ApiOperation(value = "新增或更新客户端,id为null时新增",notes = "需要accessToken，需要管理员权限")
-    public ApiResponse save(@RequestBody Client client) {
+    public ApiResponse save(@Validated @RequestBody Client client) {
         validateExist(client);
         clientService.saveOrUpdate(client);
         clientService.clearCache();

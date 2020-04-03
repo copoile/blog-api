@@ -12,6 +12,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * <p>
  * 客户端表
@@ -33,10 +35,12 @@ public class Client implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
+    @NotBlank(message = "客户端ID不能为空")
     @ApiModelProperty(value = "客户端id，客户端唯一标识")
     private String clientId;
 
-    @ApiModelProperty(value = "客户端密码")
+    @NotBlank(message = "客户端秘钥不能为空")
+    @ApiModelProperty(value = "客户端秘钥")
     private String clientSecret;
 
     @ApiModelProperty(value = "access_token有效时长")

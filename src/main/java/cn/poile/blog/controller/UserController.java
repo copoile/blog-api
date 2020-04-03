@@ -58,7 +58,7 @@ public class UserController extends BaseController {
 
     @PostMapping("/update")
     @ApiOperation(value = "更新用户基本信息", notes = "需要传accessToken，请求的json中id字段必传，更新不为null的项")
-    public ApiResponse update(@RequestBody UpdateUserRequest request) {
+    public ApiResponse update(@Validated @RequestBody UpdateUserRequest request) {
         userService.update(request);
         return createResponse();
     }
