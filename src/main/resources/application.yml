@@ -32,6 +32,7 @@ ignore:
     - /logout
     - /refresh_access_token
     - /user/register
+    - /user/password/reset
     - /user/email/bind
     - /user/password/reset
     - /category/tree

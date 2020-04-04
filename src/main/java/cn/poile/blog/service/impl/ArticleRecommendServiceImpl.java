@@ -67,7 +67,7 @@ public class ArticleRecommendServiceImpl implements ArticleRecommendService {
      */
     @Override
     public List<ArticleVo> list() {
-        Set<ZSetOperations.TypedTuple<Object>> valueScoreSet = zSetOperations.reverseRangeWithScores(KEY, 0, -1);
+        Set<ZSetOperations.TypedTuple<Object>> valueScoreSet = zSetOperations.rangeWithScores(KEY, 0, -1);
         List<ArticleVo> resultList = new ArrayList<>();
         if (valueScoreSet != null) {
             valueScoreSet.forEach(item -> {
@@ -90,7 +90,7 @@ public class ArticleRecommendServiceImpl implements ArticleRecommendService {
         if (articleId == null) {
             return;
         }
-        Set<Object> set = zSetOperations.range(KEY, 0, -0);
+        Set<Object> set = zSetOperations.range(KEY, 0, -1);
         if (set != null) {
             set.forEach(i -> {
                 ArticleVo articleVo = (ArticleVo) i;

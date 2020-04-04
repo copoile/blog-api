@@ -276,7 +276,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             // 清空用户缓存
             tokenStore.clearUserCacheById(userId);
         } catch (IOException e) {
-            log.error("上传文件失败:{}", e);
+            log.error("上传文件失败:{0}", e);
             throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(), ErrorEnum.SYSTEM_ERROR.getErrorMsg());
         }
     }
