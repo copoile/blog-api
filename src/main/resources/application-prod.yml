@@ -23,9 +23,9 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/blog_db?useSSL=false
+    url: jdbc:mysql://193.112.43.235:3306/blog_db?useSSL=false
     username: root
-    password: root
+    password: Ab452637!
     druid:
       initial-size: 5
       min-idle: 5
@@ -70,8 +70,8 @@ spring:
 oss:
   type: 3
   netease:
-    accessKey: 2bec4d8797e64f99b967c88fa
-    secretKey: ca8bb777179949a4b07671
+    accessKey: 2bec4d8797e64f99b967c88fa0d08d39
+    secretKey: ca8bb777179949a4b0767108bdf032e8
     endpoint: nos-eastchina1.126.net
     bucket: poile-img
 
@@ -81,8 +81,8 @@ sms:
   day_max: 10
   ali:
     regionId: cn-hangzhou
-    accessKeyId: LTAIaEeboqn0
-    accessKeySecret: bU54eGKPugUj03LJm8eELNE
+    accessKeyId: LTAI4FvoP9o1tH
+    accessKeySecret: YjUrQ9sTEWwGY6Ys1o
     signName: 个人悦读分享
     templateCode: SMS_176942058
 
@@ -93,6 +93,6 @@ mail:
 
 # 生产环境禁用swagger
 swagger:
-  enabled: false
+  enabled: true
 
 

@@ -98,7 +98,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 文章状态
         article.setStatus(status);
         // 时间
-        article.setPublishTime(LocalDateTime.now());
+        if (ArticleStatusEnum.NORMAL.getStatus().equals(status)) {
+            article.setPublishTime(LocalDateTime.now());
+        }
         article.setUpdateTime(LocalDateTime.now());
         // 保存或更新文章
         saveOrUpdate(article);
