@@ -1,5 +1,7 @@
 package cn.poile.blog.common.oss;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+
 import java.io.InputStream;
 
 /**
@@ -33,4 +35,12 @@ public interface Storage {
      * @return 是否删除成功
      */
     boolean delete(String fullPath);
+
+    /**
+     * 分页获取文件对象列表
+     * @param nextMarker 下一个marker
+     * @param size
+     * @return
+     */
+    PageStorageObject page(String nextMarker, int size);
 }

@@ -1,23 +1,24 @@
 package cn.poile.blog.common.oss;
+import com.google.common.collect.Lists;
 
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
+import cn.poile.blog.common.util.AbstractListWarp;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.netease.cloud.ClientConfiguration;
 import com.netease.cloud.Protocol;
 import com.netease.cloud.auth.BasicCredentials;
 import com.netease.cloud.auth.Credentials;
 import com.netease.cloud.services.nos.NosClient;
-import com.netease.cloud.services.nos.model.DeleteObjectsRequest;
-import com.netease.cloud.services.nos.model.MultiObjectDeleteException;
-import com.netease.cloud.services.nos.model.ObjectMetadata;
-import com.netease.cloud.services.nos.model.PutObjectRequest;
+import com.netease.cloud.services.nos.model.*;
 import com.netease.cloud.services.nos.transfer.TransferManager;
 import com.netease.cloud.services.nos.transfer.Upload;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * 网易云 存储
@@ -103,5 +104,48 @@ public class NeteaseStorage extends AbstractStorage{
             return false;
         }
         return true;
+    }
+
+    /**
+     * 分页获取文件对象列表
+     * @param nextMarker
+     * @param size
+     * @return
+     */
+    @Override
+    public PageStorageObject page(String nextMarker, int size) {
+        ListObjectsRequest request = new ListObjectsRequest();
+        request.setBucketName(bucket);
+        request.setMarker(nextMarker);
+        request.setMaxKeys(size);
+        ObjectListing listObjects = nosClient.listObjects(request);
+        List<NOSObjectSummary> objectSummaries = listObjects.getObjectSummaries();
+        PageStorageObject page = new PageStorageObject();
+        page.setRecords(warpList(objectSummaries));
+        page.setNextMarker(listObjects.getNextMarker());
+        page.setCurrentMarker(nextMarker);
+        page.setLoadedAll(!listObjects.isTruncated());
+        page.setSize(size);
+        return page;
+    }
+
+    /**
+     * 列表类型转换
+     * @param sourceList
+     * @return
+     */
+    private List<StorageObject> warpList(List<NOSObjectSummary> sourceList) {
+        return new AbstractListWarp<NOSObjectSummary,StorageObject>() {
+            @Override
+            public StorageObject warp(NOSObjectSummary source) {
+                StorageObject storageObject = new StorageObject();
+                String key = source.getKey();
+                storageObject.setName(key);
+                storageObject.setPath( "/" + key);
+                storageObject.setDate(source.getLastModified());
+                storageObject.setUrl("https://" + bucket + "." + nosEndpoint + "/" + key);
+                return storageObject;
+            }
+        }.warpList(sourceList);
     }
 }

@@ -84,4 +84,15 @@ public class LocalStorage extends AbstractStorage{
         }
         return FileUtils.deleteQuietly(new File(path + getFileNameFromFullPath(fullPath)));
     }
+
+    /**
+     * 分页获取文件对象列表
+     * @param nextMarker
+     * @param size
+     * @return
+     */
+    @Override
+    public PageStorageObject page(String nextMarker, int size) {
+        return new PageStorageObject();
+    }
 }

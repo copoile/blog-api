@@ -1,5 +1,6 @@
 package cn.poile.blog.controller;
 
+import cn.poile.blog.common.oss.PageStorageObject;
 import cn.poile.blog.common.oss.Storage;
 import cn.poile.blog.common.response.ApiResponse;
 import io.swagger.annotations.Api;
@@ -45,5 +46,13 @@ public class FileController extends BaseController {
     public ApiResponse delete(@ApiParam("文件全路径") @NotNull @RequestParam("fullPath")String fullPath){
         storage.delete(fullPath);
         return createResponse();
+    }
+
+    @GetMapping("/page")
+    @PreAuthorize("hasAuthority('admin')")
+    @ApiOperation(value = "分页分类列表", notes = "需要accessToken，需要管理员权限")
+    public ApiResponse<PageStorageObject> page(@ApiParam("marker标记") @RequestParam(value = "marker", required = false) String marker,
+                                                              @ApiParam("每页数量") @RequestParam(value = "size", required = false, defaultValue = "5") int size) {
+        return createResponse(storage.page(marker,size));
     }
 }

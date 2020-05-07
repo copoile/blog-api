@@ -111,4 +111,15 @@ public class QiniuStorage extends AbstractStorage {
             throw new ApiException(ErrorEnum.SYSTEM_ERROR.getErrorCode(),"删除文件失败");
         }
     }
+
+    /**
+     * 分页获取文件对象列表
+     * @param nextMarker
+     * @param size
+     * @return
+     */
+    @Override
+    public PageStorageObject page(String nextMarker, int size) {
+        return new PageStorageObject();
+    }
 }

@@ -78,4 +78,16 @@ public class AliStorage extends AbstractStorage{
         }
         return true;
     }
+
+    /**
+     * 分页获取文件对象列表
+     *
+     * @param nextMarker 下一个marker
+     * @param size
+     * @return
+     */
+    @Override
+    public PageStorageObject page(String nextMarker, int size) {
+        return new PageStorageObject();
+    }
 }

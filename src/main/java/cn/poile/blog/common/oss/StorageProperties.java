@@ -8,8 +8,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author: yaohw
  * @create: 2019-10-30 18:57
  **/
-@ConfigurationProperties(prefix = "oss")
 @Data
+@ConfigurationProperties(prefix = "oss")
 public class StorageProperties {
 
     private int type = 1;
