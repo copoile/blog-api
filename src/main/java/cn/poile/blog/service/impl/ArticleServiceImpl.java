@@ -552,9 +552,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         String[] array = yearMonth.split(separator);
         String yearStr = array[0];
         String monthStr = array[1];
-        int maxDayOfMonth = DateUtil.getMaxDayOfMonth(Integer.parseInt(yearStr), Integer.parseInt(monthStr));
-        String start = yearStr + separator + monthStr + separator + "01";
-        String end = yearStr + separator + monthStr + separator + maxDayOfMonth;
+        // 如：2020-04-02 00:00
+        String start = yearStr + separator + monthStr + separator + "01" + " 00:00";
+        int nextMonth = Integer.parseInt(monthStr) + 1;
+        // 如：2020-05-01 00:00
+        String end = yearStr + separator + nextMonth + separator + "01" + " 00:00";
         return new String[]{start, end};
     }
 

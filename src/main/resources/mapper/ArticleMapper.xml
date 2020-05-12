@@ -117,7 +117,7 @@
             and a.category_id = #{categoryId}
         </if>
         <if test="start != null and end != null">
-            and a.publish_time >= #{start} and a.publish_time <![CDATA[<=]]> #{end}
+            and a.publish_time >= #{start} and a.publish_time <![CDATA[<]]> #{end}
         </if>
         <if test="tagId != null">
             and a.id in (select a_t.article_id from article_tag a_t where a_t.tag_id = #{tagId})
@@ -165,7 +165,7 @@
             and inner_a.category_id = #{categoryId}
         </if>
         <if test="start != null and end != null">
-            and inner_a.publish_time >= #{start} and inner_a.publish_time <![CDATA[<=]]> #{end}
+            and inner_a.publish_time >= #{start} and inner_a.publish_time <![CDATA[<]]> #{end}
         </if>
         <if test="tagId != null">
             and inner_a.id in (select inner_a_t.article_id from article_tag inner_a_t where inner_a_t.tag_id = #{tagId})
@@ -193,7 +193,7 @@
         </choose>
     </select>
 
-    <!--查询用户收藏文章-->
+    <!-- 查询用户收藏文章 -->
     <select id="selectCollectByUserId" resultMap="articleVoResultMap">
         select
         outer_a.id,
@@ -233,7 +233,7 @@
         left join tag t on t.id = a_t.tag_id
     </select>
     
-    <!--标签列表查询文章列表-->
+    <!-- 标签列表查询文章列表 -->
     <select id="selectByTagList" resultMap="articleVoResultMap">
         select
         outer_a.id,
@@ -278,7 +278,7 @@
         left join tag t on t.id = a_t.tag_id
     </select>
 
-    <!--文章归档计数-->
+    <!-- 文章归档计数 -->
     <select id="selectArticleArchivesCount" resultType="Integer">
         select
         count(1) count
@@ -296,7 +296,7 @@
         ) temp
     </select>
 
-    <!--文章归档-->
+    <!-- 文章归档 -->
     <select id="selectArticleArchives" resultType="cn.poile.blog.vo.ArticleArchivesVo">
         select
         date_format(a.publish_time, '%Y-%m') yearMonth,
@@ -309,7 +309,7 @@
         limit #{offset},#{limit}
     </select>
 
-    <!--查询上一篇和下一篇-->
+    <!-- 查询上一篇和下一篇 -->
     <select id="selectPreAndNext" resultMap="articleResultMap">
         (
         select
@@ -336,7 +336,7 @@
         )
     </select>
 
-    <!--文章分类统计查询-->
+    <!-- 文章分类统计查询 -->
     <select id="selectCategoryStatistic" resultType="cn.poile.blog.vo.ArticleCategoryStatisticsVo">
         select
         c.id,
@@ -358,7 +358,7 @@
         c.deleted = 0
     </select>
 
-    <!--文章标签统计查询-->
+    <!-- 文章标签统计查询 -->
     <select id="selectTagStatistic" resultType="cn.poile.blog.vo.ArticleTagStatisticsVo">
         select
         t.id,
@@ -387,7 +387,7 @@
         t.deleted = 0
     </select>
 
-    <!--点赞数自增-->
+    <!-- 点赞数自增 -->
     <update id="likeCountIncrement">
         update article a
         set a.like_count = (a.like_count + 1)
@@ -395,7 +395,7 @@
         a.id = #{id}
     </update>
 
-    <!--点赞数自减-->
+    <!-- 点赞数自减 -->
     <update id="likeCountDecrement">
         update article a
         set a.like_count = (a.like_count - 1)
@@ -403,7 +403,7 @@
         a.id = #{id}
     </update>
 
-    <!--评论数自增-->
+    <!-- 评论数自增 -->
     <update id="commentCountIncrement">
         update article a
         set a.comment_count = (a.comment_count + 1)
@@ -411,7 +411,7 @@
         a.id = #{id}
     </update>
 
-    <!--评论数自减-->
+    <!-- 评论数自减 -->
     <update id="commentCountDecrement">
         update article a
         set a.comment_count = (a.comment_count - 1)
@@ -419,7 +419,7 @@
         a.id = #{id}
     </update>
 
-    <!--收藏数自增-->
+    <!-- 收藏数自增 -->
     <update id="collectCountIncrement">
         update article a
         set a.collect_count = (a.collect_count + 1)
@@ -427,7 +427,7 @@
         a.id = #{id}
     </update>
 
-    <!--收藏数自减-->
+    <!-- 收藏数自减 -->
     <update id="collectCountDecrement">
         update article a
         set a.collect_count = (a.collect_count - 1)
