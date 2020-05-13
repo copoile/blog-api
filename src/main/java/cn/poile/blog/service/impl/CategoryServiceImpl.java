@@ -85,7 +85,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Transactional(rollbackFor = Exception.class)
     public void updateCategoryById(int id, String name) {
         Category daoCategory = selectByBName(name);
-        if (daoCategory != null) {
+        if (daoCategory != null && daoCategory.getName().equals(name)) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"分类已存在");
         }
         Category category = new Category();

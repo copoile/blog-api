@@ -87,7 +87,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagS
     @Override
     public void update(int id, String tagName) {
         Tag daoTag = selectByTagName(tagName);
-        if (daoTag != null) {
+        if (daoTag != null && daoTag.getName().equals(tagName)) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(),"标签已存在");
         }
         Tag tag = new Tag();
