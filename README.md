@@ -65,4 +65,5 @@
 
 ## 文档
 
-<a href="http://doc.poile.cn" target="_black">http://doc.poile.cn</a>
+国内: <a href="http://copoile.gitee.io/blog-doc" target="_black">http://copoile.gitee.io/blog-doc</a>
+国外: <a href="https://copoile.github.io" target="_black">https://copoile.github.io</a>
