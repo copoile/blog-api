@@ -32,3 +32,4 @@ gen### Java template
 hs_err_pid*
 
 /target/
+/logs/

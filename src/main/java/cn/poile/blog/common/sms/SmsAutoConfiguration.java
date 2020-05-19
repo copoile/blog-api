@@ -19,6 +19,10 @@ public class SmsAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public SmsCodeService smsService(SmsServiceProperties properties) {
-        return new AliSmsCodeService(properties);
+        int type = properties.getType();
+        if (type == 1) {
+            return new AliSmsCodeService(properties);
+        }
+        return new TencentSmsCodeService(properties);
     }
 }

@@ -79,7 +79,7 @@ oss:
   type: 1
   local:
     path: /var/blog/
-    proxy: http://www.poile.cn/resource/
+    proxy: http://resource.poile.cn/
   # 网易云存储配置
   netease:
     accessKey: 2bec4d8797e64f99b967c88f
@@ -101,6 +101,7 @@ oss:
     endpoint: oss-cn-shenzhen.aliyuncs.com
 
 sms:
+  # 短信类型，1：阿里，2：腾讯
   type: 1
   # 短信验证码有效时，单位为:秒
   expire: 300
@@ -110,10 +111,15 @@ sms:
   ali:
     regionId: cn-hangzhou
     accessKeyId: LTAIaEeboqn0kR
-    accessKeySecret: bU54eGKPugUj03LJm
+    accessKeySecret: bU54eGKPugUj03LJ
     signName: 个人悦读分享
-    templateCode: SMS_176942058
-
+    templateCode: SMS_17694205
+  # 腾讯短信配置
+  tencent:
+    appId: 14001859
+    appKey: ea4d97cdc5d23f0741b98c2ef
+    templateId: 608484
+    signName: 个人阅读分享网
 # 邮件中的链接配置，按需求配置
 mail:
   # 邮箱绑定时发送的验证链接前缀

@@ -121,7 +121,7 @@
             <artifactId>freemarker</artifactId>
             <version>2.3.29</version>
         </dependency>
-        <!--网易云对象存储sdk-->
+        <!-- 网易云对象存储sdk -->
         <dependency>
             <groupId>com.netease.cloud</groupId>
             <artifactId>nos-sdk-java-publiccloud</artifactId>
@@ -144,6 +144,12 @@
             <groupId>com.aliyun</groupId>
             <artifactId>aliyun-java-sdk-core</artifactId>
             <version>4.1.0</version>
+        </dependency>
+        <!-- 腾讯短信sdk -->
+        <dependency>
+            <groupId>com.github.qcloudsms</groupId>
+            <artifactId>qcloudsms</artifactId>
+            <version>1.0.5</version>
         </dependency>
     </dependencies>
 
