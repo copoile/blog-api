@@ -391,6 +391,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 
     /**
+     * 绑定手机号 - 用于原手机号为空的情况下
+     *
+     * @param mobile
+     * @param code
+     */
+    @Override
+    public void bindMobile(long mobile, String code) {
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
+        boolean hasMobile  = userDetail.getMobile() != null;
+        if (hasMobile) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "已存在手机号，请验证原手机后重新绑定");
+        }
+        // 验证码校验
+        checkSmsCode(mobile, code);
+        smsCodeService.deleteSmsCode(mobile);
+    }
+
+    /**
+     * 绑定用户名 - 用于用户名为空的情况
+     *
+     * @param username
+     */
+    @Override
+    public void bindUsername(String username) {
+        CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(User::getUsername,username);
+        User user = getOne(queryWrapper, false);
+        if (user != null) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "用户名已存在");
+        }
+        User updateUser = new User();
+        updateUser.setId(userDetail.getId());
+        updateUser.setUsername(username);
+        updateById(updateUser);
+    }
+
+    /**
      * 分页查询用户
      *
      * @param current

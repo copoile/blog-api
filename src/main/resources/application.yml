@@ -54,6 +54,7 @@ ignore:
     - /article/comment/latest
     - /leave/message/page
     - /leave/message/latest
+    - /oauth
 
 # mybatis-plus配置，不可修改
 mybatis-plus:

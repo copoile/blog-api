@@ -1,9 +1,12 @@
 package cn.poile.blog.common.security;
+import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.context.MessageSource;
 
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.filter.AuthorizationTokenFilter;
 import cn.poile.blog.common.response.ApiResponse;
 import cn.poile.blog.common.sms.SmsCodeService;
+import cn.poile.blog.service.IUserService;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +58,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private SmsCodeService smsCodeService;
 
+    @Autowired
+    private IUserService userService;
+
 
     /**
      * 配置认证管理器
@@ -77,6 +83,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(provider())
+                .authenticationProvider(provider2())
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder());
     }
@@ -148,6 +155,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         MobileCodeAuthenticationProvider provider = new MobileCodeAuthenticationProvider();
         provider.setSmsCodeService(smsCodeService);
         provider.setUserDetailsService(userDetailsService);
+        return provider;
+    }
+
+    /**
+     * 自定义主键查询用户认证提供者
+     * @return
+     */
+    @Bean
+    public PrimaryKeyAuthenticationProvider provider2() {
+        PrimaryKeyAuthenticationProvider provider = new PrimaryKeyAuthenticationProvider();
+        provider.setUserService(userService);
         return provider;
     }
 }

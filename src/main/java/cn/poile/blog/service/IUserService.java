@@ -1,6 +1,5 @@
 package cn.poile.blog.service;
 
-import cn.poile.blog.controller.model.dto.AccessTokenDTO;
 import cn.poile.blog.controller.model.request.UpdateUserRequest;
 import cn.poile.blog.controller.model.request.UserRegisterRequest;
 import cn.poile.blog.entity.User;
@@ -130,4 +129,16 @@ public interface IUserService extends IService<User> {
      */
     void status(Integer userId, Integer status);
 
+    /**
+     * 绑定手机号 - 用于原手机号为空的情况
+     * @param mobile
+     * @param code
+     */
+    void bindMobile(long mobile, String code);
+
+    /**
+     * 绑定用户名 - 用于用户名为空的情况
+     * @param username
+     */
+    void bindUsername(String username);
 }

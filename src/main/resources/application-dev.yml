@@ -111,13 +111,13 @@ sms:
   ali:
     regionId: cn-hangzhou
     accessKeyId: LTAIaEeboqn0kR
-    accessKeySecret: bU54eGKPugUj03LJ
+    accessKeySecret: bU54eGKPugU
     signName: 个人悦读分享
     templateCode: SMS_17694205
   # 腾讯短信配置
   tencent:
     appId: 14001859
-    appKey: ea4d97cdc5d23f0741b98c2ef
+    appKey: ea4d97cdc5d23f0741b
     templateId: 608484
     signName: 个人阅读分享网
 # 邮件中的链接配置，按需求配置
@@ -128,6 +128,21 @@ mail:
   article: http://127.0.0.1:8080/article/#/
   # 留言邮件提醒留言版页面链接
   message: http://127.0.0.1:8080/message
+
+# 第三方登录
+oauth:
+  github:
+    clientId: bded74b0f0213
+    clientSecret: 904294b14bb
+  gitee:
+    clientId: 18348ed893d47d047a79fb0a395fe1c8c4
+    clientSecret: ac72d64d7e1f365fb526bcaa8057c
+    redirect_uri: https://www.poile.cn/oauth
+  qq:
+    appId: appid
+    clientId: clientId
+    clientSecret: clientSecret
+    redirect_uri: https://www.poile.cn/oauth
 
 # 开发环境，为调试方便，降低日志级别
 logging:

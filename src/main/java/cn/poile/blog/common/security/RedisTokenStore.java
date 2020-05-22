@@ -47,32 +47,32 @@ public class RedisTokenStore {
     /**
      * accessToken key前缀
      */
-    private static final String AUTH_ACCESS = "auth:access:";
+    private static final String AUTH_ACCESS = "oauth:access:";
 
     /**
      * refreshToken key前缀
      */
-    private static final String AUTH_REFRESH = "auth:refresh:";
+    private static final String AUTH_REFRESH = "oauth:refresh:";
 
     /**
      * key为refreshToken ， value为accessToken，用于refreshToken获取accessToken
      */
-    private static final String AUTH_REFRESH_TO_ACCESS = "auth:refresh_to_access:";
+    private static final String AUTH_REFRESH_TO_ACCESS = "oauth:refresh_to_access:";
 
     /**
      * key为accessToken ， value为refreshToken，用于refreshToken获取accessToken
      */
-    private static final String AUTH_ACCESS_TO_REFRESH = "auth:access_to_refresh:";
+    private static final String AUTH_ACCESS_TO_REFRESH = "oauth:access_to_refresh:";
 
     /**
      * userId + clientId
      */
-    private static final String UNAME_TO_ACCESS = "auth:uname_to_access:";
+    private static final String UNAME_TO_ACCESS = "oauth:uname_to_access:";
 
     /**
      * user md5 : accessToken，这是zset的key，列表里放此用户登录的accessToken
      */
-    private static final String AUTH_USER_ACCESS = "auth:user_to_access:";
+    private static final String AUTH_USER_ACCESS = "oauth:user_to_access:";
 
     /**
      * 默认accessToken 时效,两小时

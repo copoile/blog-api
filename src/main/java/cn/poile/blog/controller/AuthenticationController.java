@@ -1,5 +1,6 @@
 package cn.poile.blog.controller;
 
+import cn.poile.blog.biz.OauthService;
 import cn.poile.blog.common.constant.ErrorEnum;
 import cn.poile.blog.common.exception.ApiException;
 import cn.poile.blog.common.response.ApiResponse;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 
 /**
  * @author: yaohw
@@ -53,6 +55,9 @@ public class AuthenticationController extends BaseController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    private OauthService oauthService;
+
     @PostMapping("/account/login")
     @ApiOperation(value = "账号密码登录", notes = "账号可以是用户名或手机号")
     public ApiResponse<AccessTokenDTO> accountLogin(@ApiParam("用户名或手机号") @NotBlank(message = "账号不能为空") @RequestParam String username,
@@ -72,6 +77,19 @@ public class AuthenticationController extends BaseController {
                                                    @ApiParam("客户端认证请求头") @RequestHeader(value = "Authorization") String authorization) {
         Client client = getAndValidatedClient(authorization);
         AuthenticationToken authenticationToken = authenticationService.mobileCodeAuthenticate(mobile, code, client);
+        AccessTokenDTO response = new AccessTokenDTO();
+        BeanUtils.copyProperties(authenticationToken, response);
+        return createResponse(response);
+    }
+
+    @PostMapping("/oauth")
+    @ApiOperation(value = "第三方登录", notes = "不需要accessToken")
+    public ApiResponse<AccessTokenDTO> oauth(
+            @ApiParam("认证类型") @NotNull(message = "认证类型不能为空") @RequestParam Integer type,
+            @ApiParam("第三方授权码") @NotBlank(message = "授权码不能为空") @RequestParam String code,
+            @ApiParam("客户端认证请求头") @RequestHeader(value = "Authorization") String authorization) {
+        Client client = getAndValidatedClient(authorization);
+        AuthenticationToken authenticationToken = oauthService.oauth(type, code, client);
         AccessTokenDTO response = new AccessTokenDTO();
         BeanUtils.copyProperties(authenticationToken, response);
         return createResponse(response);

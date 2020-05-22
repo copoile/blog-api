@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 /**
  * <p>
@@ -102,6 +103,24 @@ public class UserController extends BaseController {
         userService.rebindMobile(mobile, code);
         return createResponse();
     }
+
+    @PostMapping("/mobile/bind")
+    @ApiOperation(value = "绑定手机号", notes = "需要传accessToken，只用于原手机为空的情况下")
+    public ApiResponse bindMobile(@ApiParam("手机号") @NotNull(message = "手机号不能为空") @IsPhone @RequestParam(value = "mobile") long mobile,
+                                    @ApiParam("验证码") @NotBlank(message = "验证码不能为空") @RequestParam(value = "code") String code) {
+        userService.bindMobile(mobile, code);
+        return createResponse();
+    }
+
+    @PostMapping("/username/bind")
+    @ApiOperation(value = "绑定用户名", notes = "需要传accessToken，只用于原用户名为空的情况下")
+    public ApiResponse bindUsername(@ApiParam("用户名") @NotBlank(message = "用户名不能为空")
+                                    @Pattern(regexp = "^[a-zA-Z][a-zA-Z0-9_]{1,15}$", message = "用户名只能字母开头，允许2-16字节，允许字母数字下划线")
+                                    @RequestParam(value = "username") String username) {
+        userService.bindUsername(username);
+        return createResponse();
+    }
+
 
     @PostMapping("/email/validate")
     @ApiOperation(value = "发送验证链接到邮箱", notes = "需要accessToken")
