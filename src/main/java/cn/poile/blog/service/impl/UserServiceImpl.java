@@ -403,9 +403,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (hasMobile) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "已存在手机号，请验证原手机后重新绑定");
         }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(User::getMobile,mobile);
+        int count = count(queryWrapper);
+        if (count != 0) {
+            throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "手机号已被使用");
+        }
         // 验证码校验
         checkSmsCode(mobile, code);
+        User user = new User();
+        Integer id = userDetail.getId();
+        user.setId(id);
+        user.setMobile(mobile);
+        updateById(user);
         smsCodeService.deleteSmsCode(mobile);
+        // 清空用户缓存
+        tokenStore.clearUserCacheById(id);
     }
 
     /**
@@ -418,14 +431,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(true);
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(User::getUsername,username);
-        User user = getOne(queryWrapper, false);
-        if (user != null) {
+        int count = count(queryWrapper);
+        if (count != 0) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "用户名已存在");
         }
         User updateUser = new User();
         updateUser.setId(userDetail.getId());
         updateUser.setUsername(username);
         updateById(updateUser);
+        // 清空用户缓存
+        tokenStore.clearUserCacheById(userDetail.getId());
     }
 
     /**

@@ -1,17 +1,17 @@
 /*
  Navicat MySQL Data Transfer
 
- Source Server         : 127.0.0.1
+ Source Server         : 193.112.43.235
  Source Server Type    : MySQL
  Source Server Version : 50726
- Source Host           : 127.0.0.1
+ Source Host           : 193.112.43.235
  Source Database       : blog_db
 
  Target Server Type    : MySQL
  Target Server Version : 50726
  File Encoding         : utf-8
 
- Date: 04/07/2020 21:47:28 PM
+ Date: 05/24/2020 19:16:39 PM
 */
 
 SET NAMES utf8;
@@ -60,7 +60,7 @@ CREATE TABLE `article_collect` (
   UNIQUE KEY `unique_index` (`user_id`,`article_id`) USING BTREE,
   KEY `index_article_id` (`article_id`) USING BTREE,
   KEY `index_user_id` (`user_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COMMENT='文章收藏表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章收藏表';
 
 -- ----------------------------
 --  Table structure for `article_comment`
@@ -74,7 +74,7 @@ CREATE TABLE `article_comment` (
   `comment_time` datetime NOT NULL COMMENT '评论时间',
   `deleted` tinyint(1) DEFAULT '0' COMMENT '是否已删除，1：是，0：否',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COMMENT='文章评论表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章评论表';
 
 -- ----------------------------
 --  Table structure for `article_like`
@@ -88,7 +88,7 @@ CREATE TABLE `article_like` (
   UNIQUE KEY `unique_index` (`article_id`,`user_id`),
   KEY `index_article_id` (`article_id`) USING BTREE,
   KEY `index_user_id` (`user_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COMMENT='文章点赞表';
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COMMENT='文章点赞表';
 
 -- ----------------------------
 --  Table structure for `article_reply`
@@ -104,7 +104,7 @@ CREATE TABLE `article_reply` (
   `reply_time` datetime NOT NULL COMMENT '回复时间',
   `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已删除，1:是，0:否',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COMMENT='文章回复表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章回复表';
 
 -- ----------------------------
 --  Table structure for `article_tag`
@@ -117,7 +117,7 @@ CREATE TABLE `article_tag` (
   PRIMARY KEY (`id`),
   KEY `index_article_id` (`article_id`) USING BTREE,
   KEY `index_article_tag_id` (`tag_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=117 DEFAULT CHARSET=utf8mb4 COMMENT='文章-标签 关联表';
+) ENGINE=InnoDB AUTO_INCREMENT=123 DEFAULT CHARSET=utf8mb4 COMMENT='文章-标签 关联表';
 
 -- ----------------------------
 --  Table structure for `category`
@@ -175,7 +175,21 @@ CREATE TABLE `leave_message` (
   KEY `index_pid` (`pid`) USING BTREE,
   KEY `index_from_user` (`from_user_id`) USING BTREE,
   KEY `index_to_user` (`to_user_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COMMENT='留言表';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COMMENT='留言表';
+
+-- ----------------------------
+--  Table structure for `oauth_user`
+-- ----------------------------
+DROP TABLE IF EXISTS `oauth_user`;
+CREATE TABLE `oauth_user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(100) NOT NULL COMMENT '第三方平台的用户唯一id',
+  `user_id` int(11) NOT NULL COMMENT '用户id',
+  `type` int(2) NOT NULL COMMENT '认证类型，1：qq，2：github，3：微信，4：gitee',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_index` (`uuid`,`user_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COMMENT='第三方登录关联表';
 
 -- ----------------------------
 --  Table structure for `tag`
@@ -186,7 +200,7 @@ CREATE TABLE `tag` (
   `name` varchar(30) NOT NULL COMMENT '标签名',
   `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '已删除,1:是，0否',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COMMENT='标签表';
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COMMENT='标签表';
 
 -- ----------------------------
 --  Table structure for `user`
@@ -194,9 +208,9 @@ CREATE TABLE `tag` (
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '用户id',
-  `username` varchar(20) NOT NULL COMMENT '用户名',
-  `password` varchar(255) NOT NULL COMMENT '密码',
-  `mobile` bigint(11) NOT NULL COMMENT '手机号',
+  `username` varchar(20) DEFAULT NULL COMMENT '用户名',
+  `password` varchar(255) DEFAULT NULL COMMENT '密码',
+  `mobile` bigint(11) DEFAULT NULL COMMENT '手机号',
   `nickname` varchar(50) NOT NULL COMMENT '昵称',
   `gender` tinyint(1) NOT NULL DEFAULT '1' COMMENT '性别，1：男，0：女，默认为1',
   `birthday` date DEFAULT NULL COMMENT '生日',
@@ -209,6 +223,6 @@ CREATE TABLE `user` (
   PRIMARY KEY (`id`),
   KEY `index_username` (`username`) USING BTREE,
   KEY `index` (`mobile`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
 SET FOREIGN_KEY_CHECKS = 1;
