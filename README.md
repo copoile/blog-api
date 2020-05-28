@@ -29,6 +29,7 @@
 ```
 - 账号注册
 - 账号登录 / 手机号登录
+- 第三方登录 / QQ / Github / Gitee
 - 个人信息
 - 绑定邮箱 / 绑定手机号
 - 修改密码 / 重置密码
@@ -63,7 +64,13 @@
 
 
 
-## 文档
+## 在线文档
 
 国内: <a href="http://copoile.gitee.io/blog-doc" target="_black">http://copoile.gitee.io/blog-doc</a>  
 国外: <a href="https://copoile.github.io" target="_black">https://copoile.github.io</a>
+
+## 线上
+目前网站已正式上线，如需查看完整效果可查看网站:  
+[https://www.poile.cn](https://www.poile.cn)
+
+> 觉得不错的话，多支持下low逼弟弟哦～
