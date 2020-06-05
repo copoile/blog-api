@@ -79,7 +79,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
         Article article = new Article();
         // 文章id处理
-        article.setId(request.getId() == null ? null : request.getId() == 0 ? null : request.getId());
+        Integer id = request.getId() == null ? null : request.getId() == 0 ? null : request.getId();
+        article.setId(id);
         // 判断是否原创，做不同处理
         setAuthor(article, request);
         // 获取分类信息
@@ -98,7 +99,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 文章状态
         article.setStatus(status);
         // 时间
-        if (ArticleStatusEnum.NORMAL.getStatus().equals(status)) {
+        if (ArticleStatusEnum.NORMAL.getStatus().equals(status) || id == null) {
             article.setPublishTime(LocalDateTime.now());
         }
         article.setUpdateTime(LocalDateTime.now());
