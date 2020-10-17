@@ -261,7 +261,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     /**
-     * 获取文章详情并增长浏览次数
+     * 获取文章详情
      *
      * @param id
      * @return
@@ -273,6 +273,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         if (articleVo == null) {
             throw new ApiException(ErrorEnum.INVALID_REQUEST.getErrorCode(), "文章不存在");
         }
+        // 详情不返回原内容
+        articleVo.setContent(null);
         // 上一篇和下一篇
         PreArtAndNextArtDTO preAndNext = selectPreAndNext(id);
         articleVo.setPrevious(preAndNext.getPre());
@@ -290,7 +292,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         CustomUserDetails userDetail = ServerSecurityContext.getUserDetail(false);
         String  key = userDetail != null? RedisConstant.ART_VIEW + userDetail.getId() + ":" + id
                 : RedisConstant.ART_VIEW + IpUtil.getIpAddress() + ":" + id;
-        Boolean notViewed = stringRedisTemplate.opsForValue().setIfAbsent(key, "viewed",20L,TimeUnit.MINUTES);
+        Boolean notViewed = stringRedisTemplate.opsForValue().setIfAbsent(key, "viewed",120L,TimeUnit.MINUTES);
         if (notViewed != null && notViewed) {
             // 浏览次数自增
             Article article = getById(id);

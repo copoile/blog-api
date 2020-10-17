@@ -153,6 +153,12 @@
         (
         select
         <include refid="Article_Column_List"/>
+        ,(
+        inner_a.view_count * 0.15
+        + inner_a.comment_count * 0.35
+        + inner_a.like_count * 0.25
+        + inner_a.collect_count * 0.25
+        ) as score
         from article inner_a
         where inner_a.deleted = 0
         <if test="status != null">
@@ -188,7 +194,7 @@
                 order by outer_a.publish_time desc
             </when>
             <otherwise>
-                order by outer_a.view_count desc
+                order by score desc
             </otherwise>
         </choose>
     </select>

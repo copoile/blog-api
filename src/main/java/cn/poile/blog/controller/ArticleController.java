@@ -60,7 +60,7 @@ public class ArticleController extends BaseController {
                                                        @ApiParam("标签id，非必传") @RequestParam(value = "tagId", required = false) Integer tagId,
                                                        @ApiParam("年月,非必传,格式:yyyy-mm") @YearMonthFormat @RequestParam(value = "yearMonth", required = false) String yearMonth,
                                                        @ApiParam("标题关键字，非必传") @RequestParam(value = "title", required = false) String title,
-                                                       @ApiParam("排序字段，倒序，非必传，默认:publish_time;可选项：发布时间:publish_time、浏览数:view_count")
+                                                       @ApiParam("排序字段，倒序，非必传，默认:publish_time;可选项：发布时间:publish_time、热度:hot")
                                                        @RequestParam(value = "orderBy", required = false, defaultValue = "publish_time") String orderBy
     ) {
         return createResponse(articleService.selectPublishedArticleVoPage(current, size, categoryId, tagId, yearMonth, title, orderBy));
