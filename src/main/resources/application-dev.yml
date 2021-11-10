@@ -27,7 +27,7 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/blog_db?useSSL=false
+    url: jdbc:mysql://127.0.0.1:3306/blog_db?useSSL=false&u-seUnicode=true&characterEncoding=utf-8
     username: root
     password: root
     druid:
