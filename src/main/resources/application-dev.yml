@@ -64,13 +64,18 @@ spring:
   # 邮箱配置
   mail:
     host: smtp.163.com
-    port: 25
+    port: 465
     username: 15625295093@163.com
     # 这里的密码为密码授权码
     password: abc
     protocol: smtp
     default-encoding: UTF-8
     jndi-name: 个人悦读分享
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
 
 
 # 存储配置，配置其一即可，类型需要严格匹配

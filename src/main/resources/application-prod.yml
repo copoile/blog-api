@@ -58,12 +58,17 @@ spring:
         login-password: yaohw321!
   mail:
     host: smtp.163.com
-    port: 25
+    port: 465
     username: 15625295093@163.com
     password:
     protocol: smtp
     default-encoding: UTF-8
     jndi-name: 个人悦读分享
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
 
 
 ## oss存储配置 ##
